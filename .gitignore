@@ -1,5 +1,8 @@
 HELP.md
 target/
+
+### Local config (per-developer DB credentials) ###
+src/main/resources/application.properties
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/

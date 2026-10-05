@@ -1,0 +1,323 @@
+/* Forms, fields, buttons, demo-fill buttons and flash messages. Loaded on every page. */
+
+/* Form card — internal dashboard forms (e.g. Register Staff), same field
+   vocabulary as .auth-form but sitting inside the normal sidebar/topbar
+   chrome instead of a centered public-page card. */
+
+.form-card {
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-xl);
+	padding: 2.5rem;
+	max-width: 580px;
+	box-shadow: var(--shadow-sm);
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+/* Form sections (group headers inside a form, e.g. "Personal Information") */
+
+.form-section {
+	border-bottom: 1px solid var(--border);
+	padding-bottom: 0.4rem;
+	margin-top: 0.5rem;
+}
+
+.form-section:first-of-type {
+	margin-top: 0;
+}
+
+.form-section-label {
+	margin: 0;
+	font-size: 1.1rem;
+	font-weight: 700;
+	color: var(--text);
+	letter-spacing: -0.01em;
+}
+
+/* Field row — two fields side by side */
+
+.field-row {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 0.85rem;
+}
+
+@media (max-width: 520px) {
+	.field-row {
+		grid-template-columns: 1fr;
+	}
+}
+
+.field-hint {
+	font-size: 0.75rem;
+	color: var(--text-muted);
+	margin-top: 0.2rem;
+	display: block;
+}
+
+/* Form */
+
+.field {
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+}
+
+.field label {
+	margin: 0;
+	display: block;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--text-muted);
+	letter-spacing: 0.01em;
+}
+
+.field input,
+.field select,
+.field textarea {
+	width: 100%;
+	max-width: none;
+	background: var(--bg);
+	border: 1.5px solid var(--border);
+	border-radius: var(--radius);
+	color: var(--text);
+	padding: 0.65rem 0.9rem;
+	font-size: 0.9rem;
+	outline: none;
+	transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+}
+
+.field input::placeholder,
+.field textarea::placeholder {
+	color: var(--text-subtle);
+}
+
+textarea {
+	resize: none;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+	border-color: var(--accent);
+	box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+.multi-input-row {
+	display: flex;
+	gap: 0.4rem;
+	margin-bottom: 0.4rem;
+}
+
+.multi-input-row input {
+	flex: 1;
+	width: auto;
+	background: var(--bg);
+	border: 1.5px solid var(--border);
+	border-radius: var(--radius);
+	color: var(--text);
+	padding: 0.65rem 0.9rem;
+	font-size: 0.9rem;
+	outline: none;
+	transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+}
+
+.multi-input-row input::placeholder {
+	color: var(--text-subtle);
+}
+
+.multi-input-row input:focus {
+	border-color: var(--accent);
+	box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+.multi-input-row button,
+.multi-input-remove {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	padding: 0.5rem 0.9rem;
+	border-radius: var(--radius);
+	border: 1.5px solid var(--danger-border, var(--danger));
+	background: var(--danger-bg, transparent);
+	color: var(--danger);
+	font-size: 0.8rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.18s ease;
+}
+
+.multi-input-row button:hover,
+.multi-input-remove:hover {
+	background: var(--danger);
+	color: var(--danger-contrast, #ffffff);
+}
+
+button[onclick^="addMultiInputRow"] {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	margin-top: 0.2rem;
+	padding: 0.5rem 1rem;
+	border-radius: var(--radius);
+	border: 1.5px solid var(--success-border, var(--success));
+	background: var(--success-bg, transparent);
+	color: var(--success);
+	font-size: 0.8rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.18s ease;
+}
+
+button[onclick^="addMultiInputRow"]:hover {
+	background: var(--success);
+	color: var(--success-contrast, #ffffff);
+}
+
+/* Buttons (auth pages use the larger pill style) */
+
+.btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.45rem;
+	margin: 0;
+	padding: 0.6rem 1.4rem;
+	border-radius: var(--radius);
+	font-size: 0.875rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.18s ease;
+	border: 1.5px solid transparent;
+	text-decoration: none;
+	white-space: nowrap;
+	letter-spacing: 0.01em;
+}
+
+.btn-primary {
+	background: var(--accent);
+	color: var(--accent-contrast);
+	border-color: var(--accent);
+	box-shadow: 0 1px 4px var(--accent-dim);
+}
+
+.btn-primary:hover {
+	background: var(--accent-hover);
+	border-color: var(--accent-hover);
+	color: var(--accent-contrast);
+	box-shadow: 0 4px 12px var(--accent-dim);
+	transform: translateY(-1px);
+}
+
+.btn-block {
+	width: 100%;
+}
+
+.btn-outline {
+	background: transparent;
+	color: var(--text);
+	border-color: var(--border);
+}
+
+.btn-outline:hover {
+	border-color: var(--accent);
+	color: var(--accent);
+	background: var(--accent-dim);
+}
+
+.btn-lg {
+	padding: 0.8rem 2rem;
+	font-size: 1rem;
+}
+
+/* Demo buttons (auth pages) — instant-fill sample data for testing/demos */
+
+.demo-btn-row {
+	position: fixed;
+	bottom: 1.5rem;
+	right: 1.5rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	align-items: center;
+	z-index: 60;
+}
+
+.demo-btn-label {
+	font-size: 0.6rem;
+	color: var(--text-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+}
+
+.demo-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	width: 36px;
+	height: 36px;
+	min-width: 36px;
+	margin: 0;
+	padding: 0;
+	border-radius: 50%;
+	border: 1.5px solid var(--border);
+	background: var(--surface);
+	color: var(--text-muted);
+	cursor: pointer;
+	font-size: 0.58rem;
+	font-weight: 700;
+	letter-spacing: -0.02em;
+	transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.demo-btn:hover {
+	border-color: var(--accent);
+	color: var(--accent);
+}
+
+/* Flash messages (auth pages) */
+
+.flash {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	padding: 0.8rem 1.1rem;
+	border-radius: var(--radius-lg);
+	margin-bottom: 1.25rem;
+	font-size: 0.86rem;
+	font-weight: 500;
+	border: 1px solid;
+	animation: fadeIn 0.3s ease both;
+}
+
+.flash-success {
+	background: var(--success-bg);
+	color: var(--success);
+	border-color: var(--success-border);
+}
+
+.flash-error {
+	background: var(--danger-bg);
+	color: var(--danger);
+	border-color: var(--danger-border);
+}
+
+/* File picker (js/file-picker.js): the chosen files listed under a multi-file input, each renamable */
+.file-pick-list {
+	margin-top: 0.5rem;
+}
+
+.file-pick-list:empty {
+	display: none;
+}
+
+.file-pick-ext {
+	align-self: center;
+	color: var(--text-muted);
+	font-size: 0.85rem;
+	white-space: nowrap;
+}

@@ -1,9 +1,13 @@
 package lexflow.controller;
 
 import jakarta.validation.Valid;
+import lexflow.dto.consultation.SubmitOnlineConsultationRequest;
 import lexflow.dto.user.ChangePasswordRequest;
+import lexflow.entity.consultation.CaseType;
+import lexflow.entity.consultation.Consultation;
 import lexflow.entity.user.Client;
 import lexflow.entity.user.User;
+import lexflow.exception.PersistenceException;
 import lexflow.security.CustomUserPrincipal;
 import lexflow.service.*;
 import lombok.RequiredArgsConstructor;
@@ -14,11 +18,16 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
 public class ClientController {
+	
+	private final ConsultationService consultationService;
 	
 	private final UserService userService;
 	
@@ -71,6 +80,37 @@ public class ClientController {
 	@GetMapping("/client/documents/user/{id}")
 	public ResponseEntity<Resource> viewUserDocument(@PathVariable("id") Long documentId, Authentication authentication) {
 		return documentService.streamUserDocument(documentService.findById(documentId), currentClient(authentication));
+	}
+	
+	// ==================== Consultations (Submit, Requests) ====================
+	
+	@GetMapping("/client/consultations/new")
+	public String showConsultationForm(Model model) {
+		model.addAttribute("caseTypes", CaseType.values());
+		return "client/consultation-form";
+	}
+	
+	@PostMapping("/client/consultations")
+	public String submitConsultation(@Valid @ModelAttribute SubmitOnlineConsultationRequest form, BindingResult bindingResult,
+									 Authentication authentication, Model model, RedirectAttributes redirectAttributes) {
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			model.addAttribute("caseTypes", CaseType.values());
+			return "client/consultation-form";
+		}
+		
+		List<MultipartFile> consultationFiles = form.getConsultationFiles() != null ? form.getConsultationFiles() : List.of();
+		
+		try {
+			consultationService.submit(currentClient(authentication), form.getCaseType(), form.getOpposingParties(), form.getDescription(), consultationFiles);
+		} catch (PersistenceException e) {
+			model.addAttribute("caseTypes", CaseType.values());
+			model.addAttribute("error", "Could not submit your consultation request. Please try again.");
+			return "client/consultation-form";
+		}
+		
+		redirectAttributes.addFlashAttribute("success", "Consultation request submitted successfully.");
+		return "redirect:/client/consultations";
 	}
 	
 }

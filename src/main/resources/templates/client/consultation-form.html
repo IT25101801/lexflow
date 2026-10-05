@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Submit Consultation Request – LexFlow')}"></head>
+<body>
+
+<aside th:replace="~{fragments/sidebar-client :: sidebar('consultation-new')}"></aside>
+
+<div class="main">
+	<div th:replace="~{fragments/common :: topbar('Submit Consultation Request', null)}"></div>
+	
+	<div class="content">
+		
+		<div class="flash flash-error" th:if="${error}" th:text="${error}"></div>
+		
+		<form class="form-card" th:action="@{/client/consultations}" method="post" enctype="multipart/form-data">
+			
+			<div class="field">
+				<label for="caseType">Case Type</label>
+				<select id="caseType" name="caseType" required>
+					<option value="" hidden>Select…</option>
+					<option th:each="type : ${caseTypes}" th:value="${type.name()}" th:text="${#strings.replace(type.name(), '_', ' ')}"></option>
+				</select>
+			</div>
+			
+			<div class="field">
+				<label>Opposing Parties</label>
+				<div id="opposingPartyRows">
+					<div class="multi-input-row">
+						<input type="text" name="opposingParties" placeholder="John Doe" maxlength="255"/>
+						<button type="button" onclick="this.parentElement.remove();">Remove</button>
+					</div>
+				</div>
+				<button type="button" onclick="addMultiInputRow('opposingPartyRows','opposingParties','John Doe')">+ Add Opposing Party</button>
+			</div>
+			
+			<div class="field">
+				<label for="description">Description of the Case</label>
+				<textarea id="description" name="description" rows="10" required
+						  placeholder="Describe your legal matter in as much detail as possible…"></textarea>
+			</div>
+			
+			<div class="field">
+				<label for="consultationFiles">Documents (optional)</label>
+				<input id="consultationFiles" type="file" name="consultationFiles" multiple/>
+				<span class="field-hint">You can select multiple files at once (evidence, correspondence, contracts, etc.).</span>
+			</div>
+			
+			<button class="btn btn-primary btn-block" type="submit" style="margin-top:0.5rem;">Submit Request</button>
+		
+		</form>
+	
+	</div>
+</div>
+
+<!-- Demo Button -->
+<div class="demo-btn-row">
+	<span class="demo-btn-label">Demo</span>
+	<button class="demo-btn" type="button" title="Fill Sample Request" onclick="fillConsultationForm()">C</button>
+</div>
+
+<script th:src="@{/js/demo.js}"></script>
+
+</body>
+</html>

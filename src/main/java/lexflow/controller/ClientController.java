@@ -113,4 +113,10 @@ public class ClientController {
 		return "redirect:/client/consultations";
 	}
 	
+	@GetMapping("/client/consultations")
+	public String consultations(Authentication authentication, Model model) {
+		model.addAttribute("consultations", consultationService.findAllForClient(currentClient(authentication)));
+		return "client/consultation-list";
+	}
+	
 }

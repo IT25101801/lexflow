@@ -1,0 +1,76 @@
+/* Dashboard stat cards and chart cards. Linked from the Partner, Associate, Paralegal and Finance dashboards. */
+
+/* ---- Analytics (stat cards + chart cards) ---- */
+
+.stat-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: 1.25rem;
+	max-width: 900px;
+	margin: 2.5rem auto 0;
+}
+
+.stat-card {
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-xl);
+	box-shadow: var(--shadow-sm);
+	padding: 1.5rem;
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+}
+
+.stat-icon {
+	width: 48px;
+	height: 48px;
+	flex-shrink: 0;
+	background: var(--accent-dim);
+	border-radius: var(--radius-lg);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--accent);
+	font-size: 1.25rem;
+}
+
+.stat-value {
+	font-size: 1.6rem;
+	font-weight: 800;
+	color: var(--text);
+	letter-spacing: -0.02em;
+	line-height: 1.2;
+}
+
+.stat-label {
+	font-size: 0.8rem;
+	color: var(--text-muted);
+}
+
+.chart-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+	gap: 1.25rem;
+	max-width: 1400px;
+	margin: 1.5rem auto 0;
+}
+
+.chart-card {
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-xl);
+	box-shadow: var(--shadow-sm);
+	padding: 1.5rem;
+}
+
+.chart-card-title {
+	font-size: 0.85rem;
+	font-weight: 700;
+	color: var(--text);
+	margin-bottom: 1rem;
+}
+
+.chart-canvas-wrap {
+	position: relative;
+	height: 260px;
+}

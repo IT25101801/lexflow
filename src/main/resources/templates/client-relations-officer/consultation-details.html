@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Consultation Request Details – LexFlow')}"></head>
+<body>
+
+<aside th:replace="~{fragments/sidebar-client-relations-officer :: sidebar('consultations')}"></aside>
+
+<div class="main">
+	<div th:replace="~{fragments/common :: topbar('Consultation Request Details', null)}"></div>
+	
+	<div class="content">
+		
+		<div class="flash flash-success" th:if="${success}" th:text="${success}"></div>
+		<div class="flash flash-error" th:if="${error}" th:text="${error}"></div>
+		
+		<div class="profile-layout">
+			<div>
+				
+				<div class="section-card">
+					<div class="avatar-header" style="padding-bottom:1rem;margin-bottom:1rem;border-bottom:1px solid var(--border);">
+						<div>
+							<div class="avatar-name">Consultation Details</div>
+						</div>
+						<div style="margin-left:auto;display:flex;gap:0.5rem;align-items:center;">
+							<button class="action-btn action-btn-edit" type="button" th:if="${consultation.consultationStatus.name() == 'PENDING'}"
+									onclick="document.getElementById('editModal').style.display='flex';">Edit
+							</button>
+							<form method="post" style="margin:0;" th:if="${consultation.consultationStatus.name() == 'PENDING'}" th:action="@{/client-relations-officer/consultations/{id}/delete(id=${consultation.consultationId})}"
+								  onsubmit="return confirm('Delete this consultation request? This action cannot be undone.');">
+								<button class="action-btn action-btn-delete" type="submit">Delete</button>
+							</form>
+						</div>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Consultation Code</span>
+						<span class="detail-value" th:text="${consultation.consultationCode}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Client</span>
+						<span style="display:flex;flex-direction:column;align-items:flex-end;">
+							<div th:text="${consultation.client.name}"></div>
+							<div class="cell-sub" th:text="${consultation.client.userCode}"></div>
+						</span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Case Type</span>
+						<span class="detail-value" th:text="${#strings.replace(consultation.caseType, '_', ' ')}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Opposing Parties</span>
+						<div class="detail-value">
+							<div th:each="op : ${consultation.opposingParties}" th:text="${op}"></div>
+						</div>
+					</div>
+					<div class="detail-row" style="border-bottom:none;">
+						<span class="detail-label">Legal Issue Details</span>
+					</div>
+					<div style="padding:0 0 0.75rem;font-size:0.88rem;line-height:1.7;color:var(--text);word-break:break-word;overflow-wrap:anywhere;border-bottom:1px solid var(--border);"
+						 th:text="${consultation.description}"></div>
+					<div class="detail-row">
+						<span class="detail-label">Consultation Status</span>
+						<span class="badge" th:classappend="'badge-' + ${consultation.consultationStatus}" th:text="${#strings.replace(consultation.consultationStatus, '_', ' ')}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Submitted At</span>
+						<span class="detail-value" th:text="${#temporals.format(consultation.submittedAt, 'dd/MM/yyyy HH:mm')}"></span>
+					</div>
+					<div class="detail-row" th:if="${consultation.associate != null}">
+						<span class="detail-label">Assigned Associate</span>
+						<span style="display:flex;flex-direction:column;align-items:flex-end;">
+							<div th:text="${consultation.associate.name}"></div>
+							<div class="cell-sub" th:text="${consultation.associate.userCode}"></div>
+						</span>
+					</div>
+					<div class="detail-row" th:if="${consultation.paralegal != null}">
+						<span class="detail-label">Assigned Paralegal</span>
+						<span style="display:flex;flex-direction:column;align-items:flex-end;">
+							<div th:text="${consultation.paralegal.name}"></div>
+							<div class="cell-sub" th:text="${consultation.paralegal.userCode}"></div>
+						</span>
+					</div>
+					<div class="detail-row" th:if="${consultation.rejectionReason != null}">
+						<span class="detail-label">Rejection Reason</span>
+					</div>
+					<div th:if="${consultation.rejectionReason != null}" style="padding:0.5rem 0 0.25rem;font-size:0.88rem;line-height:1.7;color:var(--text);word-break:break-word;overflow-wrap:anywhere;"
+						 th:text="${consultation.rejectionReason}"></div>
+				</div>
+				
+				<div class="section-card">
+					<div class="section-title">Documents</div>
+					<div class="item-list">
+						<p class="empty-state" th:if="${#lists.isEmpty(consultationDocuments)}">No documents attached.</p>
+						<div class="item-row" th:each="d : ${consultationDocuments}">
+							<div class="item-main">
+								<a class="item-title" th:href="@{/client-relations-officer/documents/consultation/{id}(id=${d.documentId})}" th:text="${d.originalFilename}" target="_blank"></a>
+							</div>
+						</div>
+					</div>
+				</div>
+			
+			</div>
+		</div>
+	
+	</div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-overlay" id="editModal" onclick="if(event.target===this)this.style.display='none';">
+	<div class="modal-dialog" style="max-width:480px;width:92%;">
+		<div class="section-title">Edit Consultation Request</div>
+		
+		<form method="post" enctype="multipart/form-data" th:action="@{/client-relations-officer/consultations/{id}/edit(id=${consultation.consultationId})}" style="display:flex;flex-direction:column;gap:0.85rem;margin-top:1rem;">
+			<div class="field">
+				<label for="caseType">Case Type</label>
+				<select id="caseType" name="caseType" required>
+					<option th:each="type : ${caseTypes}" th:value="${type.name()}" th:text="${#strings.replace(type.name(), '_', ' ')}"
+							th:selected="${type == consultation.caseType}"></option>
+				</select>
+			</div>
+			<div class="field">
+				<label>Opposing Parties</label>
+				<div id="opposingPartyRows">
+					<div class="multi-input-row" th:each="op : ${consultation.opposingParties}">
+						<input type="text" name="opposingParties" maxlength="255" th:value="${op}"/>
+						<button type="button" onclick="this.parentElement.remove();">Remove</button>
+					</div>
+				</div>
+				<button type="button" onclick="addMultiInputRow('opposingPartyRows','opposingParties')">+ Add Opposing Party</button>
+			</div>
+			<div class="field">
+				<label for="description">Legal Issue Details</label>
+				<textarea id="description" name="description" rows="10" required th:text="${consultation.description}"></textarea>
+			</div>
+			<div class="field" th:unless="${#lists.isEmpty(consultationDocuments)}">
+				<label>Documents</label>
+				<div class="doc-row" th:each="d : ${consultationDocuments}" th:id="'doc-row-' + ${d.documentId}" style="display:flex;align-items:center;gap:0.4rem;margin-bottom:0.35rem;">
+					<input type="hidden" name="documentIds" th:value="${d.documentId}"/>
+					<input type="text" name="originalFilenames" th:value="${d.originalFilename}"
+						   style="flex:1;font-size:0.85rem;padding:0.15rem 0.4rem;"/>
+					<input type="checkbox" name="deleteDocumentIds" th:value="${d.documentId}" th:id="'doc-del-' + ${d.documentId}" style="display:none;"/>
+					<button class="action-btn action-btn-delete" type="button" th:id="'doc-del-btn-' + ${d.documentId}"
+							th:onclick="'toggleDocDelete(' + ${d.documentId} + ')'">Delete
+					</button>
+				</div>
+			</div>
+			<div class="field">
+				<label for="consultationFiles">Add Documents</label>
+				<input id="consultationFiles" type="file" name="consultationFiles" multiple/>
+			</div>
+			<div class="modal-actions" style="margin-top:0.5rem;">
+				<button class="modal-btn-cancel" type="button" onclick="document.getElementById('editModal').style.display='none';">Cancel</button>
+				<button class="btn btn-warning" type="submit">Save Changes</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+</body>
+</html>

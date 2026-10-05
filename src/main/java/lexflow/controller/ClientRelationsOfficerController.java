@@ -1,6 +1,7 @@
 package lexflow.controller;
 
 import jakarta.validation.Valid;
+import lexflow.dto.consultation.EditConsultationRequest;
 import lexflow.dto.consultation.SubmitWalkInConsultationRequest;
 import lexflow.dto.user.*;
 import lexflow.entity.consultation.CaseType;
@@ -11,6 +12,7 @@ import lexflow.entity.user.ClientRelationsOfficer;
 import lexflow.entity.user.Gender;
 import lexflow.entity.user.User;
 import lexflow.exception.*;
+import lexflow.exception.consultation.InvalidConsultationStateException;
 import lexflow.exception.document.NonPdfDocumentException;
 import lexflow.security.CustomUserPrincipal;
 import lexflow.service.*;
@@ -291,6 +293,67 @@ public class ClientRelationsOfficerController {
 		model.addAttribute("genders", Gender.values());
 		populateClientDetailModel(client, model);
 		return "client-relations-officer/client-details";
+	}
+	
+	@GetMapping("/client-relations-officer/consultations/{id}")
+	public String consultationDetails(@PathVariable("id") Long consultationId, Model model) {
+		populateConsultationDetailModel(consultationService.findById(consultationId), model);
+		return "client-relations-officer/consultation-details";
+	}
+	
+	// ==================== Helpers ====================
+	
+	private void populateConsultationDetailModel(Consultation consultation, Model model) {
+		model.addAttribute("consultation", consultation);
+		model.addAttribute("consultationDocuments", documentService.findConsultationDocuments(consultation));
+		model.addAttribute("caseTypes", CaseType.values());
+	}
+	
+	@PostMapping("/client-relations-officer/consultations/{id}/edit")
+	public String editConsultation(@PathVariable("id") Long consultationId, @Valid @ModelAttribute EditConsultationRequest form, BindingResult bindingResult, Model model) {
+		Consultation consultation = consultationService.findById(consultationId);
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			populateConsultationDetailModel(consultation, model);
+			return "client-relations-officer/consultation-details";
+		}
+		
+		List<MultipartFile> consultationFiles = form.getConsultationFiles() != null ? form.getConsultationFiles() : List.of();
+		
+		try {
+			consultation = consultationService.updateDetails(consultation, form.getCaseType(), form.getOpposingParties(), form.getDescription(),
+															 consultationFiles, form.getDeleteDocumentIds(), form.getDocumentIds(), form.getOriginalFilenames());
+			populateConsultationDetailModel(consultation, model);
+			model.addAttribute("success", "Consultation request updated successfully.");
+		} catch (InvalidConsultationStateException e) {
+			populateConsultationDetailModel(consultation, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "client-relations-officer/consultation-details";
+	}
+	
+	@PostMapping("/client-relations-officer/consultations/{id}/delete")
+	public String deleteConsultation(@PathVariable("id") Long consultationId, RedirectAttributes redirectAttributes) {
+		Consultation consultation = consultationService.findById(consultationId);
+		
+		try {
+			consultationService.delete(consultation);
+		} catch (InvalidConsultationStateException e) {
+			redirectAttributes.addFlashAttribute("error", e.getMessage());
+			return "redirect:/client-relations-officer/consultations/" + consultationId;
+		}
+		
+		redirectAttributes.addFlashAttribute("success", "Consultation request deleted.");
+		return "redirect:/client-relations-officer/consultations";
+	}
+	
+	// ==================== Documents ====================
+	
+	@GetMapping("/client-relations-officer/documents/consultation/{id}")
+	public ResponseEntity<Resource> viewConsultationDocument(@PathVariable("id") Long documentId, Authentication authentication) {
+		return documentService.streamConsultationDocument(documentService.findById(documentId), currentClientRelationsOfficer(authentication));
 	}
 	
 }

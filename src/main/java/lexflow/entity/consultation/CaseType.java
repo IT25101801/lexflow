@@ -1,0 +1,14 @@
+package lexflow.entity.consultation;
+
+public enum CaseType {
+	CIVIL,
+	CONTRACT_COMMERCIAL,
+	CORPORATE,
+	CRIMINAL,
+	EMPLOYMENT,
+	FAMILY,
+	IMMIGRATION,
+	INTELLECTUAL_PROPERTY,
+	PROPERTY,
+	OTHER
+}

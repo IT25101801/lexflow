@@ -28,6 +28,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PartnerController {
 	
+	private final ConsultationService consultationService;
+	
 	private final ConflictCheckService conflictCheckService;
 	
 	private final DocumentService documentService;
@@ -235,6 +237,14 @@ public class PartnerController {
 		}
 		
 		return "partner/conflict-check";
+	}
+	
+	// ==================== Consultations (Pending, All, Conflict Check) ====================
+	
+	@GetMapping("/partner/consultations/pending")
+	public String pendingConsultations(Model model) {
+		model.addAttribute("consultations", consultationService.findAwaitingReviewForPartner());
+		return "partner/consultation-pending-list";
 	}
 	
 }

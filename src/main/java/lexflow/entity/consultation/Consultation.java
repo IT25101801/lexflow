@@ -1,8 +1,8 @@
 package lexflow.entity.consultation;
 
-import lexflowdelta.entity.user.Associate;
-import lexflowdelta.entity.user.Client;
-import lexflowdelta.entity.user.Paralegal;
+import lexflow.entity.user.Associate;
+import lexflow.entity.user.Client;
+import lexflow.entity.user.Paralegal;
 import lombok.Getter;
 import lombok.Setter;
 

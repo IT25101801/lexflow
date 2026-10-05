@@ -446,4 +446,12 @@ public class AssociateController {
 		return documentService.streamCaseDocument(documentService.findById(documentId), currentAssociate(authentication));
 	}
 	
+	// ==================== Schedule (My Events) ====================
+	
+	@GetMapping("/associate/events")
+	public String events(Authentication authentication, Model model) {
+		model.addAttribute("events", eventService.findAllForAssociate(currentAssociate(authentication)));
+		return "associate/event-list";
+	}
+	
 }

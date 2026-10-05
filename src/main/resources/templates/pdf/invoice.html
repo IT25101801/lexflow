@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8"/>
+	<title th:text="${invoice.invoiceCode}">Invoice</title>
+	<style>
+		@page {
+			size: A4;
+			margin: 2.2cm 2cm;
+		}
+		
+		body {
+			font-family: "Helvetica", "Arial", sans-serif;
+			color: #1a1a1a;
+			font-size: 11pt;
+			line-height: 1.5;
+		}
+		
+		.letterhead {
+			display: flex;
+			justify-content: space-between;
+			align-items: flex-start;
+			border-bottom: 2px solid #0a1526;
+			padding-bottom: 16px;
+			margin-bottom: 28px;
+		}
+		
+		.firm-name {
+			font-size: 22pt;
+			font-weight: bold;
+			letter-spacing: -0.5px;
+		}
+		
+		.firm-name .flow {
+			color: #2563eb;
+		}
+		
+		.firm-tagline {
+			font-size: 9pt;
+			color: #666666;
+			margin-top: 2px;
+		}
+		
+		.invoice-meta {
+			text-align: right;
+		}
+		
+		.invoice-title {
+			font-size: 16pt;
+			font-weight: bold;
+			text-transform: uppercase;
+			letter-spacing: 1px;
+		}
+		
+		.invoice-code {
+			font-size: 11pt;
+			color: #444444;
+			margin-top: 4px;
+		}
+		
+		.invoice-status {
+			display: inline-block;
+			margin-top: 6px;
+			padding: 3px 10px;
+			border-radius: 3px;
+			font-size: 9pt;
+			font-weight: bold;
+			text-transform: uppercase;
+			letter-spacing: 0.5px;
+			border: 1px solid #999999;
+		}
+		
+		.parties {
+			display: flex;
+			justify-content: space-between;
+			margin-bottom: 28px;
+		}
+		
+		.party-block {
+			width: 48%;
+		}
+		
+		.party-label {
+			font-size: 8.5pt;
+			text-transform: uppercase;
+			letter-spacing: 0.6px;
+			color: #888888;
+			margin-bottom: 4px;
+		}
+		
+		.party-name {
+			font-size: 12pt;
+			font-weight: bold;
+		}
+		
+		.party-detail {
+			color: #444444;
+			font-size: 10pt;
+		}
+		
+		table.line-items {
+			width: 100%;
+			border-collapse: collapse;
+			margin-bottom: 24px;
+		}
+		
+		table.line-items th {
+			text-align: left;
+			font-size: 8.5pt;
+			text-transform: uppercase;
+			letter-spacing: 0.5px;
+			color: #888888;
+			padding: 8px 6px;
+			border-bottom: 1.5px solid #0a1526;
+		}
+		
+		table.line-items td {
+			padding: 10px 6px;
+			border-bottom: 1px solid #e0e0e0;
+			font-size: 10.5pt;
+		}
+		
+		table.line-items th.amount-col,
+		table.line-items td.amount-col {
+			text-align: right;
+			white-space: nowrap;
+		}
+		
+		.totals {
+			width: 100%;
+			margin-top: 8px;
+		}
+		
+		.totals-row {
+			display: flex;
+			justify-content: flex-end;
+			padding: 6px 0;
+		}
+		
+		.totals-label {
+			width: 140px;
+			text-align: right;
+			padding-right: 24px;
+			color: #444444;
+		}
+		
+		.totals-value {
+			width: 130px;
+			text-align: right;
+			font-weight: bold;
+		}
+		
+		.grand-total .totals-label,
+		.grand-total .totals-value {
+			font-size: 13pt;
+			font-weight: bold;
+			border-top: 2px solid #0a1526;
+			padding-top: 10px;
+		}
+		
+		.footer-note {
+			margin-top: 48px;
+			padding-top: 12px;
+			border-top: 1px solid #e0e0e0;
+			font-size: 8.5pt;
+			color: #888888;
+			text-align: center;
+		}
+	</style>
+</head>
+<body>
+
+<div class="letterhead">
+	<div>
+		<div class="firm-name">Lex<span class="flow">Flow</span></div>
+		<div class="firm-tagline">Legal Case Management</div>
+	</div>
+	<div class="invoice-meta">
+		<div class="invoice-title">Invoice</div>
+		<div class="invoice-code" th:text="${invoice.invoiceCode}"></div>
+		<div class="invoice-status" th:text="${invoice.invoiceStatus}"></div>
+	</div>
+</div>
+
+<div class="parties">
+	<div class="party-block">
+		<div class="party-label">Billed To</div>
+		<div class="party-name" th:text="${case.client.name}"></div>
+		<div class="party-detail" th:text="${case.client.email}"></div>
+	</div>
+	<div class="party-block" style="text-align:right;">
+		<div class="party-label">Case</div>
+		<div class="party-name" th:text="${case.caseCode}"></div>
+		<div class="party-detail" th:text="${'Compiled At ' + #temporals.format(invoice.compiledAt, 'dd/MM/yyyy')}"></div>
+		<div class="party-detail" th:if="${invoice.paidAt != null}" th:text="${'Paid ' + #temporals.format(invoice.paidAt, 'dd/MM/yyyy')}"></div>
+	</div>
+</div>
+
+<table class="line-items">
+	<thead>
+	<tr>
+		<th>Description</th>
+		<th class="amount-col">Amount</th>
+	</tr>
+	</thead>
+	<tbody>
+	<tr th:each="t : ${tasks}">
+		<td th:text="${t.title}"></td>
+		<td class="amount-col" th:text="${#numbers.formatDecimal(t.billableAmount, 1, 'COMMA', 2, 'POINT')}"></td>
+	</tr>
+	</tbody>
+</table>
+
+<div class="totals">
+	<div class="totals-row grand-total">
+		<div class="totals-label">Total Due</div>
+		<div class="totals-value" th:text="${#numbers.formatDecimal(invoice.totalAmount, 1, 'COMMA', 2, 'POINT')}"></div>
+	</div>
+</div>
+
+<div class="footer-note">
+	This is a system-generated invoice from LexFlow. For questions regarding this invoice, please contact your assigned associate.
+</div>
+
+</body>
+</html>

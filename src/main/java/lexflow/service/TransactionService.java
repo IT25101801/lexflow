@@ -6,7 +6,6 @@ import lexflow.entity.finance.TransactionType;
 import lexflow.entity.user.Client;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -20,7 +19,6 @@ public class TransactionService {
 	
 	// ---- Create ----
 	
-	@Transactional
 	public Transaction record(Client client, BigDecimal amount, TransactionType transactionType, Long invoiceId) {
 		Transaction transaction = new Transaction(client, amount, transactionType, invoiceId, LocalDateTime.now());
 		

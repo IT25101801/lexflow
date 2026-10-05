@@ -135,21 +135,23 @@ public class UserService {
 	}
 	
 	public List<Associate> findActiveAssociates() {
-		return castAll(userDao.findActiveByRole(Role.ASSOCIATE), Associate.class);
+		List<Associate> associates = new ArrayList<>();
+		
+		for (User user : userDao.findActiveByRole(Role.ASSOCIATE)) {
+			associates.add((Associate) user);
+		}
+		
+		return associates;
 	}
 	
 	public List<Paralegal> findActiveParalegals() {
-		return castAll(userDao.findActiveByRole(Role.PARALEGAL), Paralegal.class);
-	}
-	
-	private <T extends User> List<T> castAll(List<User> users, Class<T> type) {
-		List<T> typedUsers = new ArrayList<>();
+		List<Paralegal> paralegals = new ArrayList<>();
 		
-		for (User user : users) {
-			typedUsers.add(type.cast(user));
+		for (User user : userDao.findActiveByRole(Role.PARALEGAL)) {
+			paralegals.add((Paralegal) user);
 		}
 		
-		return typedUsers;
+		return paralegals;
 	}
 	
 	private boolean matchesKeyword(User user, String lowerKeyword) {
@@ -194,7 +196,6 @@ public class UserService {
 		return userDao.update(user);
 	}
 	
-	@Transactional
 	public User changePassword(User user, String newPassword) {
 		user.setPassword(passwordEncoder.encode(newPassword));
 		

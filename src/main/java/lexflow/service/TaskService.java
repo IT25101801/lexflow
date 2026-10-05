@@ -139,7 +139,6 @@ public class TaskService {
 		
 	}
 	
-	@Transactional
 	public void unlinkFromInvoice(Long billedInvoiceId) {
 		List<Task> tasks = taskDao.findByBilledInvoiceId(billedInvoiceId);
 		

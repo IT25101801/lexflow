@@ -1,0 +1,147 @@
+/* Design tokens, reset, base elements and the shared keyframes. Loaded on every page. */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
+/* Single dark theme — no light mode, no toggle. */
+
+:root {
+	color-scheme: dark;
+	--bg: #0a1526;
+	--surface: #101f38;
+	--card-hover: #16294a;
+	--border: #1e2f4d;
+	--border-focus: rgba(212, 175, 55, 0.4);
+	
+	--text: #e8edf5;
+	--text-muted: #92a1ba;
+	--text-subtle: #5b6b85;
+	
+	--sidebar-bg: #060f22;
+	--sidebar-surface: var(--sidebar-bg);
+	--sidebar-border: #16264a;
+	--sidebar-link: #a8b6cf;
+	--sidebar-text: #ffffff;
+	--sidebar-btn-bg: rgba(255, 255, 255, 0.08);
+	--sidebar-btn-bg-hover: rgba(255, 255, 255, 0.14);
+	
+	--accent: #d4af37;
+	--accent-dim: rgba(212, 175, 55, 0.14);
+	--accent-hover: #c9a227;
+	--accent-contrast: #0a1526;
+	
+	--success: #34d399;
+	--success-bg: rgba(52, 211, 153, 0.10);
+	--success-border: rgba(52, 211, 153, 0.25);
+	
+	--danger: #f87171;
+	--danger-bg: rgba(248, 113, 113, 0.10);
+	--danger-border: rgba(248, 113, 113, 0.25);
+	
+	--warning: #fbbf24;
+	--warning-bg: rgba(251, 191, 36, 0.10);
+	--warning-border: rgba(251, 191, 36, 0.25);
+	
+	--info: #38bdf8;
+	--info-bg: rgba(56, 189, 248, 0.10);
+	--info-border: rgba(56, 189, 248, 0.25);
+	
+	--edit: var(--accent);
+	--edit-bg: var(--accent-dim);
+	--edit-border: var(--accent-dim);
+	
+	--view: #2563eb;
+	--view-bg: rgba(37, 99, 235, 0.10);
+	--view-border: rgba(37, 99, 235, 0.25);
+	
+	--table-stripe: #0d1c34;
+	--table-header: #14294a;
+	
+	--shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.5);
+	--shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45);
+	--shadow-lg: 0 10px 32px rgba(0, 0, 0, 0.55);
+	
+	--radius-sm: 6px;
+	--radius: 8px;
+	--radius-lg: 12px;
+	--radius-xl: 16px;
+	--radius-2xl: 20px;
+	
+	--sidebar-width: 296px;
+	--topbar-height: 62px;
+	
+	--font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+*, *::before, *::after {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+html {
+	font-size: 16px;
+}
+
+body {
+	font-family: var(--font);
+	background: var(--bg);
+	color: var(--text);
+	line-height: 1.6;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+img {
+	max-width: 100%;
+	display: block;
+}
+
+button {
+	font-family: var(--font);
+	cursor: pointer;
+}
+
+input, select, textarea {
+	font-family: var(--font);
+}
+
+::-webkit-scrollbar {
+	width: 5px;
+	height: 5px;
+}
+
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+	background: var(--border);
+	border-radius: 99px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: var(--text-subtle);
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(-4px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes slideUp {
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}

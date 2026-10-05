@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Analytics – LexFlow')}"></head>
+<body>
+<link rel="stylesheet" th:href="@{/css/analytics.css}"/>
+
+<aside th:replace="~{fragments/sidebar-paralegal :: sidebar('analytics')}"></aside>
+
+<div class="main">
+	<div th:replace="~{fragments/common :: topbar('Analytics', null)}"></div>
+	
+	<div class="content">
+		<div class="stat-grid">
+			<div class="stat-card">
+				<div class="stat-icon"><i class="bi bi-trophy"></i></div>
+				<div>
+					<div class="stat-value" th:text="${#numbers.formatDecimal(winRate, 1, 1)} + '%'"></div>
+					<div class="stat-label">Win Rate</div>
+				</div>
+			</div>
+			<div class="stat-card">
+				<div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
+				<div>
+					<div class="stat-value" th:text="${avgCaseDurationDays != null ? #numbers.formatDecimal(avgCaseDurationDays, 1, 1) + ' days' : '–'}"></div>
+					<div class="stat-label">Avg. Case Duration</div>
+				</div>
+			</div>
+			<div class="stat-card">
+				<div class="stat-icon"><i class="bi bi-cash-stack"></i></div>
+				<div>
+					<div class="stat-value" th:text="${#numbers.formatDecimal(billableThisMonth, 1, 'COMMA', 2, 'POINT')}"></div>
+					<div class="stat-label">Billable This Month</div>
+				</div>
+			</div>
+			<div class="stat-card">
+				<div class="stat-icon"><i class="bi bi-clock-history"></i></div>
+				<div>
+					<div class="stat-value" th:text="${#numbers.formatDecimal(billableLastMonth, 1, 'COMMA', 2, 'POINT')}"></div>
+					<div class="stat-label">Billable Last Month</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+</body>
+</html>

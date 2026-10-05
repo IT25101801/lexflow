@@ -45,6 +45,8 @@ public class ParalegalController {
 	
 	private final ContactService contactService;
 	
+	private final AnalyticsService analyticsService;
+	
 	// ==================== Overview (Dashboard, Profile) ====================
 	
 	@GetMapping("/paralegal/dashboard")
@@ -310,6 +312,19 @@ public class ParalegalController {
 	public String eventDetails(@PathVariable("id") Long eventId, Authentication authentication, Model model) {
 		model.addAttribute("event", eventService.findOwnedByParalegal(eventId, currentParalegal(authentication)));
 		return "paralegal/event-details";
+	}
+	
+	@GetMapping("/paralegal/analytics")
+	public String analytics(Authentication authentication, Model model) {
+		Paralegal paralegal = currentParalegal(authentication);
+		model.addAttribute("user", paralegal);
+		
+		model.addAttribute("winRate", analyticsService.winRateForParalegal(paralegal.getUserId()));
+		model.addAttribute("avgCaseDurationDays", analyticsService.avgCaseDurationDaysForParalegal(paralegal.getUserId()));
+		model.addAttribute("billableThisMonth", analyticsService.billableAmountThisMonthForParalegal(paralegal.getUserId()));
+		model.addAttribute("billableLastMonth", analyticsService.billableAmountLastMonthForParalegal(paralegal.getUserId()));
+		
+		return "paralegal/analytics";
 	}
 	
 }

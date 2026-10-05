@@ -5,6 +5,7 @@ import lexflow.dto.consultation.SubmitWalkInConsultationRequest;
 import lexflow.dto.user.*;
 import lexflow.entity.consultation.CaseType;
 import lexflow.entity.consultation.Consultation;
+import lexflow.entity.user.Role;
 import lexflow.entity.user.Client;
 import lexflow.entity.user.ClientRelationsOfficer;
 import lexflow.entity.user.Gender;
@@ -162,6 +163,15 @@ public class ClientRelationsOfficerController {
 		model.addAttribute("consultations", consultationService.search(keyword));
 		model.addAttribute("keyword", keyword);
 		return "client-relations-officer/consultation-list";
+	}
+	
+	@GetMapping("/client-relations-officer/clients")
+	public String clients(@RequestParam(required = false) String keyword, Model model) {
+		model.addAttribute("users", userService.search(Role.CLIENT, keyword));
+		model.addAttribute("keyword", keyword);
+		model.addAttribute("title", "Clients");
+		model.addAttribute("active", "clients");
+		return "client-relations-officer/client-list";
 	}
 	
 }

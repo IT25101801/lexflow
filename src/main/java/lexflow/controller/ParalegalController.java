@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class ParalegalController {
 	
+	private final ConsultationService consultationService;
+	
 	private final UserService userService;
 	
 	private final DocumentService documentService;
@@ -71,6 +73,14 @@ public class ParalegalController {
 	@GetMapping("/paralegal/documents/user/{id}")
 	public ResponseEntity<Resource> viewUserDocument(@PathVariable("id") Long documentId, Authentication authentication) {
 		return documentService.streamUserDocument(documentService.findById(documentId), currentParalegal(authentication));
+	}
+	
+	// ==================== Consultations (Unscheduled, All) ====================
+	
+	@GetMapping("/paralegal/consultations/pending")
+	public String pendingConsultations(Authentication authentication, Model model) {
+		model.addAttribute("consultations", consultationService.findAwaitingReviewForParalegal(currentParalegal(authentication)));
+		return "paralegal/consultation-pending-list";
 	}
 	
 }

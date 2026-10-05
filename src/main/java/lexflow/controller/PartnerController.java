@@ -419,4 +419,22 @@ public class PartnerController {
 		return documentService.streamConsultationDocument(documentService.findById(documentId), currentPartner(authentication));
 	}
 	
+	// ==================== Cases (Open, Closed) ====================
+	
+	@GetMapping("/partner/cases/open")
+	public String openCases(Model model) {
+		model.addAttribute("cases", caseService.findAllOpen());
+		model.addAttribute("title", "Open Cases");
+		model.addAttribute("active", "cases-open");
+		return "partner/case-list";
+	}
+	
+	@GetMapping("/partner/cases/closed")
+	public String closedCases(Model model) {
+		model.addAttribute("cases", caseService.findAllClosed());
+		model.addAttribute("title", "Closed Cases");
+		model.addAttribute("active", "cases-closed");
+		return "partner/case-list";
+	}
+	
 }

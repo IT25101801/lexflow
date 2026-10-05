@@ -356,4 +356,12 @@ public class ClientRelationsOfficerController {
 		return documentService.streamConsultationDocument(documentService.findById(documentId), currentClientRelationsOfficer(authentication));
 	}
 	
+	// ==================== Schedule (Consultation Events) ====================
+	
+	@GetMapping("/client-relations-officer/events")
+	public String events(Model model) {
+		model.addAttribute("events", eventService.findAllConsultationEvents());
+		return "client-relations-officer/event-list";
+	}
+	
 }

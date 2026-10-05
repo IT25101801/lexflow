@@ -3,6 +3,7 @@ package lexflow.controller;
 import jakarta.validation.Valid;
 import lexflow.dto.finance.CompileInvoiceRequest;
 import lexflow.dto.finance.EditBillableAmountRequest;
+import lexflow.dto.finance.TopUpByCashRequest;
 import lexflow.dto.finance.WithdrawRequest;
 import lexflow.dto.user.ChangePasswordRequest;
 import lexflow.entity.case_.Case;
@@ -285,6 +286,39 @@ public class FinanceController {
 		model.addAttribute("success", String.format("Withdrawal of %,.2f recorded for %s. Remaining balance: %,.2f.",
 													form.getAmount(), client.getName(), client.getWalletBalance()));
 		return "finance/withdrawal";
+	}
+	
+	// ==================== Payments (Cash Top-Up, Transactions) ====================
+	
+	@GetMapping("/finance/cash-top-up")
+	public String showCashTopUpForm(Model model) {
+		return "finance/cash-top-up";
+	}
+	
+	@PostMapping("/finance/cash-top-up")
+	public String topUpByCash(@Valid @ModelAttribute TopUpByCashRequest form, BindingResult bindingResult, Model model) {
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			return "finance/cash-top-up";
+		}
+		
+		Client client;
+		try {
+			client = userService.findClientByUserCode(form.getClientCode());
+		} catch (EntityNotFoundException e) {
+			model.addAttribute("error", "No client found with code " + form.getClientCode() + ".");
+			return "finance/cash-top-up";
+		}
+		
+		try {
+			transactionService.topUpByCash(client, form.getAmount());
+		} catch (PersistenceException e) {
+			model.addAttribute("error", "The cash top-up could not be processed. Please try again.");
+			return "finance/cash-top-up";
+		}
+		
+		model.addAttribute("success", "Trust account topped up successfully for " + client.getName() + ".");
+		return "finance/cash-top-up";
 	}
 	
 }

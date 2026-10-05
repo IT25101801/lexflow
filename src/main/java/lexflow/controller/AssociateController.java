@@ -82,4 +82,10 @@ public class AssociateController {
 		return "associate/consultation-pending-list";
 	}
 	
+	@GetMapping("/associate/consultations")
+	public String consultations(Authentication authentication, Model model) {
+		model.addAttribute("consultations", consultationService.findAllForAssociate(currentAssociate(authentication)));
+		return "associate/consultation-list";
+	}
+	
 }

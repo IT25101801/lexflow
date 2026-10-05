@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Consultation Requests – LexFlow')}"></head>
+<body>
+
+<aside th:replace="~{fragments/sidebar-associate :: sidebar('consultations')}"></aside>
+
+<div class="main">
+	<div th:replace="~{fragments/common :: topbar('Consultation Requests', null)}"></div>
+	
+	<div class="content">
+		<div class="table-card">
+			<div>
+				<table>
+					<thead>
+					<tr>
+						<th>Consultation Code</th>
+						<th>Client</th>
+						<th>Case Type</th>
+						<th>Opposing Parties</th>
+						<th>Consultation Status</th>
+						<th>Submitted At</th>
+						<th>Assigned Paralegal</th>
+						<th>Actions</th>
+					</tr>
+					</thead>
+					<tbody>
+					<tr th:if="${#lists.isEmpty(consultations)}">
+						<td class="table-empty" colspan="8">No consultation requests yet.</td>
+					</tr>
+					<tr th:each="r : ${consultations}">
+						<td class="cell-id" th:text="${r.consultationCode}"></td>
+						<td>
+							<div th:text="${r.client.name}"></div>
+							<div class="cell-sub" th:text="${r.client.userCode}"></div>
+						</td>
+						<td th:text="${#strings.replace(r.caseType, '_', ' ')}"></td>
+						<td th:text="${#lists.size(r.opposingParties) > 1 ? r.opposingParties[0] + ' et al.' : r.opposingParties[0]}"></td>
+						<td><span class="badge" th:classappend="'badge-' + ${r.consultationStatus}" th:text="${#strings.replace(r.consultationStatus, '_', ' ')}"></span></td>
+						<td th:text="${#temporals.format(r.submittedAt, 'dd/MM/yyyy HH:mm')}"></td>
+						<td>
+							<span th:if="${r.paralegal == null}">–</span>
+							<div th:if="${r.paralegal != null}" th:text="${r.paralegal.name}"></div>
+							<div class="cell-sub" th:if="${r.paralegal != null}" th:text="${r.paralegal.userCode}"></div>
+						</td>
+						<td>
+							<a class="action-btn action-btn-view" th:href="@{/associate/consultations/{id}(id=${r.consultationId})}">View</a>
+						</td>
+					</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+</body>
+</html>

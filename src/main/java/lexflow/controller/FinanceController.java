@@ -8,6 +8,7 @@ import lexflow.dto.finance.WithdrawRequest;
 import lexflow.dto.user.ChangePasswordRequest;
 import lexflow.entity.case_.Case;
 import lexflow.entity.finance.InvoiceStatus;
+import lexflow.entity.finance.TransactionType;
 import lexflow.entity.user.Role;
 import lexflow.entity.user.Client;
 import lexflow.entity.user.FinanceOfficer;
@@ -28,6 +29,10 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequiredArgsConstructor
@@ -44,6 +49,8 @@ public class FinanceController {
 	private final DocumentService documentService;
 	
 	private final TaskService taskService;
+	
+	private final AnalyticsService analyticsService;
 	
 	// ==================== Overview (Dashboard, Profile) ====================
 	
@@ -319,6 +326,30 @@ public class FinanceController {
 		
 		model.addAttribute("success", "Trust account topped up successfully for " + client.getName() + ".");
 		return "finance/cash-top-up";
+	}
+	
+	@GetMapping("/finance/analytics")
+	public String analytics(Authentication authentication, Model model) {
+		model.addAttribute("user", currentFinanceOfficer(authentication));
+		
+		Map<Integer, BigDecimal> revenueByMonth = analyticsService.revenueByMonth(LocalDate.now().getYear());
+		model.addAttribute("revenueByMonthLabels", monthLabels());
+		model.addAttribute("revenueByMonthValues", revenueByMonth.values());
+		
+		model.addAttribute("outstandingInvoiceTotal", analyticsService.outstandingInvoiceTotal());
+		model.addAttribute("avgDaysToPayment", analyticsService.avgDaysToPayment());
+		
+		Map<TransactionType, Integer> topUps = analyticsService.topUpCountComparison();
+		model.addAttribute("cardTopUpCount", topUps.getOrDefault(TransactionType.CARD_TOP_UP, 0));
+		model.addAttribute("cashTopUpCount", topUps.getOrDefault(TransactionType.CASH_TOP_UP, 0));
+		
+		model.addAttribute("totalClientWalletFloat", analyticsService.totalClientWalletFloat());
+		
+		return "finance/analytics";
+	}
+	
+	private List<String> monthLabels() {
+		return List.of("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
 	}
 	
 }

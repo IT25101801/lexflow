@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Analytics – LexFlow')}"></head>
+<body>
+<link rel="stylesheet" th:href="@{/css/analytics.css}"/>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<aside th:replace="~{fragments/sidebar-finance :: sidebar('analytics')}"></aside>
+
+<div class="main">
+	<div th:replace="~{fragments/common :: topbar('Analytics', null)}"></div>
+	
+	<div class="content">
+		<div class="stat-grid">
+			<div class="stat-card">
+				<div class="stat-icon"><i class="bi bi-exclamation-circle"></i></div>
+				<div>
+					<div class="stat-value" th:text="${#numbers.formatDecimal(outstandingInvoiceTotal, 1, 'COMMA', 2, 'POINT')}"></div>
+					<div class="stat-label">Outstanding Invoices</div>
+				</div>
+			</div>
+			<div class="stat-card">
+				<div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
+				<div>
+					<div class="stat-value" th:text="${avgDaysToPayment != null ? #numbers.formatDecimal(avgDaysToPayment, 1, 1) + ' days' : '–'}"></div>
+					<div class="stat-label">Avg. Days to Payment</div>
+				</div>
+			</div>
+			<div class="stat-card">
+				<div class="stat-icon"><i class="bi bi-wallet2"></i></div>
+				<div>
+					<div class="stat-value" th:text="${#numbers.formatDecimal(totalClientWalletFloat, 1, 'COMMA', 2, 'POINT')}"></div>
+					<div class="stat-label">Total Client Wallet Float</div>
+				</div>
+			</div>
+		</div>
+		
+		<div class="chart-grid">
+			<div class="chart-card">
+				<div class="chart-card-title">Revenue by Month</div>
+				<div class="chart-canvas-wrap">
+					<canvas id="revenueByMonthChart"></canvas>
+				</div>
+			</div>
+			<div class="chart-card">
+				<div class="chart-card-title">Card vs Cash Top-Ups</div>
+				<div class="chart-canvas-wrap">
+					<canvas id="topUpChart"></canvas>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script th:inline="javascript">
+	/*<![CDATA[*/
+	var revenueByMonthLabels = /*[[${revenueByMonthLabels}]]*/ [];
+	var revenueByMonthValues = /*[[${revenueByMonthValues}]]*/ [];
+	var cardTopUpCount = /*[[${cardTopUpCount}]]*/ 0;
+	var cashTopUpCount = /*[[${cashTopUpCount}]]*/ 0;
+	/*]]>*/
+	
+	Chart.defaults.color = getComputedStyle(document.body).getPropertyValue("--text").trim();
+	Chart.defaults.borderColor = getComputedStyle(document.body).getPropertyValue("--border").trim();
+	
+	new Chart(document.getElementById("revenueByMonthChart"), {
+		type: "bar",
+		data: {labels: revenueByMonthLabels, datasets: [{label: "Revenue", data: revenueByMonthValues, backgroundColor: "#3b82c4"}]},
+		options: {responsive: true, maintainAspectRatio: false, plugins: {legend: {display: false}}}
+	});
+	
+	new Chart(document.getElementById("topUpChart"), {
+		type: "doughnut",
+		data: {
+			labels: ["Card Top-Up", "Cash Top-Up"],
+			datasets: [{data: [cardTopUpCount, cashTopUpCount], backgroundColor: ["#3b82c4", "#2f9e5c"]}]
+		},
+		options: {responsive: true, maintainAspectRatio: false}
+	});
+</script>
+
+</body>
+</html>

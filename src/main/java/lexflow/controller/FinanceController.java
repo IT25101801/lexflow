@@ -7,6 +7,7 @@ import lexflow.dto.user.ChangePasswordRequest;
 import lexflow.entity.case_.Case;
 import lexflow.entity.finance.InvoiceStatus;
 import lexflow.entity.user.Role;
+import lexflow.entity.user.Client;
 import lexflow.entity.user.FinanceOfficer;
 import lexflow.entity.user.User;
 import lexflow.exception.BusinessRuleViolationException;
@@ -236,6 +237,16 @@ public class FinanceController {
 		model.addAttribute("title", "Clients");
 		model.addAttribute("active", "clients");
 		return "finance/client-list";
+	}
+	
+	@GetMapping("/finance/clients/{id}")
+	public String clientDetails(@PathVariable("id") Long userId, Model model) {
+		Client client = userService.findClientById(userId);
+		
+		model.addAttribute("user", client);
+		model.addAttribute("relatedCases", caseService.findAllForClient(client));
+		model.addAttribute("relatedTransactions", transactionService.findAllForClient(client));
+		return "finance/client-details";
 	}
 	
 }

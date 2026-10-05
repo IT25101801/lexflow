@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(${user.name} + ' – LexFlow')}"></head>
+<body>
+
+<aside th:replace="~{fragments/sidebar-finance :: sidebar('clients')}"></aside>
+
+<div class="main">
+	<div th:replace="~{fragments/common :: topbar(${user.name}, null)}"></div>
+	
+	<div class="content">
+		
+		<!-- Profile Layout -->
+		<div class="profile-layout">
+			
+			<!-- Info Card -->
+			<div>
+				<div class="section-card">
+					<div class="avatar-header">
+						<div class="big-avatar" th:text="${#strings.toUpperCase(#strings.substring(user.name, 0, T(java.lang.Math).min(2, user.name.length())))}"></div>
+						<div>
+							<div class="avatar-name" th:text="${user.name}"></div>
+						</div>
+					</div>
+					<div class="section-title">Account Stats</div>
+					<div class="detail-row">
+						<span class="detail-label">User Code</span>
+						<span class="detail-value" th:text="${user.userCode}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Email</span>
+						<span class="detail-value" th:text="${user.email}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Role</span>
+						<span class="chip" th:text="${#strings.replace(user.role, '_', ' ')}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Account Status</span>
+						<span class="badge" th:classappend="'badge-' + ${user.accountStatus}" th:text="${user.accountStatus}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Registered At</span>
+						<span class="detail-value" th:text="${#temporals.format(user.registeredAt, 'dd/MM/yyyy HH:mm')}"></span>
+					</div>
+					<div class="section-title" style="margin-top:1.25rem;">Personal Information</div>
+					<div class="detail-row">
+						<span class="detail-label">Name</span>
+						<span class="detail-value" th:text="${user.name}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Date of Birth</span>
+						<span class="detail-value" th:text="${#temporals.format(user.dateOfBirth, 'dd/MM/yyyy')}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Gender</span>
+						<span class="detail-value" th:text="${user.gender.name()}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Addresses</span>
+						<div class="detail-value">
+							<div th:each="a : ${user.addresses}" th:text="${a}"></div>
+						</div>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Phone Numbers</span>
+						<div class="detail-value">
+							<div th:each="p : ${user.phoneNumbers}" th:text="${p}"></div>
+						</div>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">NIC Number</span>
+						<span class="detail-value" th:text="${user.nicNumber}"></span>
+					</div>
+					<div class="section-title" style="margin-top:1.25rem;">Trust Account</div>
+					<div class="detail-row">
+						<span class="detail-label">Wallet Balance</span>
+						<span class="detail-value" th:text="${#numbers.formatDecimal(user.walletBalance, 1, 'COMMA', 2, 'POINT')}"></span>
+					</div>
+				</div>
+			</div>
+		
+		</div>
+		
+		<!-- Cases -->
+		<div th:if="${relatedCases != null}" style="margin-top:1.5rem;">
+			<div class="section-title" style="margin-bottom:0.75rem;">Cases</div>
+			<div class="table-card">
+				<div style="overflow-x:auto;max-height:280px;overflow-y:auto;">
+					<table>
+						<thead>
+						<tr>
+							<th>Case Code</th>
+							<th>Case Status</th>
+							<th>Opened At</th>
+							<th>Resolution Status</th>
+							<th>Closed At</th>
+							<th>Actions</th>
+						</tr>
+						</thead>
+						<tbody>
+						<tr th:if="${#lists.isEmpty(relatedCases)}">
+							<td class="table-empty" colspan="6">No cases on record.</td>
+						</tr>
+						<tr th:each="cs : ${relatedCases}">
+							<td class="cell-id" th:text="${cs.caseCode}"></td>
+							<td><span class="badge" th:classappend="'badge-' + ${cs.caseStatus}" th:text="${cs.caseStatus}"></span></td>
+							<td th:text="${#temporals.format(cs.openedAt, 'dd/MM/yyyy HH:mm')}" style="white-space:nowrap;"></td>
+							<td th:text="${cs.caseResolutionStatus != null ? cs.caseResolutionStatus : '–'}"></td>
+							<td th:text="${cs.closedAt != null ? #temporals.format(cs.closedAt, 'dd/MM/yyyy HH:mm') : '–'}" style="white-space:nowrap;"></td>
+							<td><a class="action-btn action-btn-view" th:href="@{/finance/cases/{id}(id=${cs.caseId})}">View</a></td>
+						</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+		
+		<!-- Transactions -->
+		<div th:if="${relatedTransactions != null}" style="margin-top:1.5rem;">
+			<div class="section-title" style="margin-bottom:0.75rem;">Transactions</div>
+			<div class="table-card">
+				<div style="overflow-x:auto;max-height:280px;overflow-y:auto;">
+					<table class="tx-firm">
+						<thead>
+						<tr>
+							<th>Transaction Code</th>
+							<th>Amount</th>
+							<th>Transaction Type</th>
+							<th>Invoice ID</th>
+							<th>Occurred At</th>
+						</tr>
+						</thead>
+						<tbody>
+						<tr th:if="${#lists.isEmpty(relatedTransactions)}">
+							<td class="table-empty" colspan="5">No transactions on record.</td>
+						</tr>
+						<tr th:each="t : ${relatedTransactions}">
+							<td class="cell-id" th:text="${t.transactionCode}"></td>
+							<td th:text="${#numbers.formatDecimal(t.amount, 1, 'COMMA', 2, 'POINT')}"></td>
+							<td><span th:classappend="'tx-' + ${t.transactionType.name()}" th:text="${#strings.replace(t.transactionType, '_', ' ')}"></span></td>
+							<td class="cell-id" th:text="${t.invoiceId ?: '–'}"></td>
+							<td th:text="${#temporals.format(t.occurredAt, 'dd/MM/yyyy HH:mm')}" style="white-space:nowrap;"></td>
+						</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	
+	</div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Case Details – LexFlow')}"></head>
+<body>
+
+<aside th:replace="~{fragments/sidebar-associate :: sidebar(${case.caseStatus.name() == 'CLOSED' ? 'cases-closed' : 'cases-open'})}"></aside>
+
+<div class="main">
+	<div th:replace="~{fragments/common :: topbar('Case Details', null)}"></div>
+	
+	<div class="content">
+		
+		<!-- Flash Messages -->
+		<div class="flash flash-success" th:if="${success}" th:text="${success}"></div>
+		<div class="flash flash-error" th:if="${error}" th:text="${error}"></div>
+		
+		<div class="section-card">
+			<div class="avatar-header" style="padding-bottom:1rem;margin-bottom:1rem;border-bottom:1px solid var(--border);">
+				<div>
+					<div class="avatar-name" style="font-size:1.45rem;"
+						 th:text="${case.client.name} + ' vs ' + ${case.consultation.opposingParties[0]} + (${#lists.size(case.consultation.opposingParties)} > 1 ? ' et al.' : '')"></div>
+				</div>
+				<span class="badge" th:classappend="'badge-' + ${case.caseStatus}" th:text="${case.caseStatus}" style="margin-left:auto;"></span>
+			</div>
+			<div class="detail-row">
+				<span class="detail-label">Case Code</span>
+				<span class="detail-value" th:text="${case.caseCode}"></span>
+			</div>
+			<div class="detail-row">
+				<span class="detail-label">Consultation</span>
+				<span class="detail-value"><a class="action-btn action-btn-view" th:href="@{/associate/consultations/{id}(id=${case.consultation.consultationId})}">View</a></span>
+			</div>
+			<div class="detail-row">
+				<span class="detail-label">Client</span>
+				<span style="display:flex;flex-direction:column;align-items:flex-end;">
+					<div th:text="${case.client.name}"></div>
+					<div class="cell-sub" th:text="${case.client.userCode}"></div>
+				</span>
+			</div>
+			<div class="detail-row" th:if="${case.paralegal != null}">
+				<span class="detail-label">Assigned Paralegal</span>
+				<span style="display:flex;flex-direction:column;align-items:flex-end;">
+					<div th:text="${case.paralegal.name}"></div>
+					<div class="cell-sub" th:text="${case.paralegal.userCode}"></div>
+				</span>
+			</div>
+			<div class="detail-row">
+				<span class="detail-label">Opened At</span>
+				<span class="detail-value" th:text="${#temporals.format(case.openedAt, 'dd/MM/yyyy HH:mm')}"></span>
+			</div>
+			<div class="detail-row" th:if="${case.caseResolutionStatus != null}">
+				<span class="detail-label">Resolution Status</span>
+				<span class="detail-value" th:text="${case.caseResolutionStatus}"></span>
+			</div>
+			<div class="detail-row" th:if="${case.closedAt != null}">
+				<span class="detail-label">Closed At</span>
+				<span class="detail-value" th:text="${#temporals.format(case.closedAt, 'dd/MM/yyyy HH:mm')}"></span>
+			</div>
+		</div>
+		
+		<div class="section-card" style="padding:0;overflow:hidden;">
+			<div class="tabbar" th:attr="data-storage-key='case-details-tab-' + ${case.caseId}">
+				<button class="tab" type="button" data-tab="tasks">Tasks</button>
+				<button class="tab" type="button" data-tab="documents">Documents</button>
+				<button class="tab" type="button" data-tab="contacts">Contacts</button>
+				<button class="tab" type="button" th:if="${case.caseStatus.name() == 'OPEN'}" data-tab="manage">Manage Case</button>
+			</div>
+			<div class="tabpanel-wrap">
+				
+				<div class="tabpanel" data-tab="tasks">
+					<div class="section-title" style="display:flex;align-items:center;justify-content:space-between;">
+						Tasks
+						<button class="btn-round-add" type="button" onclick="document.getElementById('taskAddModal').style.display='flex';">+</button>
+					</div>
+					<div style="display:none;">
+						<form th:each="t : ${tasks}" method="post" th:id="'editTitleForm-' + ${t.taskId}"
+							  th:action="@{/associate/cases/{id}/tasks/{taskId}/edit-title(id=${case.caseId},taskId=${t.taskId})}"></form>
+					</div>
+					<p class="empty-state" th:if="${#lists.isEmpty(tasks)}">No tasks logged for this case yet.</p>
+					<div class="contact-card-grid" th:unless="${#lists.isEmpty(tasks)}">
+						<div class="contact-card" th:each="t : ${tasks}">
+							<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.5rem;">
+								<div class="item-title" th:text="${t.title}"></div>
+								<button type="button" class="action-btn action-btn-edit"
+										th:attr="data-action=@{/associate/cases/{id}/tasks/{taskId}/edit-title(id=${case.caseId},taskId=${t.taskId})}"
+										th:data-title="${t.title}"
+										onclick="openTaskTitleModal(this)">Edit
+								</button>
+							</div>
+							<div class="detail-row" style="margin-top:0.5rem;">
+								<span class="detail-label">Task Type</span>
+								<span class="detail-value">
+									<span th:if="${t.documentingTask}">Documenting</span><span th:if="${t.documentingTask and (t.schedulingTask or t.billingTask)}">, </span><span th:if="${t.schedulingTask}">Scheduling</span><span th:if="${t.schedulingTask and t.billingTask}">, </span><span th:if="${t.billingTask}">Billing</span>
+								</span>
+							</div>
+							<div class="detail-row" th:if="${t.documentingTask}">
+								<span class="detail-label">Documents</span>
+								<div class="detail-value">
+									<div th:if="${#lists.isEmpty(taskDocuments.get(t.taskId))}">&ndash;</div>
+									<div th:each="d : ${taskDocuments.get(t.taskId)}">
+										<a th:href="@{/associate/documents/case/{id}(id=${d.documentId})}" th:text="${d.originalFilename}" target="_blank"></a>
+									</div>
+								</div>
+							</div>
+							<div class="detail-row" th:if="${t.schedulingTask}">
+								<span class="detail-label">Scheduled</span>
+								<span class="detail-value" th:if="${t.scheduledEvent != null}">
+									<span th:text="${#temporals.format(t.scheduledEvent.date, 'dd/MM/yyyy')}"></span> ·
+									<span th:text="${t.scheduledEvent.startTime}"></span>–<span th:text="${t.scheduledEvent.endTime}"></span> ·
+									<span th:text="${t.scheduledEvent.location}"></span><span th:if="${t.scheduledEvent.notes}"> · <span th:text="${t.scheduledEvent.notes}"></span></span>
+								</span>
+							</div>
+							<div class="detail-row" th:if="${t.schedulingTask and t.scheduledEvent != null}">
+								<span class="detail-label">Event Status</span>
+								<span class="detail-value" style="display:flex;align-items:center;gap:0.5rem;">
+									<span class="badge" th:classappend="'badge-' + ${t.scheduledEvent.eventStatus}" th:text="${t.scheduledEvent.eventStatus}"></span>
+									<button th:if="${t.scheduledEvent.eventStatus.name() == 'SCHEDULED'}" type="button" class="action-btn action-btn-edit"
+											th:attr="data-action=@{/associate/cases/{id}/tasks/{taskId}/reschedule(id=${case.caseId},taskId=${t.taskId})}"
+											th:data-subject="${t.scheduledEvent.subject}"
+											th:data-date="${#temporals.format(t.scheduledEvent.date, 'yyyy-MM-dd')}"
+											th:data-starttime="${t.scheduledEvent.startTime}"
+											th:data-endtime="${t.scheduledEvent.endTime}"
+											th:data-location="${t.scheduledEvent.location}"
+											th:data-notes="${t.scheduledEvent.notes}"
+											onclick="openTaskRescheduleModal(this)">Reschedule
+									</button>
+								</span>
+							</div>
+							<div class="detail-row" th:if="${t.billingTask}">
+								<span class="detail-label">Billable Amount</span>
+								<span class="detail-value" th:text="${#numbers.formatDecimal(t.billableAmount, 1, 'COMMA', 2, 'POINT')}"></span>
+							</div>
+						</div>
+					</div>
+				</div>
+				
+				<div class="tabpanel" data-tab="documents">
+					<div>
+						<div class="section-title">Case Documents</div>
+						<form method="get" th:action="@{/associate/cases/{id}(id=${case.caseId})}" style="display:flex;gap:0.75rem;align-items:flex-end;">
+							<div class="field" style="flex:1;">
+								<label for="documentKeyword">Name</label>
+								<input id="documentKeyword" type="text" name="documentKeyword" th:value="${documentKeyword}"/>
+							</div>
+							<button class="btn btn-outline" type="submit">Search</button>
+						</form>
+					</div>
+					<div class="item-list">
+						<p class="empty-state" th:if="${#lists.isEmpty(caseDocuments) and (documentKeyword == null or #strings.isEmpty(documentKeyword))}">No documents added to the case yet.</p>
+						<p class="empty-state" th:if="${#lists.isEmpty(caseDocuments) and documentKeyword != null and !#strings.isEmpty(documentKeyword)}">No documents match
+							"<span th:text="${documentKeyword}"></span>".</p>
+						<div class="item-row" th:each="d : ${caseDocuments}">
+							<div class="item-main">
+								<a class="item-title" th:href="@{/associate/documents/case/{id}(id=${d.documentId})}" th:text="${d.originalFilename}" target="_blank"></a>
+							</div>
+						</div>
+					</div>
+					<div>
+						<div class="section-title">Documents Pending Review</div>
+						<p class="empty-state" th:if="${#lists.isEmpty(stagedDocuments)}">No documents awaiting review.</p>
+						<div class="item-list" th:unless="${#lists.isEmpty(stagedDocuments)}">
+							<div class="item-row" th:each="d : ${stagedDocuments}">
+								<div class="item-main">
+									<a class="item-title" th:href="@{/associate/documents/case/{id}(id=${d.documentId})}" th:text="${d.originalFilename}" target="_blank"></a>
+								</div>
+								<div class="item-actions">
+									<form method="post" th:action="@{/associate/cases/{id}/documents/{documentId}/accept(id=${case.caseId},documentId=${d.documentId})}">
+										<button class="action-btn action-btn-create" type="submit">Add to Case</button>
+									</form>
+									<button type="button" class="action-btn action-btn-edit"
+											th:attr="data-action=@{/associate/cases/{id}/documents/{documentId}/rename(id=${case.caseId},documentId=${d.documentId})}"
+											th:data-filename="${d.originalFilename}" onclick="openRenameModal(this)">Rename
+									</button>
+									<form method="post" th:action="@{/associate/cases/{id}/documents/{documentId}/reject(id=${case.caseId},documentId=${d.documentId})}">
+										<button class="action-btn action-btn-delete" type="submit">Delete</button>
+									</form>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				
+				<div class="tabpanel" data-tab="contacts">
+					<div class="section-title" style="display:flex;align-items:center;justify-content:space-between;">
+						Contacts
+						<button class="btn-round-add" type="button" onclick="document.getElementById('contactAddModal').style.display='flex';">+</button>
+					</div>
+					<p class="empty-state" th:if="${#lists.isEmpty(contacts)}">No contacts logged for this case yet.</p>
+					<div class="contact-card-grid" th:unless="${#lists.isEmpty(contacts)}">
+						<div class="contact-card" th:each="c : ${contacts}">
+							<div class="detail-row">
+								<span class="detail-label">Name</span>
+								<span class="detail-value" th:text="${c.name} ?: '–'"></span>
+							</div>
+							<div class="detail-row" th:unless="${#lists.isEmpty(c.phoneNumbers)}">
+								<span class="detail-label">Phone Numbers</span>
+								<div class="detail-value">
+									<div th:each="p : ${c.phoneNumbers}" th:text="${p}"></div>
+								</div>
+							</div>
+							<div class="detail-row" th:unless="${#lists.isEmpty(c.emails)}">
+								<span class="detail-label">Emails</span>
+								<div class="detail-value">
+									<div th:each="e : ${c.emails}" th:text="${e}"></div>
+								</div>
+							</div>
+							<div class="detail-row" th:unless="${#lists.isEmpty(c.addresses)}">
+								<span class="detail-label">Addresses</span>
+								<div class="detail-value">
+									<div th:each="a : ${c.addresses}" th:text="${a}"></div>
+								</div>
+							</div>
+							<div th:if="${c.notes}" style="padding-top:0.75rem;">
+								<div class="detail-label" style="margin-bottom:0.35rem;">Notes</div>
+								<div th:text="${c.notes}" style="font-size:0.88rem;line-height:1.6;color:var(--text);"></div>
+							</div>
+						</div>
+					</div>
+				
+				</div>
+				
+				<div class="tabpanel" th:if="${case.caseStatus.name() == 'OPEN'}" data-tab="manage">
+					<div>
+						<div class="section-title">Close Case</div>
+						<form method="post" th:action="@{/associate/cases/{id}/close(id=${case.caseId})}" style="display:flex;gap:0.75rem;align-items:flex-end;">
+							<div class="field" style="flex:1;">
+								<label for="caseResolutionStatus">Resolution Status</label>
+								<select id="caseResolutionStatus" name="caseResolutionStatus" required>
+									<option value="WON">Won</option>
+									<option value="LOST">Lost</option>
+									<option value="SETTLED">Settled</option>
+									<option value="DISMISSED">Dismissed</option>
+								</select>
+							</div>
+							<button class="btn btn-danger" type="submit">Close Case</button>
+						</form>
+					</div>
+				</div>
+			
+			</div>
+		</div>
+	
+	</div>
+</div>
+
+<!-- Rename Document Modal -->
+<div id="renameModal" class="modal-overlay" onclick="if(event.target===this)this.style.display='none';">
+	<div class="modal-dialog" style="max-width:420px;width:92%;">
+		<div class="section-title">Rename Document</div>
+		<form id="renameForm" method="post" th:action="@{''}" style="display:flex;flex-direction:column;gap:0.85rem;margin-top:1rem;">
+			<div class="field">
+				<label for="renameFilenameInput">Filename</label>
+				<input id="renameFilenameInput" type="text" name="originalFilename" required/>
+			</div>
+			<div class="modal-actions">
+				<button class="modal-btn-cancel" type="button" onclick="document.getElementById('renameModal').style.display='none';">Cancel</button>
+				<button class="btn btn-primary" type="submit">Rename</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<script>
+	function openRenameModal(btn) {
+		document.getElementById("renameForm").action = btn.getAttribute("data-action");
+		document.getElementById("renameFilenameInput").value = btn.getAttribute("data-filename");
+		document.getElementById("renameModal").style.display = "flex";
+	}
+</script>
+
+<!-- Edit Task Title Modal -->
+<div id="taskTitleModal" class="modal-overlay" onclick="if(event.target===this)this.style.display='none';">
+	<div class="modal-dialog" style="max-width:420px;width:92%;">
+		<div class="section-title">Edit Task Title</div>
+		<form id="taskTitleForm" method="post" th:action="@{''}" style="display:flex;flex-direction:column;gap:0.85rem;margin-top:1rem;">
+			<div class="field">
+				<label for="taskTitleInput">Title</label>
+				<input id="taskTitleInput" type="text" name="title" required/>
+			</div>
+			<div class="modal-actions">
+				<button class="modal-btn-cancel" type="button" onclick="document.getElementById('taskTitleModal').style.display='none';">Cancel</button>
+				<button class="btn btn-primary" type="submit">Save</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<script>
+	function openTaskTitleModal(btn) {
+		document.getElementById("taskTitleForm").action = btn.getAttribute("data-action");
+		document.getElementById("taskTitleInput").value = btn.getAttribute("data-title");
+		document.getElementById("taskTitleModal").style.display = "flex";
+	}
+</script>
+
+<!-- Reschedule Task Event Modal -->
+<div id="taskRescheduleModal" class="modal-overlay" onclick="if(event.target===this)this.style.display='none';">
+	<div class="modal-dialog" style="max-width:480px;width:92%;">
+		<div class="section-title">Reschedule Event</div>
+		<form id="taskRescheduleForm" method="post" th:action="@{''}" style="display:flex;flex-direction:column;gap:0.85rem;margin-top:1rem;">
+			<div class="field">
+				<label for="taskRescheduleSubject">Subject</label>
+				<input id="taskRescheduleSubject" type="text" name="subject" required/>
+			</div>
+			<div class="field-row">
+				<div class="field">
+					<label for="taskRescheduleDate">Date</label>
+					<input id="taskRescheduleDate" type="date" name="date" required/>
+				</div>
+				<div class="field">
+					<label for="taskRescheduleStartTime">Start Time</label>
+					<input id="taskRescheduleStartTime" type="time" name="startTime" required/>
+				</div>
+			</div>
+			<div class="field-row">
+				<div class="field">
+					<label for="taskRescheduleEndTime">End Time</label>
+					<input id="taskRescheduleEndTime" type="time" name="endTime" required/>
+				</div>
+				<div class="field">
+					<label for="taskRescheduleLocation">Location</label>
+					<input id="taskRescheduleLocation" type="text" name="location" required/>
+				</div>
+			</div>
+			<div class="field">
+				<label for="taskRescheduleNotes">Notes</label>
+				<textarea id="taskRescheduleNotes" name="notes" rows="4"></textarea>
+			</div>
+			<div class="modal-actions">
+				<button class="modal-btn-cancel" type="button" onclick="document.getElementById('taskRescheduleModal').style.display='none';">Cancel</button>
+				<button class="btn btn-primary" type="submit">Save</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<script>
+	function openTaskRescheduleModal(btn) {
+		document.getElementById("taskRescheduleForm").action = btn.getAttribute("data-action");
+		document.getElementById("taskRescheduleSubject").value = btn.getAttribute("data-subject");
+		document.getElementById("taskRescheduleDate").value = btn.getAttribute("data-date");
+		document.getElementById("taskRescheduleStartTime").value = btn.getAttribute("data-starttime");
+		document.getElementById("taskRescheduleEndTime").value = btn.getAttribute("data-endtime");
+		document.getElementById("taskRescheduleLocation").value = btn.getAttribute("data-location");
+		document.getElementById("taskRescheduleNotes").value = btn.getAttribute("data-notes");
+		document.getElementById("taskRescheduleModal").style.display = "flex";
+	}
+</script>
+
+<!-- Add Task Modal -->
+<div id="taskAddModal" class="modal-overlay" onclick="if(event.target===this)this.style.display='none';">
+	<div class="modal-dialog" style="max-width:480px;width:92%;max-height:90vh;overflow-y:auto;">
+		<div class="section-title">Add Task</div>
+		<form method="post" th:action="@{/associate/cases/{id}/tasks(id=${case.caseId})}" enctype="multipart/form-data" style="display:flex;flex-direction:column;gap:0.85rem;margin-top:1rem;">
+			<div class="field">
+				<label for="taskAddTitle">Title</label>
+				<input id="taskAddTitle" type="text" name="title" required/>
+			</div>
+			
+			<div style="display:flex;flex-direction:column;gap:0.5rem;">
+				<label style="display:flex;align-items:center;gap:0.5rem;"><input type="checkbox" name="documentingTask" value="true" onchange="document.getElementById('taskDocumentingFields').style.display=this.checked?'flex':'none';document.getElementById('taskAddDocumentFiles').required=this.checked;"/>
+					Documenting Task</label>
+				<label style="display:flex;align-items:center;gap:0.5rem;"><input type="checkbox" name="schedulingTask" value="true" onchange="document.getElementById('taskSchedulingFields').style.display=this.checked?'flex':'none';"/>
+					Scheduling Task</label>
+				<label style="display:flex;align-items:center;gap:0.5rem;"><input type="checkbox" name="billingTask" value="true" onchange="document.getElementById('taskBillingFields').style.display=this.checked?'flex':'none';"/>
+					Billing Task</label>
+			</div>
+			
+			<div id="taskDocumentingFields" class="field" style="display:none;">
+				<label for="taskAddDocumentFiles">Documents</label>
+				<input id="taskAddDocumentFiles" type="file" name="caseFiles" multiple/>
+			</div>
+			
+			<div id="taskSchedulingFields" style="display:none;flex-direction:column;gap:0.85rem;">
+				<div class="field-row">
+					<div class="field">
+						<label for="taskAddDate">Date</label>
+						<input id="taskAddDate" type="date" name="date"/>
+					</div>
+					<div class="field">
+						<label for="taskAddStartTime">Start Time</label>
+						<input id="taskAddStartTime" type="time" name="startTime"/>
+					</div>
+				</div>
+				<div class="field-row">
+					<div class="field">
+						<label for="taskAddEndTime">End Time</label>
+						<input id="taskAddEndTime" type="time" name="endTime"/>
+					</div>
+					<div class="field">
+						<label for="taskAddLocation">Location</label>
+						<input id="taskAddLocation" type="text" name="location" placeholder="Location"/>
+					</div>
+				</div>
+				<div class="field">
+					<label for="taskAddNotes">Notes</label>
+					<textarea id="taskAddNotes" name="notes" rows="4" placeholder="Notes (optional)"></textarea>
+				</div>
+			</div>
+			
+			<div id="taskBillingFields" class="field" style="display:none;">
+				<label for="taskAddBillableAmount">Amount</label>
+				<input id="taskAddBillableAmount" type="number" name="billableAmount" step="0.01" placeholder="Amount"/>
+			</div>
+			
+			<div class="modal-actions">
+				<button class="modal-btn-cancel" type="button" onclick="document.getElementById('taskAddModal').style.display='none';">Cancel</button>
+				<button class="btn btn-primary" type="submit">Add Task</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<!-- Add Contact Modal -->
+<div id="contactAddModal" class="modal-overlay" onclick="if(event.target===this)this.style.display='none';">
+	<div class="modal-dialog" style="max-width:480px;width:92%;max-height:90vh;overflow-y:auto;">
+		<div class="section-title">Add Contact</div>
+		<form method="post" th:action="@{/associate/cases/{id}/contacts(id=${case.caseId})}" style="display:flex;flex-direction:column;gap:0.85rem;margin-top:1rem;">
+			<div class="field">
+				<label for="contactAddName">Name</label>
+				<input id="contactAddName" type="text" name="name"/>
+			</div>
+			
+			<div class="field">
+				<label>Phone Numbers</label>
+				<div id="contactAddPhoneRows">
+					<div class="multi-input-row"><input type="text" name="phoneNumbers"/>
+						<button type="button" onclick="this.parentElement.remove();">Remove</button>
+					</div>
+				</div>
+				<button type="button" onclick="addMultiInputRow('contactAddPhoneRows','phoneNumbers')">+ Add Phone Number</button>
+			</div>
+			
+			<div class="field">
+				<label>Emails</label>
+				<div id="contactAddEmailRows">
+					<div class="multi-input-row"><input type="text" name="emails" maxlength="255"/>
+						<button type="button" onclick="this.parentElement.remove();">Remove</button>
+					</div>
+				</div>
+				<button type="button" onclick="addMultiInputRow('contactAddEmailRows','emails')">+ Add Email</button>
+			</div>
+			
+			<div class="field">
+				<label>Addresses</label>
+				<div id="contactAddAddressRows">
+					<div class="multi-input-row"><input type="text" name="addresses" maxlength="800"/>
+						<button type="button" onclick="this.parentElement.remove();">Remove</button>
+					</div>
+				</div>
+				<button type="button" onclick="addMultiInputRow('contactAddAddressRows','addresses')">+ Add Address</button>
+			</div>
+			
+			<div class="field">
+				<label for="contactAddNotes">Notes</label>
+				<textarea id="contactAddNotes" name="notes" rows="4"></textarea>
+			</div>
+			
+			<div class="modal-actions">
+				<button class="modal-btn-cancel" type="button" onclick="document.getElementById('contactAddModal').style.display='none';">Cancel</button>
+				<button class="btn btn-primary" type="submit">Add Contact</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+</body>
+</html>

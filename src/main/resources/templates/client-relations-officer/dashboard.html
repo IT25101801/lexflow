@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Dashboard – LexFlow')}"></head>
+<body>
+
+<aside th:replace="~{fragments/sidebar-client-relations-officer :: sidebar('dashboard')}"></aside>
+
+<div class="main">
+	<div th:replace="~{fragments/common :: topbar('Dashboard', null)}"></div>
+	
+	<div class="content">
+		<div class="welcome-box">
+			<div class="welcome-icon">
+				<i class="bi bi-briefcase" style="font-size:1.75rem;"></i>
+			</div>
+			<h2 th:text="'Hello, ' + ${user.name} + '!'"></h2>
+		</div>
+	</div>
+</div>
+
+</body>
+</html>

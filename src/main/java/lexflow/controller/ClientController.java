@@ -289,4 +289,10 @@ public class ClientController {
 		return "client/event-list";
 	}
 	
+	@GetMapping("/client/events/{id}")
+	public String eventDetails(@PathVariable("id") Long eventId, Authentication authentication, Model model) {
+		model.addAttribute("event", eventService.findOwnedByClient(eventId, currentClient(authentication)));
+		return "client/event-details";
+	}
+	
 }

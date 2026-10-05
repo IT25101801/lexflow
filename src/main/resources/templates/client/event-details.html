@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Event Details – LexFlow')}"></head>
+<body>
+
+<aside th:replace="~{fragments/sidebar-client :: sidebar('events')}"></aside>
+
+<div class="main">
+	<div th:replace="~{fragments/common :: topbar('Event Details', null)}"></div>
+	
+	<div class="content">
+		
+		<div class="profile-layout">
+			<div>
+				
+				<div class="section-card">
+					<div class="avatar-header" style="padding-bottom:1rem;margin-bottom:1rem;border-bottom:1px solid var(--border);">
+						<div>
+							<div class="avatar-name">Event Details</div>
+						</div>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Subject</span>
+						<span class="detail-value" th:text="${event.subject}"></span>
+					</div>
+					<div class="detail-row" th:if="${event instanceof T(lexflow.entity.scheduling.ConsultationEvent)}">
+						<span class="detail-label">Owner</span>
+						<a class="action-btn action-btn-view" th:href="@{/client/consultations/{id}(id=${event.consultation.consultationId})}">View Consultation</a>
+					</div>
+					<div class="detail-row" th:if="${event instanceof T(lexflow.entity.scheduling.CaseEvent)}">
+						<span class="detail-label">Owner</span>
+						<a class="action-btn action-btn-view" th:href="@{/client/cases/{id}(id=${event.case_.caseId})}">View Case</a>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Date</span>
+						<span class="detail-value" th:text="${#temporals.format(event.date, 'dd/MM/yyyy')}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Start Time</span>
+						<span class="detail-value" th:text="${event.startTime}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">End Time</span>
+						<span class="detail-value" th:text="${event.endTime}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Location</span>
+						<span class="detail-value" th:text="${event.location}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Event Status</span>
+						<span class="badge" th:classappend="'badge-' + ${event.eventStatus}" th:text="${event.eventStatus}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Scheduled At</span>
+						<span class="detail-value" th:text="${#temporals.format(event.scheduledAt, 'dd/MM/yyyy HH:mm')}"></span>
+					</div>
+					<div class="detail-row" th:if="${event.completedAt != null}">
+						<span class="detail-label">Completed At</span>
+						<span class="detail-value" th:text="${#temporals.format(event.completedAt, 'dd/MM/yyyy HH:mm')}"></span>
+					</div>
+					<div class="detail-row" th:if="${event.canceledAt != null}">
+						<span class="detail-label">Canceled At</span>
+						<span class="detail-value" th:text="${#temporals.format(event.canceledAt, 'dd/MM/yyyy HH:mm')}"></span>
+					</div>
+					<div class="detail-row" style="border-bottom:none;">
+						<span class="detail-label">Notes</span>
+					</div>
+					<div style="padding:0 0 0.75rem;font-size:0.88rem;line-height:1.7;color:var(--text);word-break:break-word;overflow-wrap:anywhere;"
+						 th:text="${event.notes != null and !#strings.isEmpty(event.notes) ? event.notes : '–'}"></div>
+				</div>
+			
+			</div>
+		</div>
+	
+	</div>
+</div>
+
+</body>
+</html>

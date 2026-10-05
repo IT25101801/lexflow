@@ -15,12 +15,13 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-
 @Controller
 @RequiredArgsConstructor
 public class FinanceController {
 	
 	private final UserService userService;
+	
+	private final CaseService caseService;
 	
 	private final DocumentService documentService;
 	
@@ -71,6 +72,24 @@ public class FinanceController {
 	@GetMapping("/finance/documents/user/{id}")
 	public ResponseEntity<Resource> viewUserDocument(@PathVariable("id") Long documentId, Authentication authentication) {
 		return documentService.streamUserDocument(documentService.findById(documentId), currentFinanceOfficer(authentication));
+	}
+	
+	// ==================== Cases (Open, Closed, Details) ====================
+	
+	@GetMapping("/finance/cases/open")
+	public String openCases(Model model) {
+		model.addAttribute("cases", caseService.findAllOpen());
+		model.addAttribute("title", "Open Cases");
+		model.addAttribute("active", "cases-open");
+		return "finance/case-list";
+	}
+	
+	@GetMapping("/finance/cases/closed")
+	public String closedCases(Model model) {
+		model.addAttribute("cases", caseService.findAllClosed());
+		model.addAttribute("title", "Closed Cases");
+		model.addAttribute("active", "cases-closed");
+		return "finance/case-list";
 	}
 	
 }

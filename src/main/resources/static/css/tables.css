@@ -1,0 +1,178 @@
+/* Data tables and item lists. Loaded on every page. */
+
+/* ---- Data tables (user lists, etc.) ---- */
+
+.table-card {
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-xl);
+	overflow: clip;
+	box-shadow: var(--shadow-sm);
+}
+
+.table-card > div {
+	overflow: auto;
+	max-height: calc(100vh - var(--topbar-height) - 4rem);
+}
+
+.table-card table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.table-card th {
+	font-size: 0.71rem;
+	font-weight: 700;
+	letter-spacing: 0.07em;
+	text-transform: uppercase;
+	color: var(--text-muted);
+	padding: 0.85rem 1.25rem;
+	background: var(--bg);
+	border-bottom: 1px solid var(--border);
+	text-align: left;
+	white-space: nowrap;
+	position: sticky;
+	top: 0;
+	z-index: 1;
+}
+
+.table-card td {
+	padding: 0.9rem 1.25rem;
+	font-size: 0.86rem;
+	color: var(--text);
+	border-bottom: 1px solid var(--border);
+	vertical-align: middle;
+	white-space: nowrap;
+}
+
+.table-card tr:last-child td {
+	border-bottom: none;
+}
+
+.table-card tbody tr:hover td {
+	background: var(--accent-dim);
+}
+
+.table-empty {
+	text-align: center;
+	padding: 3.5rem 2rem;
+	color: var(--text-muted);
+	font-size: 0.88rem;
+}
+
+.cell-id {
+	font-size: 0.75rem;
+	color: var(--text-muted);
+}
+
+.cell-sub {
+	font-size: 0.73rem;
+	color: var(--text-muted);
+}
+
+.form-inline {
+	display: inline;
+}
+
+/* ---- Item lists (tasks, documents, contacts, invoices — mixed inline
+   content that doesn't fit a rigid table) ---- */
+
+.item-list {
+	display: flex;
+	flex-direction: column;
+}
+
+.item-row {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	padding: 0.85rem 0;
+	border-bottom: 1px solid var(--border);
+	font-size: 0.88rem;
+}
+
+.item-row:last-child {
+	border-bottom: none;
+}
+
+.item-main {
+	min-width: 0;
+	flex: 1;
+}
+
+.item-title {
+	font-weight: 600;
+	color: var(--text);
+}
+
+.item-meta {
+	color: var(--text-muted);
+	font-size: 0.8rem;
+	margin-top: 0.2rem;
+}
+
+.btn-round-add {
+	width: 2rem;
+	height: 2rem;
+	flex-shrink: 0;
+	border: none;
+	border-radius: 50%;
+	background: var(--accent);
+	color: #ffffff;
+	font-size: 1.25rem;
+	font-weight: 700;
+	line-height: 1;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	transition: filter 0.15s;
+}
+
+.btn-round-add:hover {
+	filter: brightness(1.12);
+}
+
+.contact-card-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 1rem;
+}
+
+.contact-card {
+	background: var(--surface);
+	border: 1.5px solid var(--border);
+	border-radius: var(--radius-xl);
+	padding: 1.25rem 1.5rem;
+}
+
+@media (max-width: 700px) {
+	.contact-card-grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+.item-meta a {
+	color: var(--accent);
+	text-decoration: none;
+}
+
+.item-meta a:hover {
+	text-decoration: underline;
+}
+
+.item-actions {
+	display: flex;
+	gap: 0.4rem;
+	flex-shrink: 0;
+	align-items: center;
+}
+
+.empty-state {
+	text-align: center;
+	padding: 2.25rem 1rem;
+	color: var(--text-muted);
+	font-size: 0.86rem;
+}

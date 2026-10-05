@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Register Staff – LexFlow')}"></head>
+<body>
+
+<aside th:replace="~{fragments/sidebar-partner :: sidebar('register-staff')}"></aside>
+
+<div class="main">
+	<div th:replace="~{fragments/common :: topbar('Register Staff', null)}"></div>
+	
+	<div class="content">
+		
+		<!-- Flash Messages -->
+		<div class="flash flash-error" th:if="${error}">
+			<i class="bi bi-exclamation-circle"></i>
+			<span th:text="${error}"></span>
+		</div>
+		<div class="flash flash-error" th:if="${validationErrors != null and !validationErrors.isEmpty()}">
+			<i class="bi bi-exclamation-circle"></i>
+			<span>Registration failed:</span>
+			<ul style="margin:0.25rem 0 0 1.25rem;">
+				<li th:each="msg : ${validationErrors}" th:text="${msg}"></li>
+			</ul>
+		</div>
+		
+		<!-- Registration Form -->
+		<form class="form-card" method="post" th:action="@{/partner/register-staff}" enctype="multipart/form-data">
+			
+			<div class="form-section">
+				<p class="form-section-label">Staff Role</p>
+			</div>
+			
+			<div class="field">
+				<label for="role">Role</label>
+				<select id="role" name="role" required>
+					<option th:each="role : ${roles}" th:value="${role.name()}" th:text="${#strings.replace(role.name(), '_', ' ')}"></option>
+				</select>
+			</div>
+			
+			<div class="form-section">
+				<p class="form-section-label">Login Credentials</p>
+			</div>
+			
+			<div class="field-row">
+				<div class="field">
+					<label for="email">Email</label>
+					<input id="email" type="email" name="email" placeholder="john.doe@email.com" required/>
+				</div>
+				<div class="field">
+					<label for="password">Password</label>
+					<input id="password" type="password" name="password" placeholder="••••••••" minlength="8" required/>
+				</div>
+			</div>
+			
+			<div class="form-section">
+				<p class="form-section-label">Personal Information</p>
+			</div>
+			
+			<div class="field">
+				<label for="name">Name</label>
+				<input id="name" type="text" name="name" placeholder="John Doe" minlength="2" maxlength="100" required/>
+			</div>
+			
+			<div class="field-row">
+				<div class="field">
+					<label for="dateOfBirth">Date of Birth</label>
+					<input id="dateOfBirth" type="date" name="dateOfBirth" required/>
+				</div>
+				<div class="field">
+					<label for="gender">Gender</label>
+					<select id="gender" name="gender" required>
+						<option value="" hidden>Select…</option>
+						<option th:each="gender : ${genders}" th:value="${gender.name()}" th:text="${gender.name()}"></option>
+					</select>
+				</div>
+			</div>
+			
+			<div class="field">
+				<label>Addresses</label>
+				<div id="addressRows">
+					<div class="multi-input-row">
+						<input type="text" name="addresses" placeholder="No. 123, Anywhere Street, Anywhere City" minlength="5" maxlength="800"/>
+						<button type="button" onclick="this.parentElement.remove();">Remove</button>
+					</div>
+				</div>
+				<button type="button" onclick="addMultiInputRow('addressRows','addresses','No. 123, Anywhere Street, Anywhere City')">+ Add Address</button>
+			</div>
+			
+			<div class="field">
+				<label>Phone Numbers</label>
+				<div id="phoneNumberRows">
+					<div class="multi-input-row">
+						<input type="text" name="phoneNumbers" placeholder="0712345678"/>
+						<button type="button" onclick="this.parentElement.remove();">Remove</button>
+					</div>
+				</div>
+				<button type="button" onclick="addMultiInputRow('phoneNumberRows','phoneNumbers','0712345678')">+ Add Phone Number</button>
+			</div>
+			
+			<div class="field">
+				<label for="nicNumber">NIC Number</label>
+				<input id="nicNumber" type="text" name="nicNumber" placeholder="200012345678" required/>
+			</div>
+			
+			<div class="field">
+				<label for="nicFile">NIC Document</label>
+				<input id="nicFile" type="file" name="nicFile" accept=".pdf" required/>
+				<span class="field-hint" th:if="${error}" style="color:var(--warning);">Please re-select your file.</span>
+				<span class="field-hint">Upload a scanned copy of the staff member's National Identity Card. (PDF only)</span>
+			</div>
+			
+			<div id="professionalDetails" style="display:none;flex-direction:column;gap:1rem;">
+				<div class="form-section">
+					<p class="form-section-label">Professional Details</p>
+				</div>
+				
+				<div class="field">
+					<label for="barNumber">Bar Number</label>
+					<input id="barNumber" type="text" name="barNumber" placeholder="0123456789" maxlength="10"/>
+				</div>
+				
+				<div class="field">
+					<label for="barFile">Bar Document</label>
+					<input id="barFile" type="file" name="barFile" accept=".pdf"/>
+					<span class="field-hint" th:if="${error}" style="color:var(--warning);">Please re-select your file.</span>
+					<span class="field-hint">Upload a scanned copy of the staff member's bar enrollment certificate. (PDF only)</span>
+				</div>
+			</div>
+			
+			<button class="btn btn-primary btn-block" type="submit" style="margin-top:0.5rem;">Register Staff</button>
+		
+		</form>
+	
+	</div>
+</div>
+
+<!-- Demo Buttons -->
+<div class="demo-btn-row">
+	<span class="demo-btn-label">Demo</span>
+	<button class="demo-btn" type="button" title="Fill Manjula Ratwatte (Partner)" onclick="fillRegisterStaffPartner()">PTR</button>
+	<button class="demo-btn" type="button" title="Fill Dilshan Weeraratne (Associate)" onclick="fillRegisterStaffAssociate()">AST</button>
+	<button class="demo-btn" type="button" title="Fill Sanduni Amerasekera (Paralegal)" onclick="fillRegisterStaffParalegal()">PRL</button>
+	<button class="demo-btn" type="button" title="Fill Nayomi Gunatilake (Client Relations Officer)" onclick="fillRegisterStaffClientRelationsOfficer()">CRO</button>
+	<button class="demo-btn" type="button" title="Fill Ashan Weerakone (Finance Officer)" onclick="fillRegisterStaffFinance()">FCO</button>
+</div>
+
+<script th:src="@{/js/demo.js}"></script>
+
+<!-- Show Bar Number only for roles that require bar admission -->
+<script>
+	const barRoles = ["PARTNER", "ASSOCIATE"];
+	const roleSelect = document.getElementById("role");
+	const professionalDetails = document.getElementById("professionalDetails");
+	const barNumberInput = document.getElementById("barNumber");
+	const barFileInput = document.getElementById("barFile");
+	
+	function syncProfessionalDetails() {
+		const show = barRoles.includes(roleSelect.value);
+		professionalDetails.style.display = show ? "flex" : "none";
+		barFileInput.required = show;
+		if (!show) barNumberInput.value = "";
+	}
+	
+	roleSelect.addEventListener("change", syncProfessionalDetails);
+	syncProfessionalDetails();
+</script>
+
+<!-- Field Validation & State Restore -->
+<script>
+	// Set max date on date of birth to today so future dates cannot be selected.
+	document.getElementById("dateOfBirth").max = new Date().toISOString().split("T")[0];
+	
+	// Save fields to sessionStorage before submitting, so they can be restored if the
+	// server redirects back with an error (a redirect is a fresh page load – every
+	// field, not just the file input, would otherwise come back empty).
+	document.querySelector(".form-card").addEventListener("submit", function () {
+		["role", "email", "name", "dateOfBirth", "gender", "nicNumber", "barNumber"].forEach(function (id) {
+			sessionStorage.setItem("rs_" + id, document.getElementById(id).value);
+		});
+	});
+	
+	// Restore fields if redirected back with a duplicate email, NIC or bar number error.
+	if (["email_exists", "nic_exists", "bar_number_exists"].indexOf(new URLSearchParams(window.location.search).get("error")) !== -1) {
+		["role", "email", "name", "dateOfBirth", "gender", "nicNumber", "barNumber"].forEach(function (id) {
+			var value = sessionStorage.getItem("rs_" + id);
+			if (value) document.getElementById(id).value = value;
+			sessionStorage.removeItem("rs_" + id);
+		});
+		syncProfessionalDetails();
+	}
+</script>
+
+</body>
+</html>

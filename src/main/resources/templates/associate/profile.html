@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('My Profile – LexFlow')}"></head>
+<body>
+
+<aside th:replace="~{fragments/sidebar-associate :: sidebar('profile')}"></aside>
+
+<div class="main">
+	<div th:replace="~{fragments/common :: topbar('Profile', null)}"></div>
+	
+	<div class="content">
+		
+		<!-- Flash Messages -->
+		<div class="flash flash-success" th:if="${success}" th:text="${success}"></div>
+		<div class="flash flash-error" th:if="${error}" th:text="${error}"></div>
+		
+		<!-- Profile Layout -->
+		<div class="profile-layout">
+			
+			<!-- Info Card -->
+			<div>
+				<div class="section-card">
+					<div class="avatar-header">
+						<div class="big-avatar" th:text="${#strings.toUpperCase(#strings.substring(user.name, 0, T(java.lang.Math).min(2, user.name.length())))}"></div>
+						<div>
+							<div class="avatar-name" th:text="${user.name}"></div>
+						</div>
+					</div>
+					<div class="section-title">Account Stats</div>
+					<div class="detail-row">
+						<span class="detail-label">User Code</span>
+						<span class="detail-value" th:text="${user.userCode}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Email</span>
+						<span class="detail-value" th:text="${user.email}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Registered At</span>
+						<span class="detail-value" th:text="${#temporals.format(user.registeredAt, 'dd/MM/yyyy HH:mm')}"></span>
+					</div>
+					<div class="section-title" style="margin-top:1.25rem;">Personal Information</div>
+					<div class="detail-row">
+						<span class="detail-label">Name</span>
+						<span class="detail-value" th:text="${user.name}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Date of Birth</span>
+						<span class="detail-value" th:text="${#temporals.format(user.dateOfBirth, 'dd/MM/yyyy')}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Gender</span>
+						<span class="detail-value" th:text="${user.gender.name()}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Addresses</span>
+						<div class="detail-value">
+							<div th:each="a : ${user.addresses}" th:text="${a}"></div>
+						</div>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Phone Numbers</span>
+						<div class="detail-value">
+							<div th:each="p : ${user.phoneNumbers}" th:text="${p}"></div>
+						</div>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">NIC Number</span>
+						<span class="detail-value" th:text="${user.nicNumber}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">NIC Document</span>
+						<span class="detail-value">
+							<a class="action-btn action-btn-view" th:if="${user.nicDocument != null}" target="_blank"
+							   th:href="@{/associate/documents/user/{id}(id=${user.nicDocument.documentId})}">View</a>
+							<span th:unless="${user.nicDocument != null}">&ndash;</span>
+						</span>
+					</div>
+					<div class="section-title" style="margin-top:1.25rem;">Professional Details</div>
+					<div class="detail-row">
+						<span class="detail-label">Bar Number</span>
+						<span class="detail-value" th:text="${user.barNumber}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Bar Document</span>
+						<span class="detail-value">
+							<a class="action-btn action-btn-view" th:if="${user.barDocument != null}" target="_blank"
+							   th:href="@{/associate/documents/user/{id}(id=${user.barDocument.documentId})}">View</a>
+							<span th:unless="${user.barDocument != null}">&ndash;</span>
+						</span>
+					</div>
+				</div>
+			</div>
+			
+			<!-- Change Password -->
+			<div>
+				<div class="section-card">
+					<div class="section-title">Change Password</div>
+					<form method="post" th:action="@{/associate/profile/change-password}"
+						  onsubmit="if(this.newPassword.value !== this.confirmPassword.value){ alert('New passwords do not match.'); return false; }"
+						  style="display:flex;flex-direction:column;gap:0.9rem;">
+						<div class="field">
+							<label for="currentPassword">Current Password</label>
+							<input id="currentPassword" type="password" name="currentPassword" placeholder="••••••••" required/>
+						</div>
+						<div class="field">
+							<label for="newPassword">New Password</label>
+							<input id="newPassword" type="password" name="newPassword" minlength="8" placeholder="••••••••" required/>
+						</div>
+						<div class="field">
+							<label for="confirmPassword">Confirm New Password</label>
+							<input id="confirmPassword" type="password" name="confirmPassword" minlength="8" placeholder="••••••••" required/>
+						</div>
+						<button class="btn btn-warning btn-block" type="submit">Update Password</button>
+					</form>
+				</div>
+			</div>
+		
+		</div>
+	</div>
+</div>
+
+</body>
+</html>

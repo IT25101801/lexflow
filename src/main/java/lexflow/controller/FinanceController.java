@@ -1,9 +1,16 @@
 package lexflow.controller;
 
 import jakarta.validation.Valid;
+import lexflow.dto.finance.CompileInvoiceRequest;
+import lexflow.dto.finance.EditBillableAmountRequest;
 import lexflow.dto.user.ChangePasswordRequest;
+import lexflow.entity.case_.Case;
+import lexflow.entity.finance.InvoiceStatus;
 import lexflow.entity.user.FinanceOfficer;
 import lexflow.entity.user.User;
+import lexflow.exception.BusinessRuleViolationException;
+import lexflow.exception.finance.InsufficientFundsException;
+import lexflow.exception.finance.InvalidInvoiceStateException;
 import lexflow.security.CustomUserPrincipal;
 import lexflow.service.*;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +22,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+
 @Controller
 @RequiredArgsConstructor
 public class FinanceController {
@@ -23,7 +31,11 @@ public class FinanceController {
 	
 	private final CaseService caseService;
 	
+	private final InvoiceService invoiceService;
+	
 	private final DocumentService documentService;
+	
+	private final TaskService taskService;
 	
 	// ==================== Overview (Dashboard, Profile) ====================
 	
@@ -90,6 +102,117 @@ public class FinanceController {
 		model.addAttribute("title", "Closed Cases");
 		model.addAttribute("active", "cases-closed");
 		return "finance/case-list";
+	}
+	
+	@GetMapping("/finance/cases/{id}")
+	public String caseDetails(@PathVariable("id") Long caseId, Model model) {
+		Case case_ = caseService.findById(caseId);
+		populateCaseDetailModel(case_, model);
+		return "finance/case-details";
+	}
+	
+	// ==================== Helpers ====================
+	
+	private void populateCaseDetailModel(Case case_, Model model) {
+		model.addAttribute("case", case_);
+		model.addAttribute("tasks", taskService.findByCase(case_));
+		model.addAttribute("unbilledCharges", taskService.findUnbilledByCase(case_));
+		model.addAttribute("unpaidInvoices", invoiceService.findByCaseAndStatus(case_, InvoiceStatus.UNPAID));
+		model.addAttribute("paidInvoices", invoiceService.findByCaseAndStatus(case_, InvoiceStatus.PAID));
+		model.addAttribute("voidedInvoices", invoiceService.findByCaseAndStatus(case_, InvoiceStatus.VOIDED));
+	}
+	
+	// ==================== Invoices & Documents (case-details sub-actions) ====================
+	
+	@PostMapping("/finance/cases/{id}/invoices/compile")
+	public String compileInvoice(@PathVariable("id") Long caseId, @Valid @ModelAttribute CompileInvoiceRequest form, Model model) {
+		Case case_ = caseService.findById(caseId);
+		
+		try {
+			invoiceService.compile(case_, form.getTaskIds());
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("success", "Invoice compiled successfully.");
+		} catch (BusinessRuleViolationException e) {
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "finance/case-details";
+	}
+	
+	@PostMapping("/finance/cases/{id}/invoices/{invoiceId}/charge")
+	public String chargeInvoice(@PathVariable("id") Long caseId, @PathVariable Long invoiceId, Model model) {
+		Case case_ = caseService.findById(caseId);
+		
+		try {
+			invoiceService.chargeInvoice(case_, invoiceService.findById(invoiceId));
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("success", "Invoice charged successfully.");
+		} catch (InvalidInvoiceStateException | InsufficientFundsException e) {
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "finance/case-details";
+	}
+	
+	@PostMapping("/finance/cases/{id}/tasks/{taskId}/edit-billable-amount")
+	public String editBillableAmount(@PathVariable("id") Long caseId, @PathVariable Long taskId, @Valid @ModelAttribute EditBillableAmountRequest form, BindingResult bindingResult, Model model) {
+		Case case_ = caseService.findById(caseId);
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			populateCaseDetailModel(case_, model);
+			return "finance/case-details";
+		}
+		
+		try {
+			taskService.editBillableAmount(taskService.findById(taskId), form.getAmount());
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("success", "Charge amount updated.");
+		} catch (BusinessRuleViolationException e) {
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "finance/case-details";
+	}
+	
+	@PostMapping("/finance/cases/{id}/invoices/{invoiceId}/void")
+	public String voidInvoice(@PathVariable("id") Long caseId, @PathVariable Long invoiceId, Model model) {
+		Case case_ = caseService.findById(caseId);
+		
+		try {
+			invoiceService.voidInvoice(invoiceService.findById(invoiceId));
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("success", "Invoice voided. Its charges are unbilled again.");
+		} catch (InvalidInvoiceStateException e) {
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "finance/case-details";
+	}
+	
+	@PostMapping("/finance/cases/{id}/invoices/{invoiceId}/void-refund")
+	public String voidAndRefund(@PathVariable("id") Long caseId, @PathVariable Long invoiceId, Model model) {
+		Case case_ = caseService.findById(caseId);
+		
+		try {
+			invoiceService.voidAndRefundInvoice(case_, invoiceService.findById(invoiceId));
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("success", "Invoice voided and refunded. Its charges are unbilled again.");
+		} catch (InvalidInvoiceStateException e) {
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "finance/case-details";
+	}
+	
+	@GetMapping("/finance/documents/invoice/{id}")
+	public ResponseEntity<Resource> viewInvoiceDocument(@PathVariable("id") Long documentId, Authentication authentication) {
+		return documentService.streamInvoiceDocument(documentService.findById(documentId), currentFinanceOfficer(authentication));
 	}
 	
 }

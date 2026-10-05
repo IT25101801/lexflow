@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Login – LexFlow')}"></head>
+<body class="public-page">
+<link rel="stylesheet" th:href="@{/css/auth.css}"/>
+
+<!-- Auth Card -->
+<div class="auth-card">
+	<div class="auth-brand">
+		<a th:href="@{/}" class="brand-name">
+			<span class="brand-lex">Lex</span><span class="brand-flow">Flow</span>
+		</a>
+	</div>
+	<div class="auth-heading">
+		<h1>Welcome back</h1>
+		<p>Sign in to your LexFlow account.</p>
+	</div>
+	
+	<!-- Flash Messages -->
+	<div class="flash flash-success" th:if="${success}" th:text="${success}"></div>
+	<div class="flash flash-error" th:if="${param.error != null}">
+		<i class="bi bi-exclamation-circle"></i>
+		Invalid email or password. Please check and try again.
+	</div>
+	
+	<!-- Login Form -->
+	<form class="auth-form" th:action="@{/auth/login}" method="post">
+		<div class="field">
+			<label for="username">Email</label>
+			<input id="username" type="text" name="username" autofocus required/>
+		</div>
+		<div class="field">
+			<label for="password">Password</label>
+			<input id="password" type="password" name="password" required/>
+		</div>
+		<button class="btn btn-primary btn-block" type="submit" style="margin-top:0.25rem;">Sign In</button>
+	</form>
+	
+	<div class="auth-footer">
+		Don't have an account? <a th:href="@{/auth/register-client}">Create one here</a>
+	</div>
+	<div style="margin-top:1rem;text-align:center;font-size:0.78rem;color:var(--text-muted);line-height:1.6;">
+		Forgot your password? Please contact an administrator.
+	</div>
+</div>
+
+<!-- Demo Buttons -->
+<div class="demo-btn-row">
+	<span class="demo-btn-label">Demo</span>
+	<button class="demo-btn" type="button" title="Fill Nadeesha Perera (Partner)" onclick="fillLogin('nadeesha.perera@lexflow.lk', 'nadeesha.perera@lexflow.lk')">PTR</button>
+	<button class="demo-btn" type="button" title="Fill Ruwan Senanayake (Associate)" onclick="fillLogin('ruwan.senanayake@lexflow.lk', 'ruwan.senanayake@lexflow.lk')">AST</button>
+	<button class="demo-btn" type="button" title="Fill Ishani Jayawardena (Paralegal)" onclick="fillLogin('ishani.jayawardena@lexflow.lk', 'ishani.jayawardena@lexflow.lk')">PRL</button>
+	<button class="demo-btn" type="button" title="Fill Lal Yapa (Client)" onclick="fillLogin('lal.yapa@gmail.com', 'lal.yapa@gmail.com')">CLT</button>
+	<button class="demo-btn" type="button" title="Fill Malithi Fernando (Client Relations Officer)" onclick="fillLogin('malithi.fernando@lexflow.lk', 'malithi.fernando@lexflow.lk')">CRO</button>
+	<button class="demo-btn" type="button" title="Fill Tharindu Weerasinghe (Finance Officer)" onclick="fillLogin('tharindu.weerasinghe@lexflow.lk', 'tharindu.weerasinghe@lexflow.lk')">FCO
+	</button>
+</div>
+
+<script th:src="@{/js/demo.js}"></script>
+
+</body>
+</html>

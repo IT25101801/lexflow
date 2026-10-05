@@ -157,4 +157,11 @@ public class ClientRelationsOfficerController {
 		return "redirect:/client-relations-officer/consultations";
 	}
 	
+	@GetMapping("/client-relations-officer/consultations")
+	public String consultations(@RequestParam(required = false) String keyword, Model model) {
+		model.addAttribute("consultations", consultationService.search(keyword));
+		model.addAttribute("keyword", keyword);
+		return "client-relations-officer/consultation-list";
+	}
+	
 }

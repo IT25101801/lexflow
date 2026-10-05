@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(${title} + ' – LexFlow')}"></head>
+<body>
+
+<aside th:replace="~{fragments/sidebar-paralegal :: sidebar(${active})}"></aside>
+
+<div class="main">
+	<div th:replace="~{fragments/common :: topbar(${title}, null)}"></div>
+	
+	<div class="content">
+		<div class="table-card">
+			<div>
+				<table>
+					<thead>
+					<tr>
+						<th>Case Code</th>
+						<th>Consultation</th>
+						<th>Client</th>
+						<th>Associate</th>
+						<th>Opened At</th>
+						<th th:if="${active == 'cases-closed'}">Resolution Status</th>
+						<th th:if="${active == 'cases-closed'}">Closed At</th>
+						<th>Actions</th>
+					</tr>
+					</thead>
+					<tbody>
+					<tr th:if="${#lists.isEmpty(cases)}">
+						<td class="table-empty" th:colspan="${active == 'cases-closed' ? 8 : 6}">No <span th:text="${#strings.toLowerCase(title)}"></span> yet.</td>
+					</tr>
+					<tr th:each="c : ${cases}">
+						<td class="cell-id" th:text="${c.caseCode}"></td>
+						<td>
+							<a class="action-btn action-btn-view" th:href="@{/paralegal/consultations/{id}(id=${c.consultation.consultationId})}">View</a>
+						</td>
+						<td>
+							<div th:text="${c.client.name}"></div>
+							<div class="cell-sub" th:text="${c.client.userCode}"></div>
+						</td>
+						<td>
+							<span th:if="${c.associate == null}">–</span>
+							<div th:if="${c.associate != null}" th:text="${c.associate.name}"></div>
+							<div class="cell-sub" th:if="${c.associate != null}" th:text="${c.associate.userCode}"></div>
+						</td>
+						<td th:text="${#temporals.format(c.openedAt, 'dd/MM/yyyy HH:mm')}"></td>
+						<td th:if="${active == 'cases-closed'}"><span class="badge" th:classappend="'badge-' + ${c.caseResolutionStatus}" th:text="${c.caseResolutionStatus}"></span></td>
+						<td th:if="${active == 'cases-closed'}" th:text="${c.closedAt != null ? #temporals.format(c.closedAt, 'dd/MM/yyyy HH:mm') : '–'}"></td>
+						<td>
+							<a class="action-btn action-btn-view" th:href="@{/paralegal/cases/{id}(id=${c.caseId})}">View</a>
+						</td>
+					</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+</body>
+</html>

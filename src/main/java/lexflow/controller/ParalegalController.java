@@ -16,7 +16,6 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-
 @Controller
 @RequiredArgsConstructor
 public class ParalegalController {
@@ -106,6 +105,24 @@ public class ParalegalController {
 	@GetMapping("/paralegal/documents/consultation/{id}")
 	public ResponseEntity<Resource> viewConsultationDocument(@PathVariable("id") Long documentId, Authentication authentication) {
 		return documentService.streamConsultationDocument(documentService.findById(documentId), currentParalegal(authentication));
+	}
+	
+	// ==================== Cases (Open, Closed, Details & Actions) ====================
+	
+	@GetMapping("/paralegal/cases/open")
+	public String openCases(Authentication authentication, Model model) {
+		model.addAttribute("cases", caseService.findOpenForParalegal(currentParalegal(authentication)));
+		model.addAttribute("title", "Open Cases");
+		model.addAttribute("active", "cases-open");
+		return "paralegal/case-list";
+	}
+	
+	@GetMapping("/paralegal/cases/closed")
+	public String closedCases(Authentication authentication, Model model) {
+		model.addAttribute("cases", caseService.findClosedForParalegal(currentParalegal(authentication)));
+		model.addAttribute("title", "Closed Cases");
+		model.addAttribute("active", "cases-closed");
+		return "paralegal/case-list";
 	}
 	
 }

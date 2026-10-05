@@ -1,10 +1,19 @@
 package lexflow.controller;
 
 import jakarta.validation.Valid;
+import lexflow.dto.case_.AddTaskRequest;
+import lexflow.dto.case_.RenameTaskRequest;
+import lexflow.dto.case_.SaveContactRequest;
+import lexflow.dto.document.RenameDocumentRequest;
+import lexflow.dto.scheduling.ScheduleMeetingRequest;
 import lexflow.dto.user.ChangePasswordRequest;
+import lexflow.entity.case_.Case;
+import lexflow.entity.case_.Task;
 import lexflow.entity.consultation.Consultation;
 import lexflow.entity.user.Paralegal;
 import lexflow.entity.user.User;
+import lexflow.exception.BusinessRuleViolationException;
+import lexflow.exception.InvalidStateException;
 import lexflow.security.CustomUserPrincipal;
 import lexflow.service.*;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +24,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
@@ -27,6 +38,10 @@ public class ParalegalController {
 	private final DocumentService documentService;
 	
 	private final CaseService caseService;
+	
+	private final TaskService taskService;
+	
+	private final ContactService contactService;
 	
 	// ==================== Overview (Dashboard, Profile) ====================
 	
@@ -123,6 +138,162 @@ public class ParalegalController {
 		model.addAttribute("title", "Closed Cases");
 		model.addAttribute("active", "cases-closed");
 		return "paralegal/case-list";
+	}
+	
+	@GetMapping("/paralegal/cases/{id}")
+	public String caseDetails(@PathVariable("id") Long caseId, @RequestParam(required = false) String documentKeyword,
+							  Authentication authentication, Model model) {
+		Case case_ = caseService.findOwnedByParalegal(caseId, currentParalegal(authentication));
+		populateCaseDetailModel(case_, model);
+		
+		model.addAttribute("caseDocuments", documentService.searchCaseDocuments(case_, documentKeyword));
+		model.addAttribute("documentKeyword", documentKeyword);
+		
+		return "paralegal/case-details";
+	}
+	
+	// ==================== Helpers ====================
+	
+	private void populateCaseDetailModel(Case case_, Model model) {
+		model.addAttribute("case", case_);
+		model.addAttribute("stagedDocuments", documentService.findStagedDocuments(case_));
+		model.addAttribute("caseDocuments", documentService.findCaseDocuments(case_));
+		model.addAttribute("contacts", contactService.findByCase(case_));
+		
+		List<Task> tasks = taskService.findByCase(case_);
+		model.addAttribute("tasks", tasks);
+		model.addAttribute("taskDocuments", documentService.findDocumentsByTasks(tasks));
+	}
+	
+	@PostMapping("/paralegal/cases/{id}/contacts")
+	public String addContact(@PathVariable("id") Long caseId, @Valid @ModelAttribute SaveContactRequest form, BindingResult bindingResult,
+							 Authentication authentication, Model model) {
+		Case case_ = caseService.findOwnedByParalegal(caseId, currentParalegal(authentication));
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			populateCaseDetailModel(case_, model);
+			return "paralegal/case-details";
+		}
+		
+		try {
+			contactService.add(case_, form.getName(), form.getPhoneNumbers(), form.getEmails(), form.getAddresses(), form.getNotes());
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("success", "Contact added.");
+		} catch (InvalidStateException e) {
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "paralegal/case-details";
+	}
+	
+	@PostMapping("/paralegal/cases/{id}/tasks")
+	public String addTask(@PathVariable("id") Long caseId, @Valid @ModelAttribute AddTaskRequest form, BindingResult bindingResult,
+						  Authentication authentication, Model model) {
+		Case case_ = caseService.findOwnedByParalegal(caseId, currentParalegal(authentication));
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			populateCaseDetailModel(case_, model);
+			return "paralegal/case-details";
+		}
+		
+		try {
+			taskService.add(case_, form.getTitle(), form.getDocumentingTask(), form.getSchedulingTask(), form.getBillingTask(),
+							form.getCaseFiles(),
+							form.getDate(), form.getStartTime(), form.getEndTime(), form.getLocation(), form.getNotes(),
+							form.getBillableAmount());
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("success", "Task added.");
+		} catch (InvalidStateException | BusinessRuleViolationException e) {
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "paralegal/case-details";
+	}
+	
+	@PostMapping("/paralegal/cases/{id}/tasks/{taskId}/edit-title")
+	public String editTaskTitle(@PathVariable("id") Long caseId, @PathVariable Long taskId, @Valid @ModelAttribute RenameTaskRequest form,
+								BindingResult bindingResult, Authentication authentication, Model model) {
+		Case case_ = caseService.findOwnedByParalegal(caseId, currentParalegal(authentication));
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			populateCaseDetailModel(case_, model);
+			return "paralegal/case-details";
+		}
+		
+		taskService.editTitle(taskService.findOwnedByCase(taskId, case_), form.getTitle());
+		
+		populateCaseDetailModel(case_, model);
+		model.addAttribute("success", "Task renamed.");
+		return "paralegal/case-details";
+	}
+	
+	@PostMapping("/paralegal/cases/{id}/tasks/{taskId}/reschedule")
+	public String rescheduleTaskEvent(@PathVariable("id") Long caseId, @PathVariable Long taskId, @Valid @ModelAttribute ScheduleMeetingRequest form,
+									  BindingResult bindingResult, Authentication authentication, Model model) {
+		Case case_ = caseService.findOwnedByParalegal(caseId, currentParalegal(authentication));
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			populateCaseDetailModel(case_, model);
+			return "paralegal/case-details";
+		}
+		
+		try {
+			taskService.rescheduleTaskEvent(taskService.findOwnedByCase(taskId, case_), form.getSubject(), form.getDate(), form.getStartTime(), form.getEndTime(), form.getLocation(), form.getNotes());
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("success", "Event rescheduled successfully.");
+		} catch (InvalidStateException | BusinessRuleViolationException e) {
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "paralegal/case-details";
+	}
+	
+	@PostMapping("/paralegal/cases/{id}/documents/{documentId}/accept")
+	public String acceptStagedDocument(@PathVariable("id") Long caseId, @PathVariable Long documentId, Authentication authentication, Model model) {
+		Case case_ = caseService.findOwnedByParalegal(caseId, currentParalegal(authentication));
+		documentService.addStagedDocumentsToCase(case_, List.of(documentId));
+		populateCaseDetailModel(case_, model);
+		model.addAttribute("success", "Document added to case.");
+		return "paralegal/case-details";
+	}
+	
+	@PostMapping("/paralegal/cases/{id}/documents/{documentId}/reject")
+	public String rejectStagedDocument(@PathVariable("id") Long caseId, @PathVariable Long documentId, Authentication authentication, Model model) {
+		Case case_ = caseService.findOwnedByParalegal(caseId, currentParalegal(authentication));
+		documentService.deleteStagedDocuments(case_, List.of(documentId));
+		populateCaseDetailModel(case_, model);
+		model.addAttribute("success", "Document deleted.");
+		return "paralegal/case-details";
+	}
+	
+	@PostMapping("/paralegal/cases/{id}/documents/{documentId}/rename")
+	public String renameCaseDocument(@PathVariable("id") Long caseId, @PathVariable Long documentId, @Valid @ModelAttribute RenameDocumentRequest form,
+									 BindingResult bindingResult, Authentication authentication, Model model) {
+		Case case_ = caseService.findOwnedByParalegal(caseId, currentParalegal(authentication));
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			populateCaseDetailModel(case_, model);
+			return "paralegal/case-details";
+		}
+		
+		documentService.renameCaseDocument(case_, documentId, form.getOriginalFilename());
+		
+		populateCaseDetailModel(case_, model);
+		model.addAttribute("success", "Document renamed.");
+		return "paralegal/case-details";
+	}
+	
+	@GetMapping("/paralegal/documents/case/{id}")
+	public ResponseEntity<Resource> viewCaseDocument(@PathVariable("id") Long documentId, Authentication authentication) {
+		return documentService.streamCaseDocument(documentService.findById(documentId), currentParalegal(authentication));
 	}
 	
 }

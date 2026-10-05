@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- Topbar Fragment -->
+<div th:fragment="topbar(title, subtitle)" class="topbar">
+	<div>
+		<div class="topbar-title" th:if="${title != null and not #strings.isEmpty(title)}" th:text="${title}"></div>
+		<div class="topbar-subtitle" th:if="${subtitle != null and not #strings.isEmpty(subtitle)}" th:text="${subtitle}"></div>
+	</div>
+</div>
+
+<!-- Topbar Fragment with a keyword-search box in the top right corner, for list pages -->
+<div th:fragment="topbar-search(title, subtitle, listUrl, keyword)" class="topbar">
+	<div>
+		<div class="topbar-title" th:if="${title != null and not #strings.isEmpty(title)}" th:text="${title}"></div>
+		<div class="topbar-subtitle" th:if="${subtitle != null and not #strings.isEmpty(subtitle)}" th:text="${subtitle}"></div>
+	</div>
+	<form class="topbar-search-form" th:action="@{${listUrl}}" method="get">
+		<input type="text" name="keyword" th:value="${keyword}" placeholder="Search…"/>
+		<button class="btn btn-primary" type="submit">Search</button>
+	</form>
+</div>
+
+
+<!-- Sidebar Footer Fragment -->
+<div th:fragment="sidebar-footer(role)" class="sidebar-user">
+	<div class="user-avatar" th:text="${#strings.toUpperCase(#strings.substring(currentUser.name, 0, T(java.lang.Math).min(2, currentUser.name.length())))}"></div>
+	<div class="user-info">
+		<div class="user-name" th:text="${currentUser.name}"></div>
+		<div class="user-role" th:text="${role}"></div>
+	</div>
+	<div class="sidebar-actions">
+		<form method="post" style="margin:0;" th:action="@{/logout}">
+			<button class="logout-btn" title="Sign out" type="submit">
+				<i class="bi bi-box-arrow-right"></i>
+			</button>
+		</form>
+	</div>
+</div>
+
+</body>
+</html>

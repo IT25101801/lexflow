@@ -15,8 +15,10 @@ import lexflow.dto.finance.EditBillableAmountRequest;
 import lexflow.dto.scheduling.ScheduleMeetingRequest;
 import lexflow.dto.user.*;
 import lexflow.entity.case_.Case;
+import lexflow.entity.case_.CaseResolutionStatus;
 import lexflow.entity.case_.Contact;
 import lexflow.entity.case_.Task;
+import lexflow.entity.consultation.CaseType;
 import lexflow.entity.consultation.Consultation;
 import lexflow.entity.finance.InvoiceStatus;
 import lexflow.entity.scheduling.ConsultationEvent;
@@ -43,12 +45,17 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequiredArgsConstructor
 public class PartnerController {
+	
+	private final AnalyticsService analyticsService;
 	
 	private final CaseService caseService;
 	
@@ -1015,6 +1022,79 @@ public class PartnerController {
 		}
 		
 		return "redirect:/partner/events/{id}";
+	}
+	
+	@GetMapping("/partner/analytics")
+	public String analytics(Authentication authentication, Model model) {
+		model.addAttribute("user", currentPartner(authentication));
+		
+		Map<CaseResolutionStatus, Integer> caseResolutionBreakdown = analyticsService.caseResolutionBreakdown();
+		model.addAttribute("caseResolutionLabels", buildLabels(caseResolutionBreakdown));
+		model.addAttribute("caseResolutionValues", buildIntValues(caseResolutionBreakdown));
+		
+		model.addAttribute("avgCaseDurationDays", analyticsService.avgCaseDurationDays());
+		
+		Map<Integer, BigDecimal> revenueByMonth = analyticsService.revenueByMonth(LocalDate.now().getYear());
+		model.addAttribute("revenueByMonthLabels", monthLabels());
+		model.addAttribute("revenueByMonthValues", revenueByMonth.values());
+		
+		Map<CaseType, BigDecimal> revenueByCaseType = analyticsService.revenueByCaseType();
+		model.addAttribute("revenueByCaseTypeLabels", buildLabels(revenueByCaseType));
+		model.addAttribute("revenueByCaseTypeValues", buildDecimalValues(revenueByCaseType));
+		
+		Map<User, Integer> associateClosedCounts = analyticsService.closedCaseCountByAssociate();
+		model.addAttribute("associateClosedLabels", buildStaffLabels(associateClosedCounts));
+		model.addAttribute("associateClosedValues", buildIntValues(associateClosedCounts));
+		
+		Map<User, Integer> paralegalClosedCounts = analyticsService.closedCaseCountByParalegal();
+		model.addAttribute("paralegalClosedLabels", buildStaffLabels(paralegalClosedCounts));
+		model.addAttribute("paralegalClosedValues", buildIntValues(paralegalClosedCounts));
+		
+		return "partner/analytics";
+	}
+	
+	private List<String> buildLabels(Map<?, ?> counts) {
+		List<String> labels = new ArrayList<>();
+		
+		for (Object key : counts.keySet()) {
+			labels.add(key.toString());
+		}
+		
+		return labels;
+	}
+	
+	private List<String> buildStaffLabels(Map<User, Integer> workload) {
+		List<String> labels = new ArrayList<>();
+		
+		for (User staff : workload.keySet()) {
+			labels.add(staff.getName());
+		}
+		
+		return labels;
+	}
+	
+	private List<Integer> buildIntValues(Map<?, Integer> counts) {
+		List<Integer> values = new ArrayList<>();
+		
+		for (Integer value : counts.values()) {
+			values.add(value);
+		}
+		
+		return values;
+	}
+	
+	private List<BigDecimal> buildDecimalValues(Map<?, BigDecimal> sums) {
+		List<BigDecimal> values = new ArrayList<>();
+		
+		for (BigDecimal value : sums.values()) {
+			values.add(value == null ? BigDecimal.ZERO : value);
+		}
+		
+		return values;
+	}
+	
+	private List<String> monthLabels() {
+		return List.of("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
 	}
 	
 }

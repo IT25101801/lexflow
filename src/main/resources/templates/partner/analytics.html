@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Analytics – LexFlow')}"></head>
+<body>
+<link rel="stylesheet" th:href="@{/css/analytics.css}"/>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<aside th:replace="~{fragments/sidebar-partner :: sidebar('analytics')}"></aside>
+
+<div class="main">
+	<div th:replace="~{fragments/common :: topbar('Analytics', null)}"></div>
+	
+	<div class="content">
+		<div class="stat-grid">
+			<div class="stat-card">
+				<div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
+				<div>
+					<div class="stat-value" th:text="${avgCaseDurationDays != null ? #numbers.formatDecimal(avgCaseDurationDays, 1, 1) + ' days' : '–'}"></div>
+					<div class="stat-label">Avg. Case Duration</div>
+				</div>
+			</div>
+		</div>
+		
+		<div class="chart-grid">
+			<div class="chart-card">
+				<div class="chart-card-title">Case Resolution Breakdown</div>
+				<div class="chart-canvas-wrap">
+					<canvas id="caseResolutionChart"></canvas>
+				</div>
+			</div>
+			<div class="chart-card">
+				<div class="chart-card-title">Revenue by Month</div>
+				<div class="chart-canvas-wrap">
+					<canvas id="revenueByMonthChart"></canvas>
+				</div>
+			</div>
+			<div class="chart-card">
+				<div class="chart-card-title">Revenue by Case Type</div>
+				<div class="chart-canvas-wrap">
+					<canvas id="revenueByCaseTypeChart"></canvas>
+				</div>
+			</div>
+			<div class="chart-card">
+				<div class="chart-card-title">Closed Cases per Associate</div>
+				<div class="chart-canvas-wrap">
+					<canvas id="associateClosedChart"></canvas>
+				</div>
+			</div>
+			<div class="chart-card">
+				<div class="chart-card-title">Closed Cases per Paralegal</div>
+				<div class="chart-canvas-wrap">
+					<canvas id="paralegalClosedChart"></canvas>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script th:inline="javascript">
+	/*<![CDATA[*/
+	const caseResolutionLabels = /*[[${caseResolutionLabels}]]*/ [];
+	const caseResolutionValues = /*[[${caseResolutionValues}]]*/ [];
+	const revenueByMonthLabels = /*[[${revenueByMonthLabels}]]*/ [];
+	const revenueByMonthValues = /*[[${revenueByMonthValues}]]*/ [];
+	const revenueByCaseTypeLabels = /*[[${revenueByCaseTypeLabels}]]*/ [];
+	const revenueByCaseTypeValues = /*[[${revenueByCaseTypeValues}]]*/ [];
+	const associateClosedLabels = /*[[${associateClosedLabels}]]*/ [];
+	const associateClosedValues = /*[[${associateClosedValues}]]*/ [];
+	const paralegalClosedLabels = /*[[${paralegalClosedLabels}]]*/ [];
+	const paralegalClosedValues = /*[[${paralegalClosedValues}]]*/ [];
+	/*]]>*/
+	
+	const chartTextColor = getComputedStyle(document.body).getPropertyValue("--text").trim();
+	Chart.defaults.color = chartTextColor;
+	Chart.defaults.borderColor = getComputedStyle(document.body).getPropertyValue("--border").trim();
+	
+	new Chart(document.getElementById("caseResolutionChart"), {
+		type: "doughnut",
+		data: {
+			labels: caseResolutionLabels,
+			datasets: [{data: caseResolutionValues, backgroundColor: ["#2f9e5c", "#d64545", "#3b82c4", "#a0a0a0"]}]
+		},
+		options: {responsive: true, maintainAspectRatio: false}
+	});
+	
+	new Chart(document.getElementById("revenueByMonthChart"), {
+		type: "bar",
+		data: {labels: revenueByMonthLabels, datasets: [{label: "Revenue", data: revenueByMonthValues, backgroundColor: "#3b82c4"}]},
+		options: {responsive: true, maintainAspectRatio: false, plugins: {legend: {display: false}}}
+	});
+	
+	new Chart(document.getElementById("revenueByCaseTypeChart"), {
+		type: "bar",
+		data: {labels: revenueByCaseTypeLabels, datasets: [{label: "Revenue", data: revenueByCaseTypeValues, backgroundColor: "#8a5fd6"}]},
+		options: {responsive: true, maintainAspectRatio: false, indexAxis: "y", plugins: {legend: {display: false}}}
+	});
+	
+	new Chart(document.getElementById("associateClosedChart"), {
+		type: "bar",
+		data: {labels: associateClosedLabels, datasets: [{label: "Closed Cases", data: associateClosedValues, backgroundColor: "#2f9e5c"}]},
+		options: {responsive: true, maintainAspectRatio: false, plugins: {legend: {display: false}}}
+	});
+	
+	new Chart(document.getElementById("paralegalClosedChart"), {
+		type: "bar",
+		data: {labels: paralegalClosedLabels, datasets: [{label: "Closed Cases", data: paralegalClosedValues, backgroundColor: "#d69e2e"}]},
+		options: {responsive: true, maintainAspectRatio: false, plugins: {legend: {display: false}}}
+	});
+</script>
+
+</body>
+</html>

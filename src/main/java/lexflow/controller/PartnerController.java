@@ -985,4 +985,36 @@ public class PartnerController {
 		return "partner/event-list";
 	}
 	
+	@GetMapping("/partner/events/{id}")
+	public String eventDetails(@PathVariable("id") Long eventId, Model model) {
+		model.addAttribute("event", eventService.findById(eventId));
+		return "partner/event-details";
+	}
+	
+	@PostMapping("/partner/events/{id}/complete")
+	public String completeEvent(@PathVariable("id") Long eventId, RedirectAttributes redirectAttributes) {
+		
+		try {
+			eventService.completeEvent(eventService.findById(eventId));
+			redirectAttributes.addFlashAttribute("success", "Event marked as completed.");
+		} catch (InvalidStateException | BusinessRuleViolationException e) {
+			redirectAttributes.addFlashAttribute("error", e.getMessage());
+		}
+		
+		return "redirect:/partner/events/{id}";
+	}
+	
+	@PostMapping("/partner/events/{id}/cancel")
+	public String cancelEvent(@PathVariable("id") Long eventId, RedirectAttributes redirectAttributes) {
+		
+		try {
+			eventService.cancelEvent(eventService.findById(eventId));
+			redirectAttributes.addFlashAttribute("success", "Event canceled.");
+		} catch (InvalidStateException e) {
+			redirectAttributes.addFlashAttribute("error", e.getMessage());
+		}
+		
+		return "redirect:/partner/events/{id}";
+	}
+	
 }

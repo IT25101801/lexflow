@@ -3,6 +3,7 @@ package lexflow.controller;
 import jakarta.validation.Valid;
 import lexflow.dto.finance.CompileInvoiceRequest;
 import lexflow.dto.finance.EditBillableAmountRequest;
+import lexflow.dto.finance.WithdrawRequest;
 import lexflow.dto.user.ChangePasswordRequest;
 import lexflow.entity.case_.Case;
 import lexflow.entity.finance.InvoiceStatus;
@@ -11,6 +12,8 @@ import lexflow.entity.user.Client;
 import lexflow.entity.user.FinanceOfficer;
 import lexflow.entity.user.User;
 import lexflow.exception.BusinessRuleViolationException;
+import lexflow.exception.EntityNotFoundException;
+import lexflow.exception.PersistenceException;
 import lexflow.exception.finance.InsufficientFundsException;
 import lexflow.exception.finance.InvalidInvoiceStateException;
 import lexflow.security.CustomUserPrincipal;
@@ -247,6 +250,41 @@ public class FinanceController {
 		model.addAttribute("relatedCases", caseService.findAllForClient(client));
 		model.addAttribute("relatedTransactions", transactionService.findAllForClient(client));
 		return "finance/client-details";
+	}
+	
+	@GetMapping("/finance/withdrawal")
+	public String showWithdrawalForm(Model model) {
+		return "finance/withdrawal";
+	}
+	
+	@PostMapping("/finance/withdrawal")
+	public String withdraw(@Valid @ModelAttribute WithdrawRequest form, BindingResult bindingResult, Model model) {
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			return "finance/withdrawal";
+		}
+		
+		Client client;
+		try {
+			client = userService.findClientByUserCode(form.getClientCode());
+		} catch (EntityNotFoundException e) {
+			model.addAttribute("error", "No client found with code " + form.getClientCode() + ".");
+			return "finance/withdrawal";
+		}
+		
+		try {
+			transactionService.withdraw(client, form.getAmount());
+		} catch (InsufficientFundsException e) {
+			model.addAttribute("error", e.getMessage());
+			return "finance/withdrawal";
+		} catch (PersistenceException e) {
+			model.addAttribute("error", "The withdrawal could not be processed. Please try again.");
+			return "finance/withdrawal";
+		}
+		
+		model.addAttribute("success", String.format("Withdrawal of %,.2f recorded for %s. Remaining balance: %,.2f.",
+													form.getAmount(), client.getName(), client.getWalletBalance()));
+		return "finance/withdrawal";
 	}
 	
 }

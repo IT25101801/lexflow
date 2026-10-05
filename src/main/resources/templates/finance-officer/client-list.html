@@ -3,10 +3,10 @@
 <head th:replace="~{fragments/head :: head(${title} + ' – LexFlow')}"></head>
 <body>
 
-<aside th:replace="~{fragments/sidebar-finance :: sidebar(${active})}"></aside>
+<aside th:replace="~{fragments/sidebar-finance-officer :: sidebar(${active})}"></aside>
 
 <div class="main">
-	<div th:replace="~{fragments/common :: topbar-search(${title}, null, '/finance/clients', ${keyword})}"></div>
+	<div th:replace="~{fragments/common :: topbar-search(${title}, null, '/finance-officer/clients', ${keyword})}"></div>
 	
 	<div class="content">
 		
@@ -42,7 +42,7 @@
 						<td><span class="badge" th:classappend="'badge-' + ${u.accountStatus}" th:text="${u.accountStatus}"></span></td>
 						<td th:text="${#temporals.format(u.registeredAt, 'dd/MM/yyyy HH:mm')}"></td>
 						<td>
-							<a class="action-btn action-btn-view" th:href="@{/finance/clients/{id}(id=${u.userId})}">View</a>
+							<a class="action-btn action-btn-view" th:href="@{/finance-officer/clients/{id}(id=${u.userId})}">View</a>
 						</td>
 					</tr>
 					</tbody>

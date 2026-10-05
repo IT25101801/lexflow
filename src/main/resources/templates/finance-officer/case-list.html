@@ -3,7 +3,7 @@
 <head th:replace="~{fragments/head :: head(${title} + ' – LexFlow')}"></head>
 <body>
 
-<aside th:replace="~{fragments/sidebar-finance :: sidebar(${active})}"></aside>
+<aside th:replace="~{fragments/sidebar-finance-officer :: sidebar(${active})}"></aside>
 
 <div class="main">
 	<div th:replace="~{fragments/common :: topbar(${title}, null)}"></div>
@@ -48,7 +48,7 @@
 						<td th:if="${active == 'cases-closed'}"><span class="badge" th:classappend="'badge-' + ${c.caseResolutionStatus}" th:text="${c.caseResolutionStatus}"></span></td>
 						<td th:if="${active == 'cases-closed'}" th:text="${c.closedAt != null ? #temporals.format(c.closedAt, 'dd/MM/yyyy HH:mm') : '–'}"></td>
 						<td>
-							<a class="action-btn action-btn-view" th:href="@{/finance/cases/{id}(id=${c.caseId})}">View</a>
+							<a class="action-btn action-btn-view" th:href="@{/finance-officer/cases/{id}(id=${c.caseId})}">View</a>
 						</td>
 					</tr>
 					</tbody>

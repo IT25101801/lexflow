@@ -13,37 +13,37 @@
 	<!-- Navigation -->
 	<nav class="sidebar-nav">
 		<span class="nav-section-label">Overview</span>
-		<a class="nav-item" th:classappend="${active == 'dashboard'} ? ' active'" th:href="@{/finance/dashboard}">
+		<a class="nav-item" th:classappend="${active == 'dashboard'} ? ' active'" th:href="@{/finance-officer/dashboard}">
 			<i class="bi bi-grid"></i> Dashboard
 		</a>
-		<a class="nav-item" th:classappend="${active == 'analytics'} ? ' active'" th:href="@{/finance/analytics}">
+		<a class="nav-item" th:classappend="${active == 'analytics'} ? ' active'" th:href="@{/finance-officer/analytics}">
 			<i class="bi bi-bar-chart-line"></i> Analytics
 		</a>
-		<a class="nav-item" th:classappend="${active == 'profile'} ? ' active'" th:href="@{/finance/profile}">
+		<a class="nav-item" th:classappend="${active == 'profile'} ? ' active'" th:href="@{/finance-officer/profile}">
 			<i class="bi bi-person"></i> My Profile
 		</a>
 		
 		<span class="nav-section-label">Cases</span>
-		<a class="nav-item" th:classappend="${active == 'cases-open'} ? ' active'" th:href="@{/finance/cases/open}">
+		<a class="nav-item" th:classappend="${active == 'cases-open'} ? ' active'" th:href="@{/finance-officer/cases/open}">
 			<i class="bi bi-briefcase"></i> Open Cases
 		</a>
-		<a class="nav-item" th:classappend="${active == 'cases-closed'} ? ' active'" th:href="@{/finance/cases/closed}">
+		<a class="nav-item" th:classappend="${active == 'cases-closed'} ? ' active'" th:href="@{/finance-officer/cases/closed}">
 			<i class="bi bi-briefcase-fill"></i> Closed Cases
 		</a>
 		
 		<span class="nav-section-label">Clients</span>
-		<a class="nav-item" th:classappend="${active == 'clients'} ? ' active'" th:href="@{/finance/clients}">
+		<a class="nav-item" th:classappend="${active == 'clients'} ? ' active'" th:href="@{/finance-officer/clients}">
 			<i class="bi bi-people"></i> Clients
 		</a>
 		
 		<span class="nav-section-label">Payments</span>
-		<a class="nav-item" th:classappend="${active == 'cash-top-up'} ? ' active'" th:href="@{/finance/cash-top-up}">
+		<a class="nav-item" th:classappend="${active == 'cash-top-up'} ? ' active'" th:href="@{/finance-officer/cash-top-up}">
 			<i class="bi bi-cash"></i> Cash Top-Up
 		</a>
-		<a class="nav-item" th:classappend="${active == 'withdrawal'} ? ' active'" th:href="@{/finance/withdrawal}">
+		<a class="nav-item" th:classappend="${active == 'withdrawal'} ? ' active'" th:href="@{/finance-officer/withdrawal}">
 			<i class="bi bi-box-arrow-up"></i> Withdrawal
 		</a>
-		<a class="nav-item" th:classappend="${active == 'transactions'} ? ' active'" th:href="@{/finance/transactions}">
+		<a class="nav-item" th:classappend="${active == 'transactions'} ? ' active'" th:href="@{/finance-officer/transactions}">
 			<i class="bi bi-cash-stack"></i> Transactions
 		</a>
 	</nav>

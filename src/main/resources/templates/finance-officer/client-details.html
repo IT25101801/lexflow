@@ -3,7 +3,7 @@
 <head th:replace="~{fragments/head :: head(${user.name} + ' – LexFlow')}"></head>
 <body>
 
-<aside th:replace="~{fragments/sidebar-finance :: sidebar('clients')}"></aside>
+<aside th:replace="~{fragments/sidebar-finance-officer :: sidebar('clients')}"></aside>
 
 <div class="main">
 	<div th:replace="~{fragments/common :: topbar(${user.name}, null)}"></div>
@@ -108,7 +108,7 @@
 							<td th:text="${#temporals.format(cs.openedAt, 'dd/MM/yyyy HH:mm')}" style="white-space:nowrap;"></td>
 							<td th:text="${cs.caseResolutionStatus != null ? cs.caseResolutionStatus : '–'}"></td>
 							<td th:text="${cs.closedAt != null ? #temporals.format(cs.closedAt, 'dd/MM/yyyy HH:mm') : '–'}" style="white-space:nowrap;"></td>
-							<td><a class="action-btn action-btn-view" th:href="@{/finance/cases/{id}(id=${cs.caseId})}">View</a></td>
+							<td><a class="action-btn action-btn-view" th:href="@{/finance-officer/cases/{id}(id=${cs.caseId})}">View</a></td>
 						</tr>
 						</tbody>
 					</table>

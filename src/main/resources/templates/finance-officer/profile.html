@@ -3,7 +3,7 @@
 <head th:replace="~{fragments/head :: head('My Profile – LexFlow')}"></head>
 <body>
 
-<aside th:replace="~{fragments/sidebar-finance :: sidebar('profile')}"></aside>
+<aside th:replace="~{fragments/sidebar-finance-officer :: sidebar('profile')}"></aside>
 
 <div class="main">
 	<div th:replace="~{fragments/common :: topbar('Profile', null)}"></div>
@@ -72,7 +72,7 @@
 						<span class="detail-label">NIC Document</span>
 						<span class="detail-value">
 							<a class="action-btn action-btn-view" th:if="${user.nicDocument != null}" target="_blank"
-							   th:href="@{/finance/documents/user/{id}(id=${user.nicDocument.documentId})}">View</a>
+							   th:href="@{/finance-officer/documents/user/{id}(id=${user.nicDocument.documentId})}">View</a>
 							<span th:unless="${user.nicDocument != null}">&ndash;</span>
 						</span>
 					</div>
@@ -83,7 +83,7 @@
 			<div>
 				<div class="section-card">
 					<div class="section-title">Change Password</div>
-					<form method="post" th:action="@{/finance/profile/change-password}"
+					<form method="post" th:action="@{/finance-officer/profile/change-password}"
 						  onsubmit="if(this.newPassword.value !== this.confirmPassword.value){ alert('New passwords do not match.'); return false; }"
 						  style="display:flex;flex-direction:column;gap:0.9rem;">
 						<div class="field">

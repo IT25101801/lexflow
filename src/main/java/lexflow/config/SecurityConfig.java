@@ -32,7 +32,7 @@ public class SecurityConfig {
 				.requestMatchers("/associate/**").hasRole("ASSOCIATE")
 				.requestMatchers("/paralegal/**").hasRole("PARALEGAL")
 				.requestMatchers("/client-relations-officer/**").hasRole("CLIENT_RELATIONS_OFFICER")
-				.requestMatchers("/finance/**").hasRole("FINANCE_OFFICER")
+				.requestMatchers("/finance-officer/**").hasRole("FINANCE_OFFICER")
 				.anyRequest().authenticated())
 			.formLogin(form -> form
 				.loginPage("/auth/login")

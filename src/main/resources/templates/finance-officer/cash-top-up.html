@@ -3,7 +3,7 @@
 <head th:replace="~{fragments/head :: head('Cash Top-Up – LexFlow')}"></head>
 <body>
 
-<aside th:replace="~{fragments/sidebar-finance :: sidebar('cash-top-up')}"></aside>
+<aside th:replace="~{fragments/sidebar-finance-officer :: sidebar('cash-top-up')}"></aside>
 
 <div class="main">
 	<div th:replace="~{fragments/common :: topbar('Cash Top-Up', null)}"></div>
@@ -14,7 +14,7 @@
 		
 		<div class="form-card">
 			<div class="section-title">Top Up Client Wallet</div>
-			<form th:action="@{/finance/cash-top-up}" method="post" style="display:flex;flex-direction:column;gap:0.85rem;">
+			<form th:action="@{/finance-officer/cash-top-up}" method="post" style="display:flex;flex-direction:column;gap:0.85rem;">
 				<div class="field">
 					<label for="clientCode">Client Code</label>
 					<input id="clientCode" type="text" name="clientCode" placeholder="CLT-31-12345678" required/>

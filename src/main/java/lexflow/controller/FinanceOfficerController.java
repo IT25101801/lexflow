@@ -36,7 +36,7 @@ import java.util.Map;
 
 @Controller
 @RequiredArgsConstructor
-public class FinanceController {
+public class FinanceOfficerController {
 	
 	private final UserService userService;
 	
@@ -54,10 +54,10 @@ public class FinanceController {
 	
 	// ==================== Overview (Dashboard, Profile) ====================
 	
-	@GetMapping("/finance/dashboard")
+	@GetMapping("/finance-officer/dashboard")
 	public String dashboard(Authentication authentication, Model model) {
 		model.addAttribute("user", currentFinanceOfficer(authentication));
-		return "finance/dashboard";
+		return "finance-officer/dashboard";
 	}
 	
 	private FinanceOfficer currentFinanceOfficer(Authentication authentication) {
@@ -65,13 +65,13 @@ public class FinanceController {
 		return (FinanceOfficer) principal.user();
 	}
 	
-	@GetMapping("/finance/profile")
+	@GetMapping("/finance-officer/profile")
 	public String profile(Authentication authentication, Model model) {
 		model.addAttribute("user", currentFinanceOfficer(authentication));
-		return "finance/profile";
+		return "finance-officer/profile";
 	}
 	
-	@PostMapping("/finance/profile/change-password")
+	@PostMapping("/finance-officer/profile/change-password")
 	public String changePassword(Authentication authentication,
 								 @Valid @ModelAttribute ChangePasswordRequest form, BindingResult bindingResult,
 								 Model model) {
@@ -80,50 +80,50 @@ public class FinanceController {
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			model.addAttribute("user", user);
-			return "finance/profile";
+			return "finance-officer/profile";
 		}
 		
 		if (!userService.verifyPassword(user, form.getCurrentPassword())) {
 			model.addAttribute("user", user);
 			model.addAttribute("error", "Current password is incorrect.");
-			return "finance/profile";
+			return "finance-officer/profile";
 		}
 		
 		userService.changePassword(user, form.getNewPassword());
 		
 		model.addAttribute("user", user);
 		model.addAttribute("success", "Password changed successfully.");
-		return "finance/profile";
+		return "finance-officer/profile";
 	}
 	
-	@GetMapping("/finance/documents/user/{id}")
+	@GetMapping("/finance-officer/documents/user/{id}")
 	public ResponseEntity<Resource> viewUserDocument(@PathVariable("id") Long documentId, Authentication authentication) {
 		return documentService.streamUserDocument(documentService.findById(documentId), currentFinanceOfficer(authentication));
 	}
 	
 	// ==================== Cases (Open, Closed, Details) ====================
 	
-	@GetMapping("/finance/cases/open")
+	@GetMapping("/finance-officer/cases/open")
 	public String openCases(Model model) {
 		model.addAttribute("cases", caseService.findAllOpen());
 		model.addAttribute("title", "Open Cases");
 		model.addAttribute("active", "cases-open");
-		return "finance/case-list";
+		return "finance-officer/case-list";
 	}
 	
-	@GetMapping("/finance/cases/closed")
+	@GetMapping("/finance-officer/cases/closed")
 	public String closedCases(Model model) {
 		model.addAttribute("cases", caseService.findAllClosed());
 		model.addAttribute("title", "Closed Cases");
 		model.addAttribute("active", "cases-closed");
-		return "finance/case-list";
+		return "finance-officer/case-list";
 	}
 	
-	@GetMapping("/finance/cases/{id}")
+	@GetMapping("/finance-officer/cases/{id}")
 	public String caseDetails(@PathVariable("id") Long caseId, Model model) {
 		Case case_ = caseService.findById(caseId);
 		populateCaseDetailModel(case_, model);
-		return "finance/case-details";
+		return "finance-officer/case-details";
 	}
 	
 	// ==================== Helpers ====================
@@ -139,7 +139,7 @@ public class FinanceController {
 	
 	// ==================== Invoices & Documents (case-details sub-actions) ====================
 	
-	@PostMapping("/finance/cases/{id}/invoices/compile")
+	@PostMapping("/finance-officer/cases/{id}/invoices/compile")
 	public String compileInvoice(@PathVariable("id") Long caseId, @Valid @ModelAttribute CompileInvoiceRequest form, Model model) {
 		Case case_ = caseService.findById(caseId);
 		
@@ -152,10 +152,10 @@ public class FinanceController {
 			model.addAttribute("error", e.getMessage());
 		}
 		
-		return "finance/case-details";
+		return "finance-officer/case-details";
 	}
 	
-	@PostMapping("/finance/cases/{id}/invoices/{invoiceId}/charge")
+	@PostMapping("/finance-officer/cases/{id}/invoices/{invoiceId}/charge")
 	public String chargeInvoice(@PathVariable("id") Long caseId, @PathVariable Long invoiceId, Model model) {
 		Case case_ = caseService.findById(caseId);
 		
@@ -168,17 +168,17 @@ public class FinanceController {
 			model.addAttribute("error", e.getMessage());
 		}
 		
-		return "finance/case-details";
+		return "finance-officer/case-details";
 	}
 	
-	@PostMapping("/finance/cases/{id}/tasks/{taskId}/edit-billable-amount")
+	@PostMapping("/finance-officer/cases/{id}/tasks/{taskId}/edit-billable-amount")
 	public String editBillableAmount(@PathVariable("id") Long caseId, @PathVariable Long taskId, @Valid @ModelAttribute EditBillableAmountRequest form, BindingResult bindingResult, Model model) {
 		Case case_ = caseService.findById(caseId);
 		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			populateCaseDetailModel(case_, model);
-			return "finance/case-details";
+			return "finance-officer/case-details";
 		}
 		
 		try {
@@ -190,10 +190,10 @@ public class FinanceController {
 			model.addAttribute("error", e.getMessage());
 		}
 		
-		return "finance/case-details";
+		return "finance-officer/case-details";
 	}
 	
-	@PostMapping("/finance/cases/{id}/invoices/{invoiceId}/void")
+	@PostMapping("/finance-officer/cases/{id}/invoices/{invoiceId}/void")
 	public String voidInvoice(@PathVariable("id") Long caseId, @PathVariable Long invoiceId, Model model) {
 		Case case_ = caseService.findById(caseId);
 		
@@ -206,10 +206,10 @@ public class FinanceController {
 			model.addAttribute("error", e.getMessage());
 		}
 		
-		return "finance/case-details";
+		return "finance-officer/case-details";
 	}
 	
-	@PostMapping("/finance/cases/{id}/invoices/{invoiceId}/void-refund")
+	@PostMapping("/finance-officer/cases/{id}/invoices/{invoiceId}/void-refund")
 	public String voidAndRefund(@PathVariable("id") Long caseId, @PathVariable Long invoiceId, Model model) {
 		Case case_ = caseService.findById(caseId);
 		
@@ -222,54 +222,54 @@ public class FinanceController {
 			model.addAttribute("error", e.getMessage());
 		}
 		
-		return "finance/case-details";
+		return "finance-officer/case-details";
 	}
 	
-	@GetMapping("/finance/documents/invoice/{id}")
+	@GetMapping("/finance-officer/documents/invoice/{id}")
 	public ResponseEntity<Resource> viewInvoiceDocument(@PathVariable("id") Long documentId, Authentication authentication) {
 		return documentService.streamInvoiceDocument(documentService.findById(documentId), currentFinanceOfficer(authentication));
 	}
 	
-	@GetMapping("/finance/transactions")
+	@GetMapping("/finance-officer/transactions")
 	public String transactions(Model model) {
 		model.addAttribute("transactions", transactionService.findAll());
 		model.addAttribute("totalCharges", transactionService.totalCharges());
 		model.addAttribute("totalRefunds", transactionService.totalRefunds());
 		model.addAttribute("netRevenue", transactionService.netRevenue());
-		return "finance/transactions";
+		return "finance-officer/transactions";
 	}
 	
 	// ==================== Clients (view and search only) ====================
 	
-	@GetMapping("/finance/clients")
+	@GetMapping("/finance-officer/clients")
 	public String clients(@RequestParam(required = false) String keyword, Model model) {
 		model.addAttribute("users", userService.search(Role.CLIENT, keyword));
 		model.addAttribute("keyword", keyword);
 		model.addAttribute("title", "Clients");
 		model.addAttribute("active", "clients");
-		return "finance/client-list";
+		return "finance-officer/client-list";
 	}
 	
-	@GetMapping("/finance/clients/{id}")
+	@GetMapping("/finance-officer/clients/{id}")
 	public String clientDetails(@PathVariable("id") Long userId, Model model) {
 		Client client = userService.findClientById(userId);
 		
 		model.addAttribute("user", client);
 		model.addAttribute("relatedCases", caseService.findAllForClient(client));
 		model.addAttribute("relatedTransactions", transactionService.findAllForClient(client));
-		return "finance/client-details";
+		return "finance-officer/client-details";
 	}
 	
-	@GetMapping("/finance/withdrawal")
+	@GetMapping("/finance-officer/withdrawal")
 	public String showWithdrawalForm(Model model) {
-		return "finance/withdrawal";
+		return "finance-officer/withdrawal";
 	}
 	
-	@PostMapping("/finance/withdrawal")
+	@PostMapping("/finance-officer/withdrawal")
 	public String withdraw(@Valid @ModelAttribute WithdrawRequest form, BindingResult bindingResult, Model model) {
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
-			return "finance/withdrawal";
+			return "finance-officer/withdrawal";
 		}
 		
 		Client client;
@@ -277,36 +277,36 @@ public class FinanceController {
 			client = userService.findClientByUserCode(form.getClientCode());
 		} catch (EntityNotFoundException e) {
 			model.addAttribute("error", "No client found with code " + form.getClientCode() + ".");
-			return "finance/withdrawal";
+			return "finance-officer/withdrawal";
 		}
 		
 		try {
 			transactionService.withdraw(client, form.getAmount());
 		} catch (InsufficientFundsException e) {
 			model.addAttribute("error", e.getMessage());
-			return "finance/withdrawal";
+			return "finance-officer/withdrawal";
 		} catch (PersistenceException e) {
 			model.addAttribute("error", "The withdrawal could not be processed. Please try again.");
-			return "finance/withdrawal";
+			return "finance-officer/withdrawal";
 		}
 		
 		model.addAttribute("success", String.format("Withdrawal of %,.2f recorded for %s. Remaining balance: %,.2f.",
 													form.getAmount(), client.getName(), client.getWalletBalance()));
-		return "finance/withdrawal";
+		return "finance-officer/withdrawal";
 	}
 	
 	// ==================== Payments (Cash Top-Up, Transactions) ====================
 	
-	@GetMapping("/finance/cash-top-up")
+	@GetMapping("/finance-officer/cash-top-up")
 	public String showCashTopUpForm(Model model) {
-		return "finance/cash-top-up";
+		return "finance-officer/cash-top-up";
 	}
 	
-	@PostMapping("/finance/cash-top-up")
+	@PostMapping("/finance-officer/cash-top-up")
 	public String topUpByCash(@Valid @ModelAttribute TopUpByCashRequest form, BindingResult bindingResult, Model model) {
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
-			return "finance/cash-top-up";
+			return "finance-officer/cash-top-up";
 		}
 		
 		Client client;
@@ -314,21 +314,21 @@ public class FinanceController {
 			client = userService.findClientByUserCode(form.getClientCode());
 		} catch (EntityNotFoundException e) {
 			model.addAttribute("error", "No client found with code " + form.getClientCode() + ".");
-			return "finance/cash-top-up";
+			return "finance-officer/cash-top-up";
 		}
 		
 		try {
 			transactionService.topUpByCash(client, form.getAmount());
 		} catch (PersistenceException e) {
 			model.addAttribute("error", "The cash top-up could not be processed. Please try again.");
-			return "finance/cash-top-up";
+			return "finance-officer/cash-top-up";
 		}
 		
 		model.addAttribute("success", "Trust account topped up successfully for " + client.getName() + ".");
-		return "finance/cash-top-up";
+		return "finance-officer/cash-top-up";
 	}
 	
-	@GetMapping("/finance/analytics")
+	@GetMapping("/finance-officer/analytics")
 	public String analytics(Authentication authentication, Model model) {
 		model.addAttribute("user", currentFinanceOfficer(authentication));
 		
@@ -345,7 +345,7 @@ public class FinanceController {
 		
 		model.addAttribute("totalClientWalletFloat", analyticsService.totalClientWalletFloat());
 		
-		return "finance/analytics";
+		return "finance-officer/analytics";
 	}
 	
 	private List<String> monthLabels() {

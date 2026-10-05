@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Consultation Request Details – LexFlow')}"></head>
+<body>
+
+<aside th:replace="~{fragments/sidebar-paralegal :: sidebar('consultations')}"></aside>
+
+<div class="main">
+	<div th:replace="~{fragments/common :: topbar('Consultation Request Details', null)}"></div>
+	
+	<div class="content">
+		
+		<div class="profile-layout">
+			<div>
+				
+				<div class="section-card">
+					<div class="avatar-header" style="padding-bottom:1rem;margin-bottom:1rem;border-bottom:1px solid var(--border);">
+						<div>
+							<div class="avatar-name">Consultation Details</div>
+						</div>
+						<a class="action-btn action-btn-view" style="margin-left:auto;" th:if="${existingCase != null}"
+						   th:href="@{/paralegal/cases/{id}(id=${existingCase.caseId})}">View Case</a>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Consultation Code</span>
+						<span class="detail-value" th:text="${consultation.consultationCode}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Client</span>
+						<span style="display:flex;flex-direction:column;align-items:flex-end;">
+							<div th:text="${consultation.client.name}"></div>
+							<div class="cell-sub" th:text="${consultation.client.userCode}"></div>
+						</span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Case Type</span>
+						<span class="detail-value" th:text="${#strings.replace(consultation.caseType, '_', ' ')}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Opposing Parties</span>
+						<div class="detail-value">
+							<div th:each="op : ${consultation.opposingParties}" th:text="${op}"></div>
+						</div>
+					</div>
+					<div class="detail-row" style="border-bottom:none;">
+						<span class="detail-label">Legal Issue Details</span>
+					</div>
+					<div style="padding:0 0 0.75rem;font-size:0.88rem;line-height:1.7;color:var(--text);word-break:break-word;overflow-wrap:anywhere;border-bottom:1px solid var(--border);"
+						 th:text="${consultation.description}"></div>
+					<div class="detail-row">
+						<span class="detail-label">Consultation Status</span>
+						<span class="badge" th:classappend="'badge-' + ${consultation.consultationStatus}" th:text="${#strings.replace(consultation.consultationStatus, '_', ' ')}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Submitted At</span>
+						<span class="detail-value" th:text="${#temporals.format(consultation.submittedAt, 'dd/MM/yyyy HH:mm')}"></span>
+					</div>
+					<div class="detail-row" th:if="${consultation.associate != null}">
+						<span class="detail-label">Assigned Associate</span>
+						<span style="display:flex;flex-direction:column;align-items:flex-end;">
+							<div th:text="${consultation.associate.name}"></div>
+							<div class="cell-sub" th:text="${consultation.associate.userCode}"></div>
+						</span>
+					</div>
+					<div class="detail-row" th:if="${consultation.rejectionReason}">
+						<span class="detail-label">Rejection Reason</span>
+					</div>
+					<div th:if="${consultation.rejectionReason}" style="padding:0.5rem 0 0.25rem;font-size:0.88rem;line-height:1.7;color:var(--text);word-break:break-word;overflow-wrap:anywhere;"
+						 th:text="${consultation.rejectionReason}"></div>
+				</div>
+				
+				<div class="section-card">
+					<div class="section-title">Documents</div>
+					<div class="item-list">
+						<p class="empty-state" th:if="${#lists.isEmpty(consultationDocuments)}">No documents attached.</p>
+						<div class="item-row" th:each="d : ${consultationDocuments}">
+							<div class="item-main">
+								<a class="item-title" th:href="@{/paralegal/documents/consultation/{id}(id=${d.documentId})}" th:text="${d.originalFilename}" target="_blank"></a>
+							</div>
+						</div>
+					</div>
+				</div>
+			
+			</div>
+		</div>
+	
+	</div>
+</div>
+
+</body>
+</html>

@@ -2,6 +2,7 @@ package lexflow.controller;
 
 import jakarta.validation.Valid;
 import lexflow.dto.user.ChangePasswordRequest;
+import lexflow.entity.consultation.Consultation;
 import lexflow.entity.user.Paralegal;
 import lexflow.entity.user.User;
 import lexflow.security.CustomUserPrincipal;
@@ -25,6 +26,8 @@ public class ParalegalController {
 	private final UserService userService;
 	
 	private final DocumentService documentService;
+	
+	private final CaseService caseService;
 	
 	// ==================== Overview (Dashboard, Profile) ====================
 	
@@ -87,6 +90,22 @@ public class ParalegalController {
 	public String consultations(Authentication authentication, Model model) {
 		model.addAttribute("consultations", consultationService.findAllForParalegal(currentParalegal(authentication)));
 		return "paralegal/consultation-list";
+	}
+	
+	@GetMapping("/paralegal/consultations/{id}")
+	public String consultationDetails(@PathVariable("id") Long consultationId, Authentication authentication, Model model) {
+		Consultation consultation = consultationService.findOwnedByParalegal(consultationId, currentParalegal(authentication));
+		model.addAttribute("consultation", consultation);
+		model.addAttribute("consultationDocuments", documentService.findConsultationDocuments(consultation));
+		model.addAttribute("existingCase", caseService.findByConsultation(consultation));
+		return "paralegal/consultation-details";
+	}
+	
+	// ==================== Documents (cross-page file streaming, no dedicated nav entry) ====================
+	
+	@GetMapping("/paralegal/documents/consultation/{id}")
+	public ResponseEntity<Resource> viewConsultationDocument(@PathVariable("id") Long documentId, Authentication authentication) {
+		return documentService.streamConsultationDocument(documentService.findById(documentId), currentParalegal(authentication));
 	}
 	
 }

@@ -247,4 +247,10 @@ public class PartnerController {
 		return "partner/consultation-pending-list";
 	}
 	
+	@GetMapping("/partner/consultations")
+	public String consultations(Model model) {
+		model.addAttribute("consultations", consultationService.findAll());
+		return "partner/consultation-list";
+	}
+	
 }

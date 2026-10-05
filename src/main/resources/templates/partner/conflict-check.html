@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Conflict Check – LexFlow')}"></head>
+<body>
+
+<aside th:replace="~{fragments/sidebar-partner :: sidebar('conflict-check')}"></aside>
+
+<div class="main">
+	<div th:replace="~{fragments/common :: topbar('Conflict Check', null)}"></div>
+	
+	<div class="content">
+		<div class="section-card" style="margin-bottom:1.25rem;">
+			<div class="avatar-header" style="padding-bottom:1rem;margin-bottom:1rem;border-bottom:1px solid var(--border);">
+				<div>
+					<div class="avatar-name">Conflict Check</div>
+				</div>
+			</div>
+			<form method="get" th:action="@{/partner/conflict-check}" style="display:flex;gap:0.75rem;align-items:flex-end;">
+				<div class="field" style="flex:1;">
+					<label for="keyword">Name</label>
+					<input id="keyword" type="text" name="keyword" th:value="${keyword}" placeholder="Opposing party's name" required/>
+				</div>
+				<button class="btn btn-primary" type="submit">Search</button>
+			</form>
+		</div>
+		
+		<div th:if="${keyword != null}">
+			<div class="table-card">
+				<div>
+					<table>
+						<thead>
+						<tr>
+							<th>Matched Name</th>
+							<th>Source</th>
+							<th>Detail</th>
+						</tr>
+						</thead>
+						<tbody>
+						<tr th:if="${#lists.isEmpty(results)}">
+							<td class="table-empty" colspan="3">No matches found – no conflict of interest on record for "<span th:text="${keyword}"></span>".</td>
+						</tr>
+						<tr th:each="r : ${results}">
+							<td th:text="${r.matchedName}"></td>
+							<td><span class="chip" th:text="${r.sourceType}"></span></td>
+							<td class="cell-sub" th:text="${r.detail}"></td>
+						</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+</body>
+</html>

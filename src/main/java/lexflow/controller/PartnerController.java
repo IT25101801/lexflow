@@ -28,6 +28,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PartnerController {
 	
+	private final ConflictCheckService conflictCheckService;
+	
 	private final DocumentService documentService;
 	
 	private final UserService userService;
@@ -222,6 +224,17 @@ public class PartnerController {
 		model.addAttribute("title", "Partners");
 		model.addAttribute("currentUserEmail", authentication.getName());
 		return "partner/partner-list";
+	}
+	
+	@GetMapping("/partner/conflict-check")
+	public String conflictCheck(@RequestParam(required = false) String keyword, Model model) {
+		
+		if (keyword != null && !keyword.isBlank()) {
+			model.addAttribute("results", conflictCheckService.check(keyword));
+			model.addAttribute("keyword", keyword);
+		}
+		
+		return "partner/conflict-check";
 	}
 	
 }

@@ -454,4 +454,38 @@ public class AssociateController {
 		return "associate/event-list";
 	}
 	
+	@GetMapping("/associate/events/{id}")
+	public String eventDetails(@PathVariable("id") Long eventId, Authentication authentication, Model model) {
+		model.addAttribute("event", eventService.findOwnedByAssociate(eventId, currentAssociate(authentication)));
+		return "associate/event-details";
+	}
+	
+	@PostMapping("/associate/events/{id}/complete")
+	public String completeEvent(@PathVariable("id") Long eventId, Authentication authentication, RedirectAttributes redirectAttributes) {
+		Event event = eventService.findOwnedByAssociate(eventId, currentAssociate(authentication));
+		
+		try {
+			eventService.completeEvent(event);
+			redirectAttributes.addFlashAttribute("success", "Event marked as completed.");
+		} catch (InvalidStateException | BusinessRuleViolationException e) {
+			redirectAttributes.addFlashAttribute("error", e.getMessage());
+		}
+		
+		return "redirect:/associate/events/{id}";
+	}
+	
+	@PostMapping("/associate/events/{id}/cancel")
+	public String cancelEvent(@PathVariable("id") Long eventId, Authentication authentication, RedirectAttributes redirectAttributes) {
+		Event event = eventService.findOwnedByAssociate(eventId, currentAssociate(authentication));
+		
+		try {
+			eventService.cancelEvent(event);
+			redirectAttributes.addFlashAttribute("success", "Event canceled.");
+		} catch (InvalidStateException e) {
+			redirectAttributes.addFlashAttribute("error", e.getMessage());
+		}
+		
+		return "redirect:/associate/events/{id}";
+	}
+	
 }

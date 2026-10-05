@@ -2,7 +2,9 @@ package lexflow.controller;
 
 import jakarta.validation.Valid;
 import lexflow.dto.user.*;
+import lexflow.entity.user.Client;
 import lexflow.entity.user.ClientRelationsOfficer;
+import lexflow.entity.user.Gender;
 import lexflow.entity.user.User;
 import lexflow.exception.*;
 import lexflow.security.CustomUserPrincipal;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 
 @Controller
@@ -72,6 +75,40 @@ public class ClientRelationsOfficerController {
 	@GetMapping("/client-relations-officer/documents/user/{id}")
 	public ResponseEntity<Resource> viewUserDocument(@PathVariable("id") Long documentId, Authentication authentication) {
 		return documentService.streamUserDocument(documentService.findById(documentId), currentClientRelationsOfficer(authentication));
+	}
+	
+	// ==================== Clients (Register Client) ====================
+	
+	@GetMapping("/client-relations-officer/register-client")
+	public String showRegisterClientForm(Model model) {
+		model.addAttribute("genders", Gender.values());
+		return "client-relations-officer/register-client";
+	}
+	
+	@PostMapping("/client-relations-officer/register-client")
+	public String registerClient(@Valid @ModelAttribute RegisterClientRequest form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			model.addAttribute("genders", Gender.values());
+			return "client-relations-officer/register-client";
+		}
+		
+		try {
+			userService.register(form.getEmail(), form.getPassword(), form.getName(), form.getDateOfBirth(),
+								 form.getGender(), form.getAddresses(), form.getPhoneNumbers(),
+								 form.getNicNumber(), form.getNicFile());
+		} catch (EntityAlreadyExistsException | BusinessRuleViolationException e) {
+			model.addAttribute("genders", Gender.values());
+			model.addAttribute("error", e.getMessage());
+			return "client-relations-officer/register-client";
+		} catch (PersistenceException e) {
+			model.addAttribute("genders", Gender.values());
+			model.addAttribute("error", "Could not register the client. Please try again.");
+			return "client-relations-officer/register-client";
+		}
+		
+		redirectAttributes.addFlashAttribute("success", "Client registered successfully.");
+		return "redirect:/client-relations-officer/register-client";
 	}
 	
 }

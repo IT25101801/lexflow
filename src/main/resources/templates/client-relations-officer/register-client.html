@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Register Walk-in Client – LexFlow')}"></head>
+<body>
+
+<aside th:replace="~{fragments/sidebar-client-relations-officer :: sidebar('register-client')}"></aside>
+
+<div class="main">
+	<div th:replace="~{fragments/common :: topbar('Register Walk-in Client', null)}"></div>
+	
+	<div class="content">
+		
+		<!-- Flash Messages -->
+		<div class="flash flash-success" th:if="${success}" th:text="${success}"></div>
+		<div class="flash flash-error" th:if="${error}" th:text="${error}"></div>
+		
+		<!-- Registration Form -->
+		<form class="form-card" th:action="@{/client-relations-officer/register-client}" method="post" enctype="multipart/form-data">
+			
+			<div class="form-section">
+				<p class="form-section-label">Login Credentials</p>
+			</div>
+			
+			<div class="field-row">
+				<div class="field">
+					<label for="email">Email</label>
+					<input id="email" type="email" name="email" placeholder="john.doe@email.com" required/>
+				</div>
+				<div class="field">
+					<label for="password">Password</label>
+					<input id="password" type="password" name="password" placeholder="••••••••" minlength="8" required/>
+				</div>
+			</div>
+			
+			<div class="form-section">
+				<p class="form-section-label">Personal Information</p>
+			</div>
+			
+			<div class="field">
+				<label for="name">Name</label>
+				<input id="name" type="text" name="name" placeholder="John Doe" minlength="2" maxlength="100" required/>
+			</div>
+			
+			<div class="field-row">
+				<div class="field">
+					<label for="dateOfBirth">Date of Birth</label>
+					<input id="dateOfBirth" type="date" name="dateOfBirth" required/>
+				</div>
+				<div class="field">
+					<label for="gender">Gender</label>
+					<select id="gender" name="gender" required>
+						<option value="" hidden>Select…</option>
+						<option th:each="gender : ${genders}" th:value="${gender.name()}" th:text="${gender.name()}"></option>
+					</select>
+				</div>
+			</div>
+			
+			<div class="field">
+				<label>Addresses</label>
+				<div id="addressRows">
+					<div class="multi-input-row">
+						<input type="text" name="addresses" placeholder="No. 123, Anywhere Street, Anywhere City" minlength="5" maxlength="800"/>
+						<button type="button" onclick="this.parentElement.remove();">Remove</button>
+					</div>
+				</div>
+				<button type="button" onclick="addMultiInputRow('addressRows','addresses','No. 123, Anywhere Street, Anywhere City')">+ Add Address</button>
+			</div>
+			
+			<div class="field">
+				<label>Phone Numbers</label>
+				<div id="phoneNumberRows">
+					<div class="multi-input-row">
+						<input type="text" name="phoneNumbers" placeholder="0712345678"/>
+						<button type="button" onclick="this.parentElement.remove();">Remove</button>
+					</div>
+				</div>
+				<button type="button" onclick="addMultiInputRow('phoneNumberRows','phoneNumbers','0712345678')">+ Add Phone Number</button>
+			</div>
+			
+			<div class="field">
+				<label for="nicNumber">NIC Number</label>
+				<input id="nicNumber" type="text" name="nicNumber" placeholder="200012345678" required/>
+			</div>
+			
+			<div class="field">
+				<label for="nicFile">NIC Document</label>
+				<input id="nicFile" type="file" name="nicFile" accept=".pdf" required/>
+				<span class="field-hint" th:if="${error}" style="color:var(--warning);">Please re-select your file.</span>
+				<span class="field-hint">Upload a scanned copy of the client's National Identity Card. (PDF only)</span>
+			</div>
+			
+			<button class="btn btn-primary btn-block" type="submit" style="margin-top:0.5rem;">Register Client</button>
+		
+		</form>
+	
+	</div>
+</div>
+
+<!-- Demo Buttons -->
+<div class="demo-btn-row">
+	<span class="demo-btn-label">Demo</span>
+	<button class="demo-btn" type="button" title="Fill Kasun Athukorala (Client)" onclick="fillWalkinClientRegisterForm()">CLT</button>
+</div>
+
+<script th:src="@{/js/demo.js}"></script>
+
+<!-- Field Validation & State Restore -->
+<script>
+	// Set max date on date of birth to today so future dates cannot be selected.
+	document.getElementById("dateOfBirth").max = new Date().toISOString().split("T")[0];
+	
+	// Save fields to sessionStorage before submitting, so they can be restored if the
+	// server redirects back with an error (a redirect is a fresh page load – every
+	// field, not just the file input, would otherwise come back empty).
+	document.querySelector(".form-card").addEventListener("submit", function () {
+		["email", "name", "dateOfBirth", "gender", "nicNumber"].forEach(function (id) {
+			sessionStorage.setItem("rc_" + id, document.getElementById(id).value);
+		});
+	});
+	
+	// Restore fields if redirected back with a duplicate email or NIC number error.
+	if (["email_exists", "nic_exists"].indexOf(new URLSearchParams(window.location.search).get("error")) !== -1) {
+		["email", "name", "dateOfBirth", "gender", "nicNumber"].forEach(function (id) {
+			var value = sessionStorage.getItem("rc_" + id);
+			if (value) {
+				document.getElementById(id).value = value;
+			}
+			sessionStorage.removeItem("rc_" + id);
+		});
+	}
+</script>
+
+</body>
+</html>

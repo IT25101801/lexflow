@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Error – LexFlow')}"></head>
+<body class="public-page">
+<link rel="stylesheet" th:href="@{/css/auth.css}"/>
+
+<div class="auth-card">
+	<div class="auth-brand">
+		<a th:href="@{/}" class="brand-name">
+			<span class="brand-lex">Lex</span><span class="brand-flow">Flow</span>
+		</a>
+	</div>
+	<div class="auth-heading">
+		<h1 th:text="${heading}">Something went wrong</h1>
+		<p th:text="${message}">An unexpected error occurred.</p>
+	</div>
+	
+	<a th:href="@{/}" class="btn btn-primary btn-block">Go to Homepage</a>
+</div>
+
+</body>
+</html>

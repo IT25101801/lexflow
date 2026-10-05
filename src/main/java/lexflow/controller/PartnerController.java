@@ -165,4 +165,54 @@ public class PartnerController {
 		return "redirect:" + listUrl;
 	}
 	
+	@GetMapping("/partner/users/associates")
+	public String associates(@RequestParam(required = false) String keyword, Model model) {
+		model.addAttribute("users", userService.search(Role.ASSOCIATE, keyword));
+		model.addAttribute("keyword", keyword);
+		model.addAttribute("title", "Associates");
+		model.addAttribute("active", "users-associates");
+		model.addAttribute("listUrl", "/partner/users/associates");
+		return "partner/user-list";
+	}
+	
+	@GetMapping("/partner/users/paralegals")
+	public String paralegals(@RequestParam(required = false) String keyword, Model model) {
+		model.addAttribute("users", userService.search(Role.PARALEGAL, keyword));
+		model.addAttribute("keyword", keyword);
+		model.addAttribute("title", "Paralegals");
+		model.addAttribute("active", "users-paralegals");
+		model.addAttribute("listUrl", "/partner/users/paralegals");
+		return "partner/user-list";
+	}
+	
+	@GetMapping("/partner/users/client-relations-officers")
+	public String clientRelationsOfficers(@RequestParam(required = false) String keyword, Model model) {
+		model.addAttribute("users", userService.search(Role.CLIENT_RELATIONS_OFFICER, keyword));
+		model.addAttribute("keyword", keyword);
+		model.addAttribute("title", "Client Relations Officers");
+		model.addAttribute("active", "users-client-relations-officers");
+		model.addAttribute("listUrl", "/partner/users/client-relations-officers");
+		return "partner/user-list";
+	}
+	
+	@GetMapping("/partner/users/finance-officers")
+	public String financeOfficers(@RequestParam(required = false) String keyword, Model model) {
+		model.addAttribute("users", userService.search(Role.FINANCE_OFFICER, keyword));
+		model.addAttribute("keyword", keyword);
+		model.addAttribute("title", "Finance Officers");
+		model.addAttribute("active", "users-finance-officers");
+		model.addAttribute("listUrl", "/partner/users/finance-officers");
+		return "partner/user-list";
+	}
+	
+	@GetMapping("/partner/users/clients")
+	public String clients(@RequestParam(required = false) String keyword, Model model) {
+		model.addAttribute("users", userService.search(Role.CLIENT, keyword));
+		model.addAttribute("keyword", keyword);
+		model.addAttribute("title", "Clients");
+		model.addAttribute("active", "users-clients");
+		model.addAttribute("listUrl", "/partner/users/clients");
+		return "partner/user-list";
+	}
+	
 }

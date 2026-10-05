@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<aside class="sidebar" th:fragment="sidebar(active)">
+	
+	<!-- Brand -->
+	<div class="sidebar-brand">
+		<a th:href="@{/}" class="brand-name">
+			<span class="brand-lex">Lex</span><span class="brand-flow">Flow</span>
+		</a>
+	</div>
+	
+	<!-- Navigation -->
+	<nav class="sidebar-nav">
+		<span class="nav-section-label">Overview</span>
+		<a class="nav-item" th:classappend="${active == 'dashboard'} ? ' active'" th:href="@{/associate/dashboard}">
+			<i class="bi bi-grid"></i> Dashboard
+		</a>
+		<a class="nav-item" th:classappend="${active == 'analytics'} ? ' active'" th:href="@{/associate/analytics}">
+			<i class="bi bi-bar-chart-line"></i> Analytics
+		</a>
+		<a class="nav-item" th:classappend="${active == 'profile'} ? ' active'" th:href="@{/associate/profile}">
+			<i class="bi bi-person"></i> My Profile
+		</a>
+		
+		<span class="nav-section-label">Consultations</span>
+		<a class="nav-item" th:classappend="${active == 'consultation-pending'} ? ' active'" th:href="@{/associate/consultations/pending}">
+			<i class="bi bi-envelope-exclamation"></i> Unscheduled Consultations
+		</a>
+		<a class="nav-item" th:classappend="${active == 'consultations'} ? ' active'" th:href="@{/associate/consultations}">
+			<i class="bi bi-envelope"></i> Consultations
+		</a>
+		
+		<span class="nav-section-label">Cases</span>
+		<a class="nav-item" th:classappend="${active == 'cases-open'} ? ' active'" th:href="@{/associate/cases/open}">
+			<i class="bi bi-briefcase"></i> Open Cases
+		</a>
+		<a class="nav-item" th:classappend="${active == 'cases-closed'} ? ' active'" th:href="@{/associate/cases/closed}">
+			<i class="bi bi-briefcase-fill"></i> Closed Cases
+		</a>
+		
+		<span class="nav-section-label">Schedule</span>
+		<a class="nav-item" th:classappend="${active == 'events'} ? ' active'" th:href="@{/associate/events}">
+			<i class="bi bi-calendar3"></i> My Events
+		</a>
+	</nav>
+	<script>
+		(function () {
+			var nav = document.currentScript.previousElementSibling;
+			var saved = sessionStorage.getItem("sidebarScrollTop");
+			
+			function restore() {
+				if (saved !== null) nav.scrollTop = parseInt(saved, 10);
+			}
+			
+			restore();
+			nav.style.visibility = "visible";
+			// Re-apply once everything (including the icon webfont) has
+			// finished loading — a late reflow can otherwise clamp the
+			// scrollTop we set above back toward zero.
+			window.addEventListener("load", restore);
+		})();
+	</script>
+	
+	<!-- Sidebar Footer -->
+	<div th:replace="~{fragments/common :: sidebar-footer('Associate')}"></div>
+
+</aside>
+</body>
+</html>

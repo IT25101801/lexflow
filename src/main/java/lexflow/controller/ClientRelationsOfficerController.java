@@ -11,6 +11,7 @@ import lexflow.entity.user.ClientRelationsOfficer;
 import lexflow.entity.user.Gender;
 import lexflow.entity.user.User;
 import lexflow.exception.*;
+import lexflow.exception.document.NonPdfDocumentException;
 import lexflow.security.CustomUserPrincipal;
 import lexflow.service.*;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +35,13 @@ public class ClientRelationsOfficerController {
 	
 	private final ConsultationService consultationService;
 	
+	private final CaseService caseService;
+	
+	private final TransactionService transactionService;
+	
 	private final DocumentService documentService;
+	
+	private final EventService eventService;
 	
 	// ==================== Overview (Dashboard, Profile) ====================
 	
@@ -172,6 +179,118 @@ public class ClientRelationsOfficerController {
 		model.addAttribute("title", "Clients");
 		model.addAttribute("active", "clients");
 		return "client-relations-officer/client-list";
+	}
+	
+	@GetMapping("/client-relations-officer/clients/{id}")
+	public String clientDetails(@PathVariable("id") Long userId, Model model) {
+		Client client = userService.findClientById(userId);
+		model.addAttribute("user", client);
+		model.addAttribute("genders", Gender.values());
+		populateClientDetailModel(client, model);
+		return "client-relations-officer/client-details";
+	}
+	
+	private void populateClientDetailModel(Client client, Model model) {
+		model.addAttribute("relatedConsultations", consultationService.findAllForClient(client));
+		model.addAttribute("relatedCases", caseService.findAllForClient(client));
+		model.addAttribute("relatedEvents", eventService.findAllForClient(client));
+		model.addAttribute("relatedTransactions", transactionService.findAllForClient(client));
+	}
+	
+	@PostMapping("/client-relations-officer/clients/{id}/edit")
+	public String editClient(@PathVariable("id") Long userId,
+							 @Valid @ModelAttribute EditProfileRequest form, BindingResult bindingResult,
+							 Model model) {
+		Client client = userService.findClientById(userId);
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			model.addAttribute("user", client);
+			model.addAttribute("genders", Gender.values());
+			populateClientDetailModel(client, model);
+			return "client-relations-officer/client-details";
+		}
+		
+		try {
+			client = (Client) userService.updateDetails(client, form.getName(), form.getDateOfBirth(), form.getGender(),
+														form.getAddresses(), form.getPhoneNumbers(), form.getNicFile(), null);
+			model.addAttribute("success", "Client updated successfully.");
+		} catch (NonPdfDocumentException e) {
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		model.addAttribute("user", client);
+		model.addAttribute("genders", Gender.values());
+		populateClientDetailModel(client, model);
+		return "client-relations-officer/client-details";
+	}
+	
+	@PostMapping("/client-relations-officer/clients/{id}/reset-password")
+	public String resetClientPassword(@PathVariable("id") Long userId,
+									  @Valid @ModelAttribute ResetPasswordRequest form, BindingResult bindingResult,
+									  Model model) {
+		Client client = userService.findClientById(userId);
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			model.addAttribute("user", client);
+			model.addAttribute("genders", Gender.values());
+			populateClientDetailModel(client, model);
+			return "client-relations-officer/client-details";
+		}
+		
+		client = (Client) userService.changePassword(client, form.getTemporaryPassword());
+		
+		model.addAttribute("user", client);
+		model.addAttribute("genders", Gender.values());
+		populateClientDetailModel(client, model);
+		model.addAttribute("success", "Password reset successfully.");
+		return "client-relations-officer/client-details";
+	}
+	
+	@PostMapping("/client-relations-officer/clients/{id}/delete")
+	public String deleteClient(@PathVariable("id") Long userId, Model model, RedirectAttributes redirectAttributes) {
+		Client client = userService.findClientById(userId);
+		
+		try {
+			userService.delete(client);
+		} catch (BusinessRuleViolationException e) {
+			model.addAttribute("user", client);
+			model.addAttribute("genders", Gender.values());
+			populateClientDetailModel(client, model);
+			model.addAttribute("error", e.getMessage());
+			return "client-relations-officer/client-details";
+		}
+		
+		redirectAttributes.addFlashAttribute("success", "Client deleted successfully.");
+		return "redirect:/client-relations-officer/clients";
+	}
+	
+	@PostMapping("/client-relations-officer/clients/{id}/reactivate")
+	public String reactivateClient(@PathVariable("id") Long userId,
+								   @Valid @ModelAttribute ReactivateAccountRequest form, BindingResult bindingResult,
+								   Model model) {
+		Client client = userService.findClientById(userId);
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			model.addAttribute("user", client);
+			model.addAttribute("genders", Gender.values());
+			populateClientDetailModel(client, model);
+			return "client-relations-officer/client-details";
+		}
+		
+		try {
+			client = (Client) userService.reactivate(client, form.getTemporaryPassword());
+			model.addAttribute("success", "Client account reactivated. Give the client the temporary password so they can log in and change it.");
+		} catch (InvalidStateException | BusinessRuleViolationException e) {
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		model.addAttribute("user", client);
+		model.addAttribute("genders", Gender.values());
+		populateClientDetailModel(client, model);
+		return "client-relations-officer/client-details";
 	}
 	
 }

@@ -1,0 +1,45 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+	<meta charset="UTF-8"/>
+	<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+	<title th:text="${title}"></title>
+	<link rel="stylesheet" th:href="@{/css/base.css}"/>
+	<link rel="stylesheet" th:href="@{/css/layout.css}"/>
+	<link rel="stylesheet" th:href="@{/css/forms.css}"/>
+	<link rel="stylesheet" th:href="@{/css/components.css}"/>
+	<link rel="stylesheet" th:href="@{/css/tables.css}"/>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"/>
+	<script th:src="@{/js/multi-input.js}"></script>
+	<script th:src="@{/js/tabs.js}"></script>
+	<script th:src="@{/js/file-picker.js}"></script>
+	<script th:src="@{/js/document-actions.js}"></script>
+	
+	<!-- BFCache Reload -->
+	<script>
+		// Force a reload when the browser restores this page from the back-forward cache (bfcache).
+		// Without this, pressing back shows a stale snapshot that ignores any changes just made.
+		window.addEventListener("pageshow", function (event) {
+			if (event.persisted) {
+				window.location.reload();
+			}
+		});
+	</script>
+	
+	<!-- Sidebar Scroll Position -->
+	<script>
+		// Persist sidebar scroll position across full-page navigations. The
+		// restore itself happens synchronously inline right after the <nav>
+		// markup (see fragments/sidebar-*.html), before first paint, so a
+		// far-scrolled item doesn't flash at the top before jumping down.
+		// This just keeps sessionStorage updated as the user scrolls.
+		document.addEventListener("DOMContentLoaded", function () {
+			var nav = document.querySelector(".sidebar-nav");
+			if (!nav) return;
+			nav.addEventListener("scroll", function () {
+				sessionStorage.setItem("sidebarScrollTop", nav.scrollTop);
+			});
+		});
+	</script>
+
+</head>
+</html>

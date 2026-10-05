@@ -364,4 +364,10 @@ public class ClientRelationsOfficerController {
 		return "client-relations-officer/event-list";
 	}
 	
+	@GetMapping("/client-relations-officer/events/{id}")
+	public String eventDetails(@PathVariable("id") Long eventId, Model model) {
+		model.addAttribute("event", eventService.findById(eventId));
+		return "client-relations-officer/event-details";
+	}
+	
 }

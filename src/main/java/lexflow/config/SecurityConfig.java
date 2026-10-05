@@ -26,7 +26,7 @@ public class SecurityConfig {
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) {
 		http
 			.authorizeHttpRequests(authorize -> authorize
-				.requestMatchers("/", "/auth/**", "/css/**", "/js/**", "/demo-files/**").permitAll()
+				.requestMatchers("/", "/favicon.svg", "/auth/**", "/css/**", "/js/**", "/demo-files/**").permitAll()
 				.requestMatchers("/client/**").hasRole("CLIENT")
 				.requestMatchers("/partner/**").hasRole("PARTNER")
 				.requestMatchers("/associate/**").hasRole("ASSOCIATE")

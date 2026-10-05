@@ -1,6 +1,7 @@
 package lexflow.controller;
 
 import jakarta.validation.Valid;
+import lexflow.dto.consultation.EditConsultationRequest;
 import lexflow.dto.consultation.SubmitOnlineConsultationRequest;
 import lexflow.dto.user.ChangePasswordRequest;
 import lexflow.entity.consultation.CaseType;
@@ -8,6 +9,7 @@ import lexflow.entity.consultation.Consultation;
 import lexflow.entity.user.Client;
 import lexflow.entity.user.User;
 import lexflow.exception.PersistenceException;
+import lexflow.exception.consultation.InvalidConsultationStateException;
 import lexflow.security.CustomUserPrincipal;
 import lexflow.service.*;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +34,8 @@ public class ClientController {
 	private final UserService userService;
 	
 	private final DocumentService documentService;
+	
+	private final CaseService caseService;
 	
 	// ==================== Overview (Dashboard, Profile) ====================
 	
@@ -117,6 +121,69 @@ public class ClientController {
 	public String consultations(Authentication authentication, Model model) {
 		model.addAttribute("consultations", consultationService.findAllForClient(currentClient(authentication)));
 		return "client/consultation-list";
+	}
+	
+	@GetMapping("/client/consultations/{id}")
+	public String consultationDetails(@PathVariable("id") Long consultationId, Authentication authentication, Model model) {
+		populateConsultationDetailModel(consultationService.findOwnedByClient(consultationId, currentClient(authentication)), model);
+		return "client/consultation-details";
+	}
+	
+	// ==================== Helpers ====================
+	
+	private void populateConsultationDetailModel(Consultation consultation, Model model) {
+		model.addAttribute("consultation", consultation);
+		model.addAttribute("consultationDocuments", documentService.findConsultationDocuments(consultation));
+		model.addAttribute("caseTypes", CaseType.values());
+		model.addAttribute("existingCase", caseService.findByConsultation(consultation));
+	}
+	
+	@PostMapping("/client/consultations/{id}/edit")
+	public String editConsultation(@PathVariable("id") Long consultationId, @Valid @ModelAttribute EditConsultationRequest form, BindingResult bindingResult,
+								   Authentication authentication, Model model) {
+		Consultation consultation = consultationService.findOwnedByClient(consultationId, currentClient(authentication));
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			populateConsultationDetailModel(consultation, model);
+			return "client/consultation-details";
+		}
+		
+		List<MultipartFile> consultationFiles = form.getConsultationFiles() != null ? form.getConsultationFiles() : List.of();
+		
+		try {
+			consultation = consultationService.updateDetails(consultation, form.getCaseType(), form.getOpposingParties(), form.getDescription(),
+															 consultationFiles, form.getDeleteDocumentIds(), form.getDocumentIds(), form.getOriginalFilenames());
+			populateConsultationDetailModel(consultation, model);
+			model.addAttribute("success", "Consultation request updated successfully.");
+		} catch (InvalidConsultationStateException e) {
+			populateConsultationDetailModel(consultation, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "client/consultation-details";
+	}
+	
+	@PostMapping("/client/consultations/{id}/delete")
+	public String deleteConsultation(@PathVariable("id") Long consultationId, Authentication authentication, RedirectAttributes redirectAttributes) {
+		Consultation consultation = consultationService.findOwnedByClient(consultationId, currentClient(authentication));
+		
+		try {
+			consultationService.delete(consultation);
+		} catch (InvalidConsultationStateException e) {
+			redirectAttributes.addFlashAttribute("error", e.getMessage());
+			return "redirect:/client/consultations/" + consultationId;
+		}
+		
+		redirectAttributes.addFlashAttribute("success", "Consultation request deleted.");
+		return "redirect:/client/consultations";
+	}
+	
+	// ==================== Documents (cross-cutting, embedded in the pages above) ====================
+	
+	@GetMapping("/client/documents/consultation/{id}")
+	public ResponseEntity<Resource> viewConsultationDocument(@PathVariable("id") Long documentId, Authentication authentication) {
+		return documentService.streamConsultationDocument(documentService.findById(documentId), currentClient(authentication));
 	}
 	
 }

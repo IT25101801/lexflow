@@ -22,7 +22,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-
 @Controller
 @RequiredArgsConstructor
 public class AssociateController {
@@ -245,6 +244,24 @@ public class AssociateController {
 	@GetMapping("/associate/documents/consultation/{id}")
 	public ResponseEntity<Resource> viewConsultationDocument(@PathVariable("id") Long documentId, Authentication authentication) {
 		return documentService.streamConsultationDocument(documentService.findById(documentId), currentAssociate(authentication));
+	}
+	
+	// ==================== Cases (Open, Closed) ====================
+	
+	@GetMapping("/associate/cases/open")
+	public String openCases(Authentication authentication, Model model) {
+		model.addAttribute("cases", caseService.findOpenForAssociate(currentAssociate(authentication)));
+		model.addAttribute("title", "Open Cases");
+		model.addAttribute("active", "cases-open");
+		return "associate/case-list";
+	}
+	
+	@GetMapping("/associate/cases/closed")
+	public String closedCases(Authentication authentication, Model model) {
+		model.addAttribute("cases", caseService.findClosedForAssociate(currentAssociate(authentication)));
+		model.addAttribute("title", "Closed Cases");
+		model.addAttribute("active", "cases-closed");
+		return "associate/case-list";
 	}
 	
 }

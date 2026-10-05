@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AssociateController {
 	
+	private final ConsultationService consultationService;
+	
 	private final DocumentService documentService;
 	
 	private final UserService userService;
@@ -70,6 +72,14 @@ public class AssociateController {
 	@GetMapping("/associate/documents/user/{id}")
 	public ResponseEntity<Resource> viewUserDocument(@PathVariable("id") Long documentId, Authentication authentication) {
 		return documentService.streamUserDocument(documentService.findById(documentId), currentAssociate(authentication));
+	}
+	
+	// ==================== Consultations (Pending, All) ====================
+	
+	@GetMapping("/associate/consultations/pending")
+	public String pendingConsultations(Authentication authentication, Model model) {
+		model.addAttribute("consultations", consultationService.findAwaitingReviewForAssociate(currentAssociate(authentication)));
+		return "associate/consultation-pending-list";
 	}
 	
 }

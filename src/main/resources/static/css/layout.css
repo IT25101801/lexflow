@@ -1,0 +1,375 @@
+/* Page chrome: sidebar, topbar, content area, public-page body, brand wordmark, responsive rules. Loaded on every page. */
+
+/* ---- Sidebar footer (shared by fragments/common.html's sidebar-footer fragment) ---- */
+
+.sidebar-user {
+	padding: 14px 16px 18px;
+	border-top: 1px solid var(--sidebar-border);
+	background: var(--sidebar-surface);
+	display: flex;
+	align-items: center;
+	gap: 0.65rem;
+}
+
+.user-avatar {
+	width: 34px;
+	height: 34px;
+	border-radius: 50%;
+	flex-shrink: 0;
+	background: linear-gradient(135deg, var(--accent-dim), var(--accent));
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-weight: 700;
+	font-size: 0.78em;
+	color: #1a1305;
+	letter-spacing: 0.02em;
+}
+
+.user-info {
+	min-width: 0;
+	flex: 1;
+}
+
+.user-info .user-name {
+	color: var(--sidebar-text);
+	font-size: 0.82em;
+	font-weight: 600;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.user-info .user-role {
+	color: var(--accent);
+	font-weight: 700;
+	font-size: 0.72em;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	margin-top: 1px;
+}
+
+.sidebar-actions {
+	display: flex;
+	align-items: center;
+	gap: 2px;
+	flex-shrink: 0;
+}
+
+/* Icon-only logout button — used in the sidebar footer. */
+.logout-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 30px;
+	height: 30px;
+	border-radius: var(--radius-sm);
+	background: none;
+	border: none;
+	color: var(--text-muted);
+	cursor: pointer;
+	padding: 0;
+	margin: 0;
+	transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.logout-btn:hover {
+	background: var(--danger-bg);
+	color: var(--danger);
+}
+
+.sidebar .logout-btn {
+	color: var(--sidebar-link);
+}
+
+.sidebar .logout-btn:hover {
+	background: rgba(248, 113, 113, 0.15);
+	color: #f87171;
+}
+
+/* ---- Dashboard layout (fragments/head, fragments/common, fragments/sidebar-*) ----
+   Fixed sidebar + fixed topbar, matching the reference project exactly. */
+
+body:has(.sidebar) {
+	display: flex;
+	min-height: 100vh;
+}
+
+.sidebar {
+	width: var(--sidebar-width);
+	flex-shrink: 0;
+	background: var(--sidebar-bg);
+	border-right: 1px solid var(--sidebar-border);
+	display: flex;
+	flex-direction: column;
+	position: fixed;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	z-index: 200;
+}
+
+.sidebar .sidebar-brand {
+	display: flex;
+	align-items: center;
+	gap: 0.7rem;
+	padding: 0 1.25rem;
+	height: var(--topbar-height);
+	border-bottom: 1px solid var(--sidebar-border);
+	flex-shrink: 0;
+}
+
+.sidebar .sidebar-brand .brand-name {
+	font-size: 1.2rem;
+	font-weight: 800;
+	letter-spacing: -0.02em;
+	text-decoration: none;
+}
+
+.sidebar .sidebar-nav {
+	flex: 1;
+	padding: 1rem 0.75rem;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	overflow-y: auto;
+	/* Hidden until the inline script right after this element restores its
+	   scroll position — otherwise a far-scrolled item flashes at the top
+	   before jumping down. */
+	visibility: hidden;
+	/* Without this, the browser's scroll-anchoring can fight the scrollTop
+	   we set in JS once late-loading content (icon webfont) reflows. */
+	overflow-anchor: none;
+}
+
+.sidebar .nav-section-label {
+	font-size: 0.63rem;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--text-subtle);
+	padding: 0.8rem 0.65rem 0.35rem;
+	margin-top: 0.25rem;
+}
+
+.sidebar .nav-section-label:first-child {
+	margin-top: 0;
+}
+
+.sidebar .nav-item {
+	display: flex;
+	align-items: center;
+	gap: 0.7rem;
+	padding: 0.58rem 0.75rem;
+	border-radius: var(--radius);
+	font-size: 0.86rem;
+	font-weight: 500;
+	color: var(--sidebar-link);
+	text-decoration: none;
+	transition: background 0.15s, color 0.15s;
+}
+
+.sidebar .nav-item i {
+	flex-shrink: 0;
+	width: 16px;
+	text-align: center;
+}
+
+.sidebar .nav-item:hover {
+	background: var(--sidebar-btn-bg-hover);
+	color: var(--sidebar-text);
+}
+
+.sidebar .nav-item.active {
+	background: var(--accent-dim);
+	color: #f1d68a;
+	font-weight: 600;
+}
+
+.sidebar .nav-item.active i {
+	color: #f1d68a;
+}
+
+.main {
+	margin-left: var(--sidebar-width);
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
+	min-width: 0;
+}
+
+.topbar {
+	height: var(--topbar-height);
+	background: var(--sidebar-bg);
+	border-bottom: 1px solid var(--sidebar-border);
+	padding: 0 2rem;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	position: fixed;
+	top: 0;
+	left: var(--sidebar-width);
+	right: 0;
+	z-index: 100;
+}
+
+.topbar-title {
+	font-size: 1rem;
+	font-weight: 700;
+	color: var(--text);
+	letter-spacing: -0.02em;
+}
+
+.topbar-subtitle {
+	font-size: 0.75rem;
+	color: var(--text-muted);
+	margin-top: 1px;
+}
+
+.topbar-search-form {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+}
+
+.topbar-search-form input[type="text"] {
+	width: 220px;
+	background: var(--bg);
+	border: 1.5px solid var(--border);
+	border-radius: var(--radius);
+	color: var(--text);
+	padding: 0.5rem 0.85rem;
+	font-size: 0.85rem;
+	outline: none;
+	transition: border-color 0.18s, box-shadow 0.18s;
+}
+
+.topbar-search-form input[type="text"]::placeholder {
+	color: var(--text-subtle);
+}
+
+.topbar-search-form input[type="text"]:focus {
+	border-color: var(--accent);
+	box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+.topbar-search-form button {
+	padding: 0.5rem 1.1rem;
+	font-size: 0.85rem;
+}
+
+.main > .content {
+	padding: 2rem;
+	padding-top: calc(var(--topbar-height) + 2rem);
+	flex: 1;
+}
+
+.welcome-box {
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-2xl);
+	padding: 3rem 2.5rem;
+	text-align: center;
+	max-width: 520px;
+	margin: 3rem auto 0;
+	box-shadow: var(--shadow-md);
+	animation: slideUp 0.4s ease both;
+}
+
+.welcome-icon {
+	width: 60px;
+	height: 60px;
+	background: var(--accent-dim);
+	border: 2px solid var(--border-focus);
+	border-radius: var(--radius-xl);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--accent);
+	margin: 0 auto 1.5rem;
+}
+
+.welcome-box h2 {
+	margin: 0 0 0.65rem;
+	font-size: 1.6rem;
+	font-weight: 800;
+	color: var(--text);
+	letter-spacing: -0.03em;
+}
+
+.welcome-box p {
+	font-size: 0.9rem;
+	color: var(--text-muted);
+	line-height: 1.7;
+}
+
+/* ---- Content area ----
+   Raw <table>/<form>/<label>/<button> content on not-yet-redesigned pages
+   is intentionally unstyled for now (no legacy generic-tag CSS left in this
+   file) — real component styles (.table-card, .form-card, etc.) get built
+   when those pages are redesigned, instead of leaning on old bare-tag rules
+   that risk bleeding into new components again. */
+
+.content {
+	flex: 1;
+	padding: 34px 38px;
+	max-width: 100%;
+	overflow-x: auto;
+}
+
+/* ---- Public pages (login / register / index) — no sidebar ---- */
+
+body.public-page {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	min-height: 100vh;
+	padding: 2rem 1rem;
+}
+
+.brand-name {
+	display: flex;
+	font-size: 1.2rem;
+	font-weight: 800;
+	color: var(--text);
+	text-decoration: none;
+	letter-spacing: -0.02em;
+	transition: opacity 0.15s ease;
+}
+
+.brand-name:hover {
+	opacity: 0.85;
+}
+
+/* "Lex" / "Flow" wordmark split — used in the sidebar logo and the
+   auth-page brand link. Each half tracks an existing paired token so
+   the wordmark flips exactly like the rest of the page: "Lex" matches
+   the body-text color (var(--text), same as "Welcome back"), "Flow"
+   matches the accent color (var(--accent), same as "Effortless"). */
+.brand-lex {
+	color: var(--text);
+}
+
+.brand-flow {
+	color: var(--accent);
+}
+
+/* ---- Responsive ---- */
+
+@media (max-width: 800px) {
+	body:not(.public-page) {
+		flex-direction: column;
+	}
+	
+	.sidebar {
+		width: 100%;
+		min-height: auto;
+		position: static;
+	}
+	
+	.content {
+		padding: 20px;
+	}
+}

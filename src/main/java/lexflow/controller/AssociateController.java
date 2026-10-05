@@ -35,6 +35,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AssociateController {
 	
+	private final AnalyticsService analyticsService;
+	
 	private final CaseService caseService;
 	
 	private final ConsultationService consultationService;
@@ -486,6 +488,19 @@ public class AssociateController {
 		}
 		
 		return "redirect:/associate/events/{id}";
+	}
+	
+	@GetMapping("/associate/analytics")
+	public String analytics(Authentication authentication, Model model) {
+		Associate associate = currentAssociate(authentication);
+		model.addAttribute("user", associate);
+		
+		model.addAttribute("winRate", analyticsService.winRateForAssociate(associate.getUserId()));
+		model.addAttribute("avgCaseDurationDays", analyticsService.avgCaseDurationDaysForAssociate(associate.getUserId()));
+		model.addAttribute("billableThisMonth", analyticsService.billableAmountThisMonthForAssociate(associate.getUserId()));
+		model.addAttribute("billableLastMonth", analyticsService.billableAmountLastMonthForAssociate(associate.getUserId()));
+		
+		return "associate/analytics";
 	}
 	
 }

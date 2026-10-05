@@ -42,6 +42,8 @@ public class ClientController {
 	
 	private final CaseService caseService;
 	
+	private final EventService eventService;
+	
 	private final TransactionService transactionService;
 	
 	private final TaskService taskService;
@@ -277,6 +279,14 @@ public class ClientController {
 		}
 		
 		return "redirect:/payment/portal?amount=" + form.getAmount();
+	}
+	
+	// ==================== Schedule (My Events) ====================
+	
+	@GetMapping("/client/events")
+	public String events(Authentication authentication, Model model) {
+		model.addAttribute("events", eventService.findAllForClient(currentClient(authentication)));
+		return "client/event-list";
 	}
 	
 }

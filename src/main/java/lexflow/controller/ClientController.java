@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lexflow.dto.consultation.EditConsultationRequest;
 import lexflow.dto.consultation.SubmitOnlineConsultationRequest;
 import lexflow.dto.document.UploadCaseDocumentsRequest;
+import lexflow.dto.finance.TopUpByCardRequest;
 import lexflow.dto.user.ChangePasswordRequest;
 import lexflow.entity.case_.Case;
 import lexflow.entity.consultation.CaseType;
@@ -40,6 +41,8 @@ public class ClientController {
 	private final DocumentService documentService;
 	
 	private final CaseService caseService;
+	
+	private final TransactionService transactionService;
 	
 	private final TaskService taskService;
 	
@@ -251,6 +254,29 @@ public class ClientController {
 	@GetMapping("/client/documents/case/{id}")
 	public ResponseEntity<Resource> viewCaseDocument(@PathVariable("id") Long documentId, Authentication authentication) {
 		return documentService.streamCaseDocument(documentService.findById(documentId), currentClient(authentication));
+	}
+	
+	// ==================== Payments (Transactions) ====================
+	
+	@GetMapping("/client/transactions")
+	public String transactions(Authentication authentication, Model model) {
+		Client client = currentClient(authentication);
+		model.addAttribute("client", client);
+		model.addAttribute("transactions", transactionService.findAllForClient(client));
+		return "client/transactions";
+	}
+	
+	@PostMapping("/client/transactions/top-up")
+	public String topUpByCard(@Valid @ModelAttribute TopUpByCardRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			Client client = currentClient(authentication);
+			model.addAttribute("client", client);
+			model.addAttribute("transactions", transactionService.findAllForClient(client));
+			return "client/transactions";
+		}
+		
+		return "redirect:/payment/portal?amount=" + form.getAmount();
 	}
 	
 }

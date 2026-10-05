@@ -1,11 +1,18 @@
 package lexflow.controller;
 
 import jakarta.validation.Valid;
+import lexflow.dto.consultation.AssignStaffRequest;
+import lexflow.dto.consultation.RejectConsultationRequest;
+import lexflow.dto.scheduling.ScheduleMeetingRequest;
 import lexflow.dto.user.*;
+import lexflow.entity.case_.Case;
+import lexflow.entity.consultation.Consultation;
+import lexflow.entity.scheduling.ConsultationEvent;
 import lexflow.entity.user.Role;
 import lexflow.entity.user.*;
 import lexflow.exception.BusinessRuleViolationException;
 import lexflow.exception.EntityAlreadyExistsException;
+import lexflow.exception.InvalidStateException;
 import lexflow.exception.PersistenceException;
 import lexflow.exception.document.NonPdfDocumentException;
 import lexflow.security.CustomUserPrincipal;
@@ -28,11 +35,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PartnerController {
 	
+	private final CaseService caseService;
+	
 	private final ConsultationService consultationService;
 	
 	private final ConflictCheckService conflictCheckService;
 	
 	private final DocumentService documentService;
+	
+	private final EventService eventService;
 	
 	private final UserService userService;
 	
@@ -251,6 +262,161 @@ public class PartnerController {
 	public String consultations(Model model) {
 		model.addAttribute("consultations", consultationService.findAll());
 		return "partner/consultation-list";
+	}
+	
+	@GetMapping("/partner/consultations/{id}")
+	public String consultationDetails(@PathVariable("id") Long consultationId, Model model) {
+		populateConsultationDetailModel(consultationService.findById(consultationId), model);
+		return "partner/consultation-details";
+	}
+	
+	private void populateConsultationDetailModel(Consultation consultation, Model model) {
+		model.addAttribute("consultation", consultation);
+		model.addAttribute("consultationDocuments", documentService.findConsultationDocuments(consultation));
+		model.addAttribute("associates", userService.findActiveAssociates());
+		model.addAttribute("paralegals", userService.findActiveParalegals());
+		model.addAttribute("meetings", eventService.findByConsultation(consultation));
+		
+		Case existingCase = caseService.findByConsultation(consultation);
+		model.addAttribute("existingCase", existingCase);
+		model.addAttribute("hasCase", existingCase != null);
+	}
+	
+	@PostMapping("/partner/consultations/{id}/accept")
+	public String acceptConsultation(@PathVariable("id") Long consultationId,
+									 @Valid @ModelAttribute AssignStaffRequest form, BindingResult bindingResult,
+									 Model model) {
+		Consultation consultation = consultationService.findById(consultationId);
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			populateConsultationDetailModel(consultation, model);
+			return "partner/consultation-details";
+		}
+		
+		Associate associate = (Associate) userService.findById(form.getAssociateId());
+		Paralegal paralegal = (Paralegal) userService.findById(form.getParalegalId());
+		
+		try {
+			consultation = consultationService.partnerAccept(consultation, associate, paralegal);
+			populateConsultationDetailModel(consultation, model);
+			model.addAttribute("success", "Consultation request accepted and staff assigned.");
+		} catch (InvalidStateException e) {
+			populateConsultationDetailModel(consultation, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "partner/consultation-details";
+	}
+	
+	@PostMapping("/partner/consultations/{id}/reject")
+	public String rejectConsultation(@PathVariable("id") Long consultationId,
+									 @Valid @ModelAttribute RejectConsultationRequest form, BindingResult bindingResult,
+									 Model model) {
+		Consultation consultation = consultationService.findById(consultationId);
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			populateConsultationDetailModel(consultation, model);
+			return "partner/consultation-details";
+		}
+		
+		try {
+			consultation = consultationService.partnerReject(consultation, form.getRejectionReason());
+			populateConsultationDetailModel(consultation, model);
+			model.addAttribute("success", "Consultation request rejected.");
+		} catch (InvalidStateException e) {
+			populateConsultationDetailModel(consultation, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "partner/consultation-details";
+	}
+	
+	@PostMapping("/partner/consultations/{id}/reassign")
+	public String reassignConsultation(@PathVariable("id") Long consultationId,
+									   @Valid @ModelAttribute AssignStaffRequest form, BindingResult bindingResult,
+									   Model model) {
+		Consultation consultation = consultationService.findById(consultationId);
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			populateConsultationDetailModel(consultation, model);
+			return "partner/consultation-details";
+		}
+		
+		Associate associate = (Associate) userService.findById(form.getAssociateId());
+		Paralegal paralegal = (Paralegal) userService.findById(form.getParalegalId());
+		consultation = consultationService.reassignStaff(consultation, associate, paralegal);
+		
+		populateConsultationDetailModel(consultation, model);
+		model.addAttribute("success", "Staff reassigned.");
+		return "partner/consultation-details";
+	}
+	
+	@PostMapping("/partner/consultations/{id}/events/{eventId}/reschedule")
+	public String rescheduleMeeting(@PathVariable("id") Long consultationId, @PathVariable Long eventId,
+									@Valid @ModelAttribute ScheduleMeetingRequest form, BindingResult bindingResult,
+									Model model) {
+		Consultation consultation = consultationService.findById(consultationId);
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			populateConsultationDetailModel(consultation, model);
+			return "partner/consultation-details";
+		}
+		
+		ConsultationEvent event = eventService.findOwnedConsultationEvent(eventId, consultation);
+		
+		try {
+			eventService.rescheduleConsultationEvent(event, form.getSubject(), form.getDate(), form.getStartTime(), form.getEndTime(), form.getLocation(), form.getNotes());
+			populateConsultationDetailModel(consultation, model);
+			model.addAttribute("success", "Meeting rescheduled successfully.");
+		} catch (InvalidStateException | BusinessRuleViolationException e) {
+			populateConsultationDetailModel(consultation, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "partner/consultation-details";
+	}
+	
+	@PostMapping("/partner/consultations/{id}/events/{eventId}/complete")
+	public String completeMeeting(@PathVariable("id") Long consultationId, @PathVariable Long eventId, Model model) {
+		Consultation consultation = consultationService.findById(consultationId);
+		
+		try {
+			eventService.completeEvent(eventService.findOwnedConsultationEvent(eventId, consultation));
+			populateConsultationDetailModel(consultation, model);
+			model.addAttribute("success", "Meeting marked as completed.");
+		} catch (InvalidStateException | BusinessRuleViolationException e) {
+			populateConsultationDetailModel(consultation, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "partner/consultation-details";
+	}
+	
+	@PostMapping("/partner/consultations/{id}/events/{eventId}/cancel")
+	public String cancelMeeting(@PathVariable("id") Long consultationId, @PathVariable Long eventId, Model model) {
+		Consultation consultation = consultationService.findById(consultationId);
+		
+		try {
+			eventService.cancelEvent(eventService.findOwnedConsultationEvent(eventId, consultation));
+			populateConsultationDetailModel(consultation, model);
+			model.addAttribute("success", "Meeting canceled.");
+		} catch (InvalidStateException e) {
+			populateConsultationDetailModel(consultation, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "partner/consultation-details";
+	}
+	
+	// ==================== Documents (file downloads, no nav item of their own) ====================
+	
+	@GetMapping("/partner/documents/consultation/{id}")
+	public ResponseEntity<Resource> viewConsultationDocument(@PathVariable("id") Long documentId, Authentication authentication) {
+		return documentService.streamConsultationDocument(documentService.findById(documentId), currentPartner(authentication));
 	}
 	
 }

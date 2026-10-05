@@ -6,6 +6,7 @@ import lexflow.dto.finance.EditBillableAmountRequest;
 import lexflow.dto.user.ChangePasswordRequest;
 import lexflow.entity.case_.Case;
 import lexflow.entity.finance.InvoiceStatus;
+import lexflow.entity.user.Role;
 import lexflow.entity.user.FinanceOfficer;
 import lexflow.entity.user.User;
 import lexflow.exception.BusinessRuleViolationException;
@@ -224,6 +225,17 @@ public class FinanceController {
 		model.addAttribute("totalRefunds", transactionService.totalRefunds());
 		model.addAttribute("netRevenue", transactionService.netRevenue());
 		return "finance/transactions";
+	}
+	
+	// ==================== Clients (view and search only) ====================
+	
+	@GetMapping("/finance/clients")
+	public String clients(@RequestParam(required = false) String keyword, Model model) {
+		model.addAttribute("users", userService.search(Role.CLIENT, keyword));
+		model.addAttribute("keyword", keyword);
+		model.addAttribute("title", "Clients");
+		model.addAttribute("active", "clients");
+		return "finance/client-list";
 	}
 	
 }

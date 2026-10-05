@@ -63,6 +63,8 @@ public class PartnerController {
 	
 	private final TaskService taskService;
 	
+	private final TransactionService transactionService;
+	
 	private final UserService userService;
 	
 	// ==================== Overview (Dashboard, Profile) ====================
@@ -801,6 +803,17 @@ public class PartnerController {
 	@GetMapping("/partner/documents/invoice/{id}")
 	public ResponseEntity<Resource> viewInvoiceDocument(@PathVariable("id") Long documentId, Authentication authentication) {
 		return documentService.streamInvoiceDocument(documentService.findById(documentId), currentPartner(authentication));
+	}
+	
+	// ==================== Finance (Firm Transactions) ====================
+	
+	@GetMapping("/partner/transactions")
+	public String transactions(Model model) {
+		model.addAttribute("transactions", transactionService.findAll());
+		model.addAttribute("totalCharges", transactionService.totalCharges());
+		model.addAttribute("totalRefunds", transactionService.totalRefunds());
+		model.addAttribute("netRevenue", transactionService.netRevenue());
+		return "partner/transactions";
 	}
 	
 }

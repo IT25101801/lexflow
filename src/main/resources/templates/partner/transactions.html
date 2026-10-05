@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Firm Transactions – LexFlow')}"></head>
+<body>
+
+<aside th:replace="~{fragments/sidebar-partner :: sidebar('transactions')}"></aside>
+
+<div class="main">
+	<div th:replace="~{fragments/common :: topbar('Firm Transactions', null)}"></div>
+	
+	<div class="content">
+		<!-- Firm Revenue -->
+		<div class="balance-grid">
+			<div class="wallet-balance-card">
+				<div class="section-title">Total Charges</div>
+				<div class="balance-amount">
+					<span th:text="${#numbers.formatDecimal(totalCharges, 1, 'COMMA', 2, 'POINT')}"></span>
+				</div>
+				<div class="balance-note">Invoices paid from client wallets</div>
+			</div>
+			<div class="wallet-balance-card">
+				<div class="section-title">Total Refunds</div>
+				<div class="balance-amount">
+					<span th:text="${#numbers.formatDecimal(totalRefunds, 1, 'COMMA', 2, 'POINT')}"></span>
+				</div>
+				<div class="balance-note">Paid invoices voided and refunded</div>
+			</div>
+			<div class="wallet-balance-card">
+				<div class="section-title">Net Revenue</div>
+				<div class="balance-amount">
+					<span th:text="${#numbers.formatDecimal(netRevenue, 1, 'COMMA', 2, 'POINT')}"></span>
+				</div>
+				<div class="balance-note">Charges minus refunds</div>
+			</div>
+		</div>
+		
+		<div class="table-card">
+			<div>
+				<table class="tx-firm">
+					<thead>
+					<tr>
+						<th>Transaction Code</th>
+						<th>Client</th>
+						<th>Amount</th>
+						<th>Transaction Type</th>
+						<th>Invoice ID</th>
+						<th>Occurred At</th>
+					</tr>
+					</thead>
+					<tbody>
+					<tr th:if="${#lists.isEmpty(transactions)}">
+						<td class="table-empty" colspan="6">No transactions yet.</td>
+					</tr>
+					<tr th:each="t : ${transactions}">
+						<td class="cell-id" th:text="${t.transactionCode}"></td>
+						<td>
+							<div th:text="${t.client.name}"></div>
+							<div class="cell-sub" th:text="${t.client.userCode}"></div>
+						</td>
+						<td th:text="${#numbers.formatDecimal(t.amount, 1, 'COMMA', 2, 'POINT')}"></td>
+						<td><span th:classappend="'tx-' + ${t.transactionType.name()}" th:text="${#strings.replace(t.transactionType, '_', ' ')}"></span></td>
+						<td class="cell-id" th:text="${t.invoiceId ?: '–'}"></td>
+						<td th:text="${#temporals.format(t.occurredAt, 'dd/MM/yyyy HH:mm')}"></td>
+					</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+</body>
+</html>

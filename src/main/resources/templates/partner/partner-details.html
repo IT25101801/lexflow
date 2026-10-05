@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(${user.name} + ' – LexFlow')}"></head>
+<body>
+
+<aside th:replace="~{fragments/sidebar-partner :: sidebar('users-partners')}"></aside>
+
+<div class="main">
+	<div th:replace="~{fragments/common :: topbar(${user.name}, null)}"></div>
+	
+	<div class="content">
+		
+		<!-- Flash Messages -->
+		<div class="flash flash-success" th:if="${success}" th:text="${success}"></div>
+		<div class="flash flash-error" th:if="${error}" th:text="${error}"></div>
+		
+		<!-- Profile Layout -->
+		<div class="profile-layout">
+			
+			<!-- Info Card -->
+			<div>
+				<div class="section-card">
+					<div class="avatar-header">
+						<div class="big-avatar" th:text="${#strings.toUpperCase(#strings.substring(user.name, 0, T(java.lang.Math).min(2, user.name.length())))}"></div>
+						<div>
+							<div class="avatar-name" th:text="${user.name} + (${isSelf} ? ' (You)' : '')"></div>
+						</div>
+						<div th:if="${isSelf}" style="margin-left:auto;display:flex;gap:0.5rem;align-items:center;">
+							<button class="action-btn action-btn-edit" type="button"
+									onclick="document.getElementById('editModal').style.display='flex';">Edit
+							</button>
+							<form method="post" style="margin:0;" th:action="@{/partner/users/{id}/delete(id=${user.userId})}"
+								  onsubmit="return confirm('Delete your account? This action cannot be undone. You will be logged out.');">
+								<button class="action-btn action-btn-delete" type="submit">Delete</button>
+							</form>
+						</div>
+					</div>
+					<div class="section-title">Account Stats</div>
+					<div class="detail-row">
+						<span class="detail-label">User Code</span>
+						<span class="detail-value" th:text="${user.userCode}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Email</span>
+						<span class="detail-value" th:text="${user.email}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Role</span>
+						<span class="chip">PARTNER</span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Account Status</span>
+						<span class="badge" th:classappend="'badge-' + ${user.accountStatus}" th:text="${user.accountStatus}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Registered At</span>
+						<span class="detail-value" th:text="${#temporals.format(user.registeredAt, 'dd/MM/yyyy HH:mm')}"></span>
+					</div>
+					<div class="section-title" style="margin-top:1.25rem;">Personal Information</div>
+					<div class="detail-row">
+						<span class="detail-label">Name</span>
+						<span class="detail-value" th:text="${user.name}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Date of Birth</span>
+						<span class="detail-value" th:text="${#temporals.format(user.dateOfBirth, 'dd/MM/yyyy')}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Gender</span>
+						<span class="detail-value" th:text="${user.gender.name()}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Addresses</span>
+						<div class="detail-value">
+							<div th:each="a : ${user.addresses}" th:text="${a}"></div>
+						</div>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Phone Numbers</span>
+						<div class="detail-value">
+							<div th:each="p : ${user.phoneNumbers}" th:text="${p}"></div>
+						</div>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">NIC Number</span>
+						<span class="detail-value" th:text="${user.nicNumber}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">NIC Document</span>
+						<span class="detail-value">
+							<a class="action-btn action-btn-view" th:if="${user.nicDocument != null}" target="_blank"
+							   th:href="@{/partner/documents/user/{id}(id=${user.nicDocument.documentId})}">View</a>
+							<span th:unless="${user.nicDocument != null}">&ndash;</span>
+						</span>
+					</div>
+					<div class="section-title" style="margin-top:1.25rem;">Professional Details</div>
+					<div class="detail-row">
+						<span class="detail-label">Bar Number</span>
+						<span class="detail-value" th:text="${user.barNumber}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Bar Document</span>
+						<span class="detail-value">
+							<a class="action-btn action-btn-view" th:if="${user.barDocument != null}" target="_blank"
+							   th:href="@{/partner/documents/user/{id}(id=${user.barDocument.documentId})}">View</a>
+							<span th:unless="${user.barDocument != null}">&ndash;</span>
+						</span>
+					</div>
+				</div>
+			</div>
+			
+			<!-- Reactivate Account -->
+			<div th:if="${user.accountStatus.name() == 'DELETED'}">
+				<div class="section-card">
+					<div class="section-title">Reactivate Account</div>
+					<form method="post" th:action="@{/partner/users/{id}/reactivate(id=${user.userId})}" style="display:flex;flex-direction:column;gap:0.9rem;">
+						<div class="field">
+							<label for="temporaryPassword">Temporary Password</label>
+							<input id="temporaryPassword" type="password" name="temporaryPassword" minlength="8" placeholder="••••••••" required/>
+							<span class="field-hint">Set a temporary password and share it with this user securely. They can change it after logging in.</span>
+						</div>
+						<button class="btn btn-primary btn-block" type="submit">Reactivate Account</button>
+					</form>
+				</div>
+			</div>
+			
+			<!-- Reset Password -->
+			<div th:if="${isSelf}">
+				<div class="section-card">
+					<div class="section-title">Reset Password</div>
+					<form method="post" th:action="@{/partner/users/{id}/reset-password(id=${user.userId})}" style="display:flex;flex-direction:column;gap:0.9rem;">
+						<div class="field">
+							<label for="resetTemporaryPassword">Temporary Password</label>
+							<input id="resetTemporaryPassword" type="password" name="temporaryPassword" minlength="8" placeholder="••••••••" required/>
+							<span class="field-hint">You'll be logged out and need to sign in again with this password.</span>
+						</div>
+						<button class="btn btn-warning btn-block" type="submit">Reset Password</button>
+					</form>
+				</div>
+			</div>
+		
+		</div>
+	</div>
+</div>
+
+<!-- Edit Modal -->
+<div id="editModal" class="modal-overlay" th:if="${isSelf}" onclick="if(event.target===this)this.style.display='none';">
+	<div class="modal-dialog" style="max-width:480px;width:92%;">
+		<div class="section-title">Edit Profile</div>
+		<form method="post" th:action="@{/partner/users/{id}/edit(id=${user.userId})}" enctype="multipart/form-data" style="display:flex;flex-direction:column;gap:0.85rem;margin-top:1rem;">
+			<div class="field">
+				<label for="name">Name</label>
+				<input id="name" type="text" name="name" th:value="${user.name}" required/>
+			</div>
+			<div class="field-row">
+				<div class="field">
+					<label for="dateOfBirth">Date of Birth</label>
+					<input id="dateOfBirth" type="date" name="dateOfBirth" th:value="${#temporals.format(user.dateOfBirth, 'yyyy-MM-dd')}" required/>
+				</div>
+				<div class="field">
+					<label for="gender">Gender</label>
+					<select id="gender" name="gender" required>
+						<option th:each="gender : ${genders}" th:selected="${gender == user.gender}" th:text="${gender.name()}" th:value="${gender.name()}"></option>
+					</select>
+				</div>
+			</div>
+			<div class="field">
+				<label>Addresses</label>
+				<div id="addressRows">
+					<div class="multi-input-row" th:each="a : ${user.addresses}">
+						<input type="text" name="addresses" th:value="${a}"/>
+						<button type="button" onclick="this.parentElement.remove();">Remove</button>
+					</div>
+				</div>
+				<button type="button" onclick="addMultiInputRow('addressRows','addresses')">+ Add Address</button>
+			</div>
+			<div class="field">
+				<label>Phone Numbers</label>
+				<div id="phoneNumberRows">
+					<div class="multi-input-row" th:each="p : ${user.phoneNumbers}">
+						<input type="text" name="phoneNumbers" th:value="${p}"/>
+						<button type="button" onclick="this.parentElement.remove();">Remove</button>
+					</div>
+				</div>
+				<button type="button" onclick="addMultiInputRow('phoneNumberRows','phoneNumbers')">+ Add Phone Number</button>
+			</div>
+			<div class="field">
+				<label for="nicFile">NIC Document</label>
+				<input id="nicFile" type="file" name="nicFile" accept=".pdf"/>
+			</div>
+			<div class="field">
+				<label for="barFile">Bar Document</label>
+				<input id="barFile" type="file" name="barFile" accept=".pdf"/>
+			</div>
+			<div class="modal-actions" style="margin-top:0.5rem;">
+				<button class="modal-btn-cancel" type="button" onclick="document.getElementById('editModal').style.display='none';">Cancel</button>
+				<button class="btn btn-warning" type="submit">Save Changes</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+</body>
+</html>

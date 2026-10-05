@@ -215,4 +215,13 @@ public class PartnerController {
 		return "partner/user-list";
 	}
 	
+	@GetMapping("/partner/users/partners")
+	public String partners(@RequestParam(required = false) String keyword, Authentication authentication, Model model) {
+		model.addAttribute("users", userService.search(Role.PARTNER, keyword));
+		model.addAttribute("keyword", keyword);
+		model.addAttribute("title", "Partners");
+		model.addAttribute("currentUserEmail", authentication.getName());
+		return "partner/partner-list";
+	}
+	
 }

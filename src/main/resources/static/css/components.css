@@ -1,0 +1,511 @@
+/* Shared page components: profile/detail layouts, badges, transaction colors, finance cards, modal, action buttons, tabs. Loaded on every page. */
+
+/* ---- Profile page components ---- */
+
+.profile-layout {
+	display: grid;
+	grid-template-columns: 1fr 360px;
+	gap: 1.5rem;
+	align-items: start;
+	max-width: 960px;
+}
+
+@media (max-width: 700px) {
+	.profile-layout {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* Like .profile-layout, but mirrored: the left column is the same 576px
+   .profile-layout's own left column renders at (960 max-width - 360 sidebar
+   - 24 gap), and the right column is a fixed 480px — wider than 360px so long
+   names/select options don't wrap, but fixed so it doesn't stretch with the
+   window. The left column may shrink on narrower windows. */
+.consult-layout {
+	display: grid;
+	grid-template-columns: minmax(0, 576px) 480px;
+	gap: 1.5rem;
+	align-items: start;
+}
+
+/* One column once the window is too narrow for both (the left column would drop
+   below ~420px); the action card keeps its 480px instead of stretching. */
+@media (max-width: 1280px) {
+	.consult-layout {
+		grid-template-columns: minmax(0, 576px);
+	}
+	
+	.consult-layout > :last-child {
+		width: 100%;
+		max-width: 480px;
+	}
+}
+
+.section-card {
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-xl);
+	padding: 1.75rem;
+	margin-bottom: 1.25rem;
+}
+
+.section-title {
+	font-size: 1.1rem;
+	font-weight: 700;
+	color: var(--text);
+	letter-spacing: -0.01em;
+	margin-bottom: 1rem;
+	padding-bottom: 0.6rem;
+	border-bottom: 1px solid var(--border);
+}
+
+/* .form-card already spaces its children with `gap` — a title's own
+   margin-bottom on top of that gap would double the space beneath it. */
+.form-card > .section-title {
+	margin-bottom: 0;
+}
+
+.chip {
+	display: inline-flex;
+	align-items: center;
+	font-size: 0.78rem;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	padding: 0.22rem 0.7rem;
+	border-radius: 99px;
+	border: 1px solid var(--accent-dim);
+	background: var(--accent-dim);
+	color: var(--accent);
+}
+
+/* Status badges — same shape as .chip, but color-coded by status rather than
+   always accent-colored. Class is built as 'badge-' + the status enum's name,
+   so every status enum needs its own rule (or share one across states that
+   mean the same thing, e.g. PENDING and SCHEDULED both read as "waiting"). */
+
+.badge {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.22rem 0.7rem;
+	border-radius: 99px;
+	font-size: 0.78rem;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	border: 1px solid;
+}
+
+.badge-PENDING,
+.badge-SCHEDULED {
+	background: var(--warning-bg);
+	color: var(--warning);
+	border-color: var(--warning-border);
+}
+
+.badge-ACCEPTED_BY_PARTNER,
+.badge-ACCEPTED_BY_ASSOCIATE {
+	background: var(--success-bg);
+	color: var(--success);
+	border-color: var(--success-border);
+}
+
+.badge-REJECTED_BY_PARTNER,
+.badge-REJECTED_BY_ASSOCIATE {
+	background: var(--danger-bg);
+	color: var(--danger);
+	border-color: var(--danger-border);
+}
+
+.badge-ACTIVE {
+	background: var(--success-bg);
+	color: var(--success);
+	border-color: var(--success-border);
+}
+
+.badge-DELETED {
+	background: var(--danger-bg);
+	color: var(--danger);
+	border-color: var(--danger-border);
+}
+
+.badge-OPEN {
+	background: var(--info-bg);
+	color: var(--info);
+	border-color: var(--info-border);
+}
+
+.badge-CLOSED,
+.badge-PAID,
+.badge-COMPLETED {
+	background: var(--success-bg);
+	color: var(--success);
+	border-color: var(--success-border);
+}
+
+.badge-UNPAID {
+	background: var(--warning-bg);
+	color: var(--warning);
+	border-color: var(--warning-border);
+}
+
+.badge-VOIDED,
+.badge-CANCELED,
+.badge-LOST {
+	background: var(--danger-bg);
+	color: var(--danger);
+	border-color: var(--danger-border);
+}
+
+.badge-WON {
+	background: var(--success-bg);
+	color: var(--success);
+	border-color: var(--success-border);
+}
+
+.badge-SETTLED {
+	background: var(--warning-bg);
+	color: var(--warning);
+	border-color: var(--warning-border);
+}
+
+.badge-DISMISSED {
+	background: var(--info-bg);
+	color: var(--info);
+	border-color: var(--info-border);
+}
+
+.section-title:not(:first-child) {
+	margin-top: 1.5rem;
+}
+
+.detail-row {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	padding: 0.55rem 0;
+	border-bottom: 1px solid var(--border);
+	font-size: 0.88rem;
+	gap: 1rem;
+}
+
+.detail-row:last-child {
+	border-bottom: none;
+}
+
+.detail-label {
+	color: var(--text-muted);
+	flex-shrink: 0;
+	font-size: 0.88rem; /* same size outside a .detail-row (e.g. the Notes label on contact cards) */
+}
+
+.detail-value {
+	font-weight: 600;
+	color: var(--text);
+	text-align: right;
+	overflow-wrap: break-word;
+	min-width: 0;
+}
+
+.avatar-header {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	margin-bottom: 1.5rem;
+}
+
+.big-avatar {
+	width: 64px;
+	height: 64px;
+	border-radius: 50%;
+	flex-shrink: 0;
+	background: linear-gradient(135deg, var(--accent-dim), var(--accent));
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-weight: 700;
+	font-size: 1.3rem;
+	color: var(--accent-contrast);
+}
+
+.avatar-name {
+	font-weight: 700;
+	font-size: 1.1rem;
+	color: var(--text);
+}
+
+/* Modal */
+
+.modal-overlay {
+	display: none;
+	position: fixed;
+	inset: 0;
+	z-index: 900;
+	background: rgba(10, 20, 40, 0.55);
+	align-items: center;
+	justify-content: center;
+}
+
+.modal-dialog {
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-xl);
+	padding: 2rem;
+	max-width: 400px;
+	width: 90%;
+	box-shadow: var(--shadow-lg);
+	animation: slideUp 0.2s ease both;
+}
+
+.modal-actions {
+	display: flex;
+	gap: 0.75rem;
+	justify-content: flex-end;
+}
+
+.modal-btn-cancel {
+	padding: 0.45rem 1.1rem;
+	border-radius: var(--radius);
+	border: 1.5px solid var(--border);
+	background: transparent;
+	color: var(--text-muted);
+	font-size: 0.85rem;
+	cursor: pointer;
+	transition: all 0.18s;
+}
+
+.modal-btn-cancel:hover {
+	border-color: var(--accent);
+	color: var(--accent);
+}
+
+/* Small action buttons (e.g. Edit in avatar-header) */
+
+.action-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3rem;
+	padding: 0.3rem 0.7rem;
+	border-radius: var(--radius);
+	font-size: 0.78rem;
+	font-weight: 600;
+	line-height: 1.6;
+	cursor: pointer;
+	border: 1px solid;
+	transition: all 0.15s;
+	text-decoration: none;
+	background: none;
+	white-space: nowrap;
+}
+
+.action-btn:hover {
+	opacity: 0.82;
+	transform: translateY(-1px);
+}
+
+.action-btn-view {
+	color: var(--view);
+	border-color: var(--view-border);
+	background: var(--view-bg);
+}
+
+.action-btn-create {
+	color: var(--success);
+	border-color: var(--success-border);
+	background: var(--success-bg);
+}
+
+.action-btn-edit {
+	color: var(--edit);
+	border-color: var(--edit-border);
+	background: var(--edit-bg);
+}
+
+.action-btn-delete {
+	color: var(--danger);
+	border-color: var(--danger-border);
+	background: var(--danger-bg);
+}
+
+.doc-row.marked-for-deletion input[type="text"] {
+	text-decoration: line-through;
+	opacity: 0.55;
+}
+
+/* Button variants used on profile pages */
+
+.btn-warning {
+	background: var(--warning-bg);
+	color: var(--warning);
+	border-color: var(--warning-border);
+}
+
+.btn-warning:hover {
+	background: var(--warning);
+	color: #ffffff;
+	border-color: var(--warning);
+}
+
+.btn-danger {
+	background: var(--danger-bg);
+	color: var(--danger);
+	border-color: var(--danger-border);
+}
+
+.btn-danger:hover {
+	background: var(--danger);
+	color: #ffffff;
+	border-color: var(--danger);
+}
+
+/* Rubrique tabs — status/role-gated action panels on *-details pages.
+   Tabs and panels pair up by data-tab; tabs.js activates the first
+   rendered tab on load since Thymeleaf conditions decide which ones exist. */
+
+.tabbar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.25rem;
+	padding: 1rem 1.25rem 0;
+}
+
+.tab {
+	appearance: none;
+	border: 1px solid var(--border);
+	border-bottom: none;
+	background: var(--bg);
+	color: var(--text-muted);
+	font: inherit;
+	font-weight: 600;
+	font-size: 0.82rem;
+	padding: 0.6rem 1.1rem;
+	border-radius: var(--radius) var(--radius) 0 0;
+	cursor: pointer;
+	position: relative;
+	top: 1px;
+	white-space: nowrap;
+	transition: background 0.15s, color 0.15s;
+}
+
+.tab:hover {
+	color: var(--text);
+}
+
+.tab[aria-selected="true"] {
+	background: var(--card-hover);
+	color: var(--accent);
+	border-bottom: 1px solid var(--card-hover);
+}
+
+.tabpanel-wrap {
+	border-top: 1px solid var(--border);
+	background: var(--card-hover);
+	padding: 1.5rem 1.25rem;
+}
+
+.tabpanel {
+	display: none;
+	flex-direction: column;
+	gap: 0.85rem;
+}
+
+.tabpanel.active {
+	display: flex;
+}
+
+.btn-sm {
+	padding: 0.45rem 1.1rem;
+	font-size: 0.85rem;
+}
+
+/* Transaction type colors: the client's view by default (a charge costs them, a refund pays them back);
+   a staff table (.tx-firm) flips charge and refund. Top-ups and withdrawals only move the client's own money, so neutral. */
+.tx-CARD_TOP_UP,
+.tx-CASH_TOP_UP,
+.tx-WITHDRAWAL {
+	color: var(--info);
+}
+
+.tx-REFUND,
+.tx-firm .tx-CHARGE {
+	color: var(--success);
+}
+
+.tx-CHARGE,
+.tx-firm .tx-REFUND {
+	color: var(--danger);
+}
+
+/* ---- Finance cards (client wallet balance and top-up, firm revenue) ---- */
+
+.wallet-top {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1.5rem;
+	margin-bottom: 1.5rem;
+	align-items: flex-start;
+}
+
+.wallet-balance-card {
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-xl);
+	padding: 2rem;
+	box-shadow: var(--shadow-sm);
+	flex: 0 0 auto;
+}
+
+.balance-amount {
+	display: flex;
+	align-items: baseline;
+	gap: 0.5rem;
+	font-size: 2rem;
+	font-weight: 800;
+	color: var(--text);
+	letter-spacing: -0.02em;
+	white-space: nowrap;
+}
+
+.balance-currency {
+	font-size: 1rem;
+	font-weight: 600;
+	color: var(--text-muted);
+}
+
+/* Client wallet top-up box: fixed width so it keeps its size whatever the window width */
+.topup-card {
+	flex: 0 0 540px;
+	width: 540px;
+	max-width: 100%;
+}
+
+@media (max-width: 600px) {
+	.topup-card {
+		flex-basis: 100%;
+	}
+}
+
+/* Row of equal-width balance cards spanning the page (firm revenue summary) */
+.balance-grid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 1.5rem;
+	margin-bottom: 1.5rem;
+}
+
+.balance-grid .balance-amount {
+	white-space: normal;
+	flex-wrap: wrap;
+}
+
+.balance-note {
+	margin-top: 0.4rem;
+	font-size: 0.8rem;
+	color: var(--text-muted);
+}
+
+@media (max-width: 900px) {
+	.balance-grid {
+		grid-template-columns: 1fr;
+	}
+}

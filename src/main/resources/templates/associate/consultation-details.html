@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Consultation Request Details – LexFlow')}"></head>
+<body>
+
+<aside th:replace="~{fragments/sidebar-associate :: sidebar('consultations')}"></aside>
+
+<div class="main">
+	<div th:replace="~{fragments/common :: topbar('Consultation Request Details', null)}"></div>
+	
+	<div class="content">
+		
+		<!-- Flash Messages -->
+		<div class="flash flash-success" th:if="${success}" th:text="${success}"></div>
+		<div class="flash flash-error" th:if="${error}" th:text="${error}"></div>
+		
+		<div class="consult-layout">
+			<div>
+				
+				<div class="section-card">
+					<div class="avatar-header" style="padding-bottom:1rem;margin-bottom:1rem;border-bottom:1px solid var(--border);">
+						<div>
+							<div class="avatar-name">Consultation Details</div>
+						</div>
+						<a class="action-btn action-btn-view" style="margin-left:auto;" th:if="${existingCase != null}"
+						   th:href="@{/associate/cases/{id}(id=${existingCase.caseId})}">View Case</a>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Consultation Code</span>
+						<span class="detail-value" th:text="${consultation.consultationCode}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Client</span>
+						<span style="display:flex;flex-direction:column;align-items:flex-end;">
+							<div th:text="${consultation.client.name}"></div>
+							<div class="cell-sub" th:text="${consultation.client.userCode}"></div>
+						</span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Case Type</span>
+						<span class="detail-value" th:text="${#strings.replace(consultation.caseType, '_', ' ')}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Opposing Parties</span>
+						<div class="detail-value">
+							<div th:each="op : ${consultation.opposingParties}" th:text="${op}"></div>
+						</div>
+					</div>
+					<div class="detail-row" style="border-bottom:none;">
+						<span class="detail-label">Legal Issue Details</span>
+					</div>
+					<div style="padding:0 0 0.75rem;font-size:0.88rem;line-height:1.7;color:var(--text);word-break:break-word;overflow-wrap:anywhere;border-bottom:1px solid var(--border);"
+						 th:text="${consultation.description}"></div>
+					<div class="detail-row">
+						<span class="detail-label">Consultation Status</span>
+						<span class="badge" th:classappend="'badge-' + ${consultation.consultationStatus}" th:text="${#strings.replace(consultation.consultationStatus, '_', ' ')}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Submitted At</span>
+						<span class="detail-value" th:text="${#temporals.format(consultation.submittedAt, 'dd/MM/yyyy HH:mm')}"></span>
+					</div>
+					<div class="detail-row" th:if="${consultation.paralegal != null}">
+						<span class="detail-label">Assigned Paralegal</span>
+						<span style="display:flex;flex-direction:column;align-items:flex-end;">
+							<div th:text="${consultation.paralegal.name}"></div>
+							<div class="cell-sub" th:text="${consultation.paralegal.userCode}"></div>
+						</span>
+					</div>
+					<div class="detail-row" th:if="${consultation.rejectionReason}">
+						<span class="detail-label">Rejection Reason</span>
+					</div>
+					<div th:if="${consultation.rejectionReason}" style="padding:0.5rem 0 0.25rem;font-size:0.88rem;line-height:1.7;color:var(--text);word-break:break-word;overflow-wrap:anywhere;"
+						 th:text="${consultation.rejectionReason}"></div>
+				</div>
+				
+				<div class="section-card">
+					<div class="section-title">Documents</div>
+					<div class="item-list">
+						<p class="empty-state" th:if="${#lists.isEmpty(consultationDocuments)}">No documents attached.</p>
+						<div class="item-row" th:each="d : ${consultationDocuments}">
+							<div class="item-main">
+								<a class="item-title" th:href="@{/associate/documents/consultation/{id}(id=${d.documentId})}" th:text="${d.originalFilename}" target="_blank"></a>
+							</div>
+						</div>
+					</div>
+				</div>
+			
+			</div>
+			
+			<div th:if="${consultation.consultationStatus.name() == 'ACCEPTED_BY_PARTNER' or consultation.consultationStatus.name() == 'SCHEDULED' or (consultation.consultationStatus.name() == 'ACCEPTED_BY_ASSOCIATE' and existingCase == null)}">
+				<div class="section-card" style="padding:0;overflow:hidden;">
+					<div class="tabbar" role="tablist">
+						<button class="tab" type="button" th:if="${consultation.consultationStatus.name() == 'ACCEPTED_BY_PARTNER'}" data-tab="schedule">Schedule Meeting</button>
+						<button class="tab" type="button" th:if="${consultation.consultationStatus.name() == 'SCHEDULED'}" data-tab="reschedule">Reschedule Meeting</button>
+						<button class="tab" type="button" th:if="${consultation.consultationStatus.name() == 'SCHEDULED' and meetingCompleted}" data-tab="accept">Accept</button>
+						<button class="tab" type="button" th:if="${consultation.consultationStatus.name() == 'SCHEDULED' and meetingCompleted}" data-tab="reject">Reject</button>
+						<button class="tab" type="button" th:if="${consultation.consultationStatus.name() == 'ACCEPTED_BY_ASSOCIATE' and existingCase == null}" data-tab="opencase">Open Case
+						</button>
+					</div>
+					<div class="tabpanel-wrap">
+						<div class="tabpanel" th:if="${consultation.consultationStatus.name() == 'ACCEPTED_BY_PARTNER'}" data-tab="schedule">
+							<form method="post" th:action="@{/associate/consultations/{id}/schedule(id=${consultation.consultationId})}" style="display:flex;flex-direction:column;gap:0.85rem;">
+								<div class="field">
+									<label for="subject">Subject</label>
+									<input id="subject" type="text" name="subject" required/>
+								</div>
+								<div class="field">
+									<label for="date">Date</label>
+									<input id="date" type="date" name="date" required/>
+								</div>
+								<div class="field">
+									<label for="startTime">Start Time</label>
+									<input id="startTime" type="time" name="startTime" required/>
+								</div>
+								<div class="field">
+									<label for="endTime">End Time</label>
+									<input id="endTime" type="time" name="endTime" required/>
+								</div>
+								<div class="field">
+									<label for="location">Location</label>
+									<input id="location" type="text" name="location" required/>
+								</div>
+								<div class="field">
+									<label for="notes">Notes</label>
+									<textarea id="notes" name="notes" rows="4"></textarea>
+								</div>
+								<div>
+									<button class="btn btn-primary btn-block" type="submit">Schedule</button>
+								</div>
+							</form>
+						</div>
+						<div class="tabpanel" th:if="${consultation.consultationStatus.name() == 'SCHEDULED'}" data-tab="reschedule">
+							<form method="post" th:action="@{/associate/consultations/{id}/events/{eventId}/reschedule(id=${consultation.consultationId},eventId=${m.eventId})}" th:each="m : ${meetings}" th:if="${m.eventStatus.name() == 'SCHEDULED'}" style="display:flex;flex-direction:column;gap:0.85rem;">
+								<div class="field">
+									<label for="subject">Subject</label>
+									<input id="subject" type="text" name="subject" th:value="${m.subject}" required/>
+								</div>
+								<div class="field">
+									<label for="date">Date</label>
+									<input id="date" type="date" name="date" th:value="${m.date}" required/>
+								</div>
+								<div class="field">
+									<label for="startTime">Start Time</label>
+									<input id="startTime" type="time" name="startTime" th:value="${m.startTime}" required/>
+								</div>
+								<div class="field">
+									<label for="endTime">End Time</label>
+									<input id="endTime" type="time" name="endTime" th:value="${m.endTime}" required/>
+								</div>
+								<div class="field">
+									<label for="location">Location</label>
+									<input id="location" type="text" name="location" th:value="${m.location}" required/>
+								</div>
+								<div class="field">
+									<label for="notes">Notes</label>
+									<textarea id="notes" name="notes" th:text="${m.notes}" rows="4"></textarea>
+								</div>
+								<div>
+									<button class="btn btn-primary btn-block" type="submit">Reschedule</button>
+								</div>
+							</form>
+						</div>
+						<div class="tabpanel" th:if="${consultation.consultationStatus.name() == 'SCHEDULED' and meetingCompleted}" data-tab="accept">
+							<form method="post" th:action="@{/associate/consultations/{id}/accept(id=${consultation.consultationId})}">
+								<button class="btn btn-primary btn-block" type="submit">Accept</button>
+							</form>
+						</div>
+						<div class="tabpanel" th:if="${consultation.consultationStatus.name() == 'SCHEDULED' and meetingCompleted}" data-tab="reject">
+							<form method="post" th:action="@{/associate/consultations/{id}/reject(id=${consultation.consultationId})}" style="display:flex;flex-direction:column;gap:0.85rem;">
+								<div class="field">
+									<label for="rejectionReason">Rejection Reason</label>
+									<textarea id="rejectionReason" name="rejectionReason" rows="4" required></textarea>
+								</div>
+								<div>
+									<button class="btn btn-danger btn-block" type="submit">Reject</button>
+								</div>
+							</form>
+						</div>
+						<div class="tabpanel" th:if="${consultation.consultationStatus.name() == 'ACCEPTED_BY_ASSOCIATE' and existingCase == null}" data-tab="opencase">
+							<form method="post" th:action="@{/associate/consultations/{id}/open-case(id=${consultation.consultationId})}">
+								<button class="btn btn-primary btn-block" type="submit">Open Case</button>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		
+		</div>
+	
+	</div>
+</div>
+
+</body>
+</html>

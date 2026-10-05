@@ -3,12 +3,15 @@ package lexflow.controller;
 import jakarta.validation.Valid;
 import lexflow.dto.consultation.EditConsultationRequest;
 import lexflow.dto.consultation.SubmitOnlineConsultationRequest;
+import lexflow.dto.document.UploadCaseDocumentsRequest;
 import lexflow.dto.user.ChangePasswordRequest;
+import lexflow.entity.case_.Case;
 import lexflow.entity.consultation.CaseType;
 import lexflow.entity.consultation.Consultation;
 import lexflow.entity.user.Client;
 import lexflow.entity.user.User;
 import lexflow.exception.PersistenceException;
+import lexflow.exception.case_.InvalidCaseStateException;
 import lexflow.exception.consultation.InvalidConsultationStateException;
 import lexflow.security.CustomUserPrincipal;
 import lexflow.service.*;
@@ -23,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Controller
@@ -36,6 +40,8 @@ public class ClientController {
 	private final DocumentService documentService;
 	
 	private final CaseService caseService;
+	
+	private final TaskService taskService;
 	
 	// ==================== Overview (Dashboard, Profile) ====================
 	
@@ -202,6 +208,49 @@ public class ClientController {
 		model.addAttribute("title", "Closed Cases");
 		model.addAttribute("active", "cases-closed");
 		return "client/case-list";
+	}
+	
+	@GetMapping("/client/cases/{id}")
+	public String caseDetails(@PathVariable("id") Long caseId, @RequestParam(required = false) String documentKeyword,
+							  Authentication authentication, Model model) {
+		Case case_ = caseService.findOwnedByClient(caseId, currentClient(authentication));
+		populateCaseDetailModel(case_, model);
+		
+		model.addAttribute("caseDocuments", documentService.searchCaseDocuments(case_, documentKeyword));
+		model.addAttribute("documentKeyword", documentKeyword);
+		
+		return "client/case-details";
+	}
+	
+	private void populateCaseDetailModel(Case case_, Model model) {
+		model.addAttribute("case", case_);
+		model.addAttribute("stagedDocuments", documentService.findStagedDocuments(case_));
+		model.addAttribute("caseDocuments", documentService.findCaseDocuments(case_));
+		model.addAttribute("tasks", taskService.findByCase(case_));
+	}
+	
+	@PostMapping("/client/cases/{id}/documents/stage")
+	public String stageCaseDocument(@PathVariable("id") Long caseId, @Valid @ModelAttribute UploadCaseDocumentsRequest form,
+									Authentication authentication, Model model) {
+		Case case_ = caseService.findOwnedByClient(caseId, currentClient(authentication));
+		
+		List<MultipartFile> caseFiles = form.getCaseFiles() != null ? form.getCaseFiles() : List.of();
+		
+		try {
+			documentService.stageCaseDocuments(case_, caseFiles, LocalDateTime.now());
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("success", "Document uploaded.");
+		} catch (InvalidCaseStateException e) {
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "client/case-details";
+	}
+	
+	@GetMapping("/client/documents/case/{id}")
+	public ResponseEntity<Resource> viewCaseDocument(@PathVariable("id") Long documentId, Authentication authentication) {
+		return documentService.streamCaseDocument(documentService.findById(documentId), currentClient(authentication));
 	}
 	
 }

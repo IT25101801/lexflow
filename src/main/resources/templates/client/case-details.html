@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Case Details – LexFlow')}"></head>
+<body>
+
+<aside th:replace="~{fragments/sidebar-client :: sidebar(${case.caseStatus.name() == 'CLOSED' ? 'cases-closed' : 'cases-open'})}"></aside>
+
+<div class="main">
+	<div th:replace="~{fragments/common :: topbar('Case Details', null)}"></div>
+	
+	<div class="content">
+		
+		<div class="flash flash-success" th:if="${success}" th:text="${success}"></div>
+		<div class="flash flash-error" th:if="${error}" th:text="${error}"></div>
+		
+		<div class="section-card">
+			<div class="avatar-header" style="padding-bottom:1rem;margin-bottom:1rem;border-bottom:1px solid var(--border);">
+				<div>
+					<div class="avatar-name" style="font-size:1.45rem;"
+						 th:text="${case.client.name} + ' vs ' + ${case.consultation.opposingParties[0]} + (${#lists.size(case.consultation.opposingParties)} > 1 ? ' et al.' : '')"></div>
+				</div>
+				<span class="badge" style="margin-left:auto;" th:classappend="'badge-' + ${case.caseStatus}" th:text="${case.caseStatus}"></span>
+			</div>
+			<div class="detail-row">
+				<span class="detail-label">Case Code</span>
+				<span class="detail-value" th:text="${case.caseCode}"></span>
+			</div>
+			<div class="detail-row">
+				<span class="detail-label">Consultation</span>
+				<span class="detail-value"><a class="action-btn action-btn-view" th:href="@{/client/consultations/{id}(id=${case.consultation.consultationId})}">View</a></span>
+			</div>
+			<div class="detail-row" th:if="${case.associate != null}">
+				<span class="detail-label">Assigned Associate</span>
+				<span style="display:flex;flex-direction:column;align-items:flex-end;">
+					<div th:text="${case.associate.name}"></div>
+					<div class="cell-sub" th:text="${case.associate.userCode}"></div>
+				</span>
+			</div>
+			<div class="detail-row" th:if="${case.paralegal != null}">
+				<span class="detail-label">Assigned Paralegal</span>
+				<span style="display:flex;flex-direction:column;align-items:flex-end;">
+					<div th:text="${case.paralegal.name}"></div>
+					<div class="cell-sub" th:text="${case.paralegal.userCode}"></div>
+				</span>
+			</div>
+			<div class="detail-row">
+				<span class="detail-label">Opened At</span>
+				<span class="detail-value" th:text="${#temporals.format(case.openedAt, 'dd/MM/yyyy HH:mm')}"></span>
+			</div>
+			<div class="detail-row" th:if="${case.caseResolutionStatus != null}">
+				<span class="detail-label">Resolution Status</span>
+				<span class="detail-value" th:text="${case.caseResolutionStatus}"></span>
+			</div>
+			<div class="detail-row" th:if="${case.closedAt != null}">
+				<span class="detail-label">Closed At</span>
+				<span class="detail-value" th:text="${#temporals.format(case.closedAt, 'dd/MM/yyyy HH:mm')}"></span>
+			</div>
+		</div>
+		
+		<div class="section-card" style="padding:0;overflow:hidden;">
+			<div class="tabbar" th:attr="data-storage-key='case-details-tab-' + ${case.caseId}">
+				<button class="tab" type="button" data-tab="tasks">Tasks</button>
+				<button class="tab" type="button" data-tab="documents">Documents</button>
+			</div>
+			<div class="tabpanel-wrap">
+				
+				<div class="tabpanel" data-tab="tasks">
+					<div class="section-title">Tasks</div>
+					<p class="empty-state" th:if="${#lists.isEmpty(tasks)}">No tasks logged for this case yet.</p>
+					<div class="contact-card-grid" th:unless="${#lists.isEmpty(tasks)}">
+						<div class="contact-card" th:each="t : ${tasks}">
+							<div class="detail-row">
+								<span class="detail-label">Title</span>
+								<span class="detail-value" th:text="${t.title}"></span>
+							</div>
+							<div class="detail-row">
+								<span class="detail-label">Task Type</span>
+								<span class="detail-value">
+							<span th:if="${t.documentingTask}">Documenting</span><span th:if="${t.documentingTask and (t.schedulingTask or t.billingTask)}">, </span><span
+										th:if="${t.schedulingTask}">Scheduling</span><span th:if="${t.schedulingTask and t.billingTask}">, </span><span
+										th:if="${t.billingTask}">Billing</span>
+						</span>
+							</div>
+							<div class="detail-row" th:if="${t.billingTask}">
+								<span class="detail-label">Billable Amount</span>
+								<span class="detail-value" th:text="${#numbers.formatDecimal(t.billableAmount, 1, 'COMMA', 2, 'POINT')}"></span>
+							</div>
+						</div>
+					</div>
+				</div>
+				
+				<div class="tabpanel" data-tab="documents">
+					<div>
+						<div class="section-title">Case Documents</div>
+						<form th:action="@{/client/cases/{id}(id=${case.caseId})}" method="get" style="display:flex;gap:0.75rem;align-items:flex-end;">
+							<div class="field" style="flex:1;">
+								<label for="documentKeyword">Name</label>
+								<input id="documentKeyword" type="text" name="documentKeyword" th:value="${documentKeyword}"/>
+							</div>
+							<button class="btn btn-outline" type="submit">Search</button>
+						</form>
+					</div>
+					<div class="item-list">
+						<p class="empty-state" th:if="${#lists.isEmpty(caseDocuments) and (documentKeyword == null or #strings.isEmpty(documentKeyword))}">No documents added to the case yet.</p>
+						<p class="empty-state" th:if="${#lists.isEmpty(caseDocuments) and documentKeyword != null and !#strings.isEmpty(documentKeyword)}">No documents match
+							"<span th:text="${documentKeyword}"></span>".</p>
+						<div class="item-row" th:each="d : ${caseDocuments}">
+							<div class="item-main">
+								<a class="item-title" th:href="@{/client/documents/case/{id}(id=${d.documentId})}" th:text="${d.originalFilename}" target="_blank"></a>
+							</div>
+						</div>
+					</div>
+					<div>
+						<div class="section-title">Documents Pending Review</div>
+						<p class="empty-state" th:if="${#lists.isEmpty(stagedDocuments)}">No documents awaiting review.</p>
+						<div class="item-list" th:unless="${#lists.isEmpty(stagedDocuments)}">
+							<div class="item-row" th:each="d : ${stagedDocuments}">
+								<div class="item-main">
+									<a class="item-title" th:href="@{/client/documents/case/{id}(id=${d.documentId})}" th:text="${d.originalFilename}" target="_blank"></a>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div>
+						<div class="section-title">Upload Document</div>
+						<form th:action="@{/client/cases/{id}/documents/stage(id=${case.caseId})}" method="post" enctype="multipart/form-data" style="display:flex;gap:0.75rem;align-items:flex-end;">
+							<div class="field" style="flex:1;">
+								<label for="caseFiles">Documents</label>
+								<input id="caseFiles" type="file" name="caseFiles" multiple required/>
+							</div>
+							<button class="btn btn-primary" type="submit">Upload</button>
+						</form>
+					</div>
+				</div>
+			
+			</div>
+		</div>
+	
+	</div>
+</div>
+
+</body>
+</html>

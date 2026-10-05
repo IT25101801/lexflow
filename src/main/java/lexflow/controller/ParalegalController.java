@@ -83,4 +83,10 @@ public class ParalegalController {
 		return "paralegal/consultation-pending-list";
 	}
 	
+	@GetMapping("/paralegal/consultations")
+	public String consultations(Authentication authentication, Model model) {
+		model.addAttribute("consultations", consultationService.findAllForParalegal(currentParalegal(authentication)));
+		return "paralegal/consultation-list";
+	}
+	
 }

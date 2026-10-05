@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<aside class="sidebar" th:fragment="sidebar(active)">
+	
+	<!-- Brand -->
+	<div class="sidebar-brand">
+		<a th:href="@{/}" class="brand-name">
+			<span class="brand-lex">Lex</span><span class="brand-flow">Flow</span>
+		</a>
+	</div>
+	
+	<!-- Navigation -->
+	<nav class="sidebar-nav">
+		<span class="nav-section-label">Overview</span>
+		<a class="nav-item" th:classappend="${active == 'dashboard'} ? ' active'" th:href="@{/finance/dashboard}">
+			<i class="bi bi-grid"></i> Dashboard
+		</a>
+		<a class="nav-item" th:classappend="${active == 'analytics'} ? ' active'" th:href="@{/finance/analytics}">
+			<i class="bi bi-bar-chart-line"></i> Analytics
+		</a>
+		<a class="nav-item" th:classappend="${active == 'profile'} ? ' active'" th:href="@{/finance/profile}">
+			<i class="bi bi-person"></i> My Profile
+		</a>
+		
+		<span class="nav-section-label">Cases</span>
+		<a class="nav-item" th:classappend="${active == 'cases-open'} ? ' active'" th:href="@{/finance/cases/open}">
+			<i class="bi bi-briefcase"></i> Open Cases
+		</a>
+		<a class="nav-item" th:classappend="${active == 'cases-closed'} ? ' active'" th:href="@{/finance/cases/closed}">
+			<i class="bi bi-briefcase-fill"></i> Closed Cases
+		</a>
+		
+		<span class="nav-section-label">Clients</span>
+		<a class="nav-item" th:classappend="${active == 'clients'} ? ' active'" th:href="@{/finance/clients}">
+			<i class="bi bi-people"></i> Clients
+		</a>
+		
+		<span class="nav-section-label">Payments</span>
+		<a class="nav-item" th:classappend="${active == 'cash-top-up'} ? ' active'" th:href="@{/finance/cash-top-up}">
+			<i class="bi bi-cash"></i> Cash Top-Up
+		</a>
+		<a class="nav-item" th:classappend="${active == 'withdrawal'} ? ' active'" th:href="@{/finance/withdrawal}">
+			<i class="bi bi-box-arrow-up"></i> Withdrawal
+		</a>
+		<a class="nav-item" th:classappend="${active == 'transactions'} ? ' active'" th:href="@{/finance/transactions}">
+			<i class="bi bi-cash-stack"></i> Transactions
+		</a>
+	</nav>
+	<script>
+		(function () {
+			var nav = document.currentScript.previousElementSibling;
+			var saved = sessionStorage.getItem("sidebarScrollTop");
+			
+			function restore() {
+				if (saved !== null) nav.scrollTop = parseInt(saved, 10);
+			}
+			
+			restore();
+			nav.style.visibility = "visible";
+			// Re-apply once everything (including the icon webfont) has
+			// finished loading — a late reflow can otherwise clamp the
+			// scrollTop we set above back toward zero.
+			window.addEventListener("load", restore);
+		})();
+	</script>
+	
+	<!-- Sidebar Footer -->
+	<div th:replace="~{fragments/common :: sidebar-footer('Finance Officer')}"></div>
+
+</aside>
+</body>
+</html>

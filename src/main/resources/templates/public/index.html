@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('LexFlow')}"></head>
+<body>
+<link rel="stylesheet" th:href="@{/css/auth.css}"/>
+
+<!-- Theme Toggle -->
+<!-- Hero Section -->
+<section class="hero">
+	<div class="hero-content">
+		<h1>Legal Case Management,<br/>Made <span class="hero-accent">Effortless</span></h1>
+		<p>LexFlow brings clients, associates, paralegals and partners onto one platform – from the first
+			consultation to the final invoice, every case moves forward without the chaos.</p>
+		<div class="hero-cta">
+			<a class="btn btn-primary btn-lg" th:href="@{/auth/register-client}">Register Now</a>
+			<a class="btn btn-outline btn-lg" th:href="@{/auth/login}">Sign In</a>
+		</div>
+	</div>
+</section>
+
+</body>
+</html>

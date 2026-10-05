@@ -306,4 +306,10 @@ public class ParalegalController {
 		return "paralegal/event-list";
 	}
 	
+	@GetMapping("/paralegal/events/{id}")
+	public String eventDetails(@PathVariable("id") Long eventId, Authentication authentication, Model model) {
+		model.addAttribute("event", eventService.findOwnedByParalegal(eventId, currentParalegal(authentication)));
+		return "paralegal/event-details";
+	}
+	
 }

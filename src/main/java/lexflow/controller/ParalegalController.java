@@ -37,6 +37,8 @@ public class ParalegalController {
 	
 	private final DocumentService documentService;
 	
+	private final EventService eventService;
+	
 	private final CaseService caseService;
 	
 	private final TaskService taskService;
@@ -294,6 +296,14 @@ public class ParalegalController {
 	@GetMapping("/paralegal/documents/case/{id}")
 	public ResponseEntity<Resource> viewCaseDocument(@PathVariable("id") Long documentId, Authentication authentication) {
 		return documentService.streamCaseDocument(documentService.findById(documentId), currentParalegal(authentication));
+	}
+	
+	// ==================== Schedule (My Events) ====================
+	
+	@GetMapping("/paralegal/events")
+	public String events(Authentication authentication, Model model) {
+		model.addAttribute("events", eventService.findAllForParalegal(currentParalegal(authentication)));
+		return "paralegal/event-list";
 	}
 	
 }

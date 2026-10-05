@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('My Events – LexFlow')}"></head>
+<body>
+
+<aside th:replace="~{fragments/sidebar-paralegal :: sidebar('events')}"></aside>
+
+<div class="main">
+	<div th:replace="~{fragments/common :: topbar('My Events', null)}"></div>
+	
+	<div class="content">
+		<div class="table-card">
+			<div>
+				<table>
+					<thead>
+					<tr>
+						<th>Subject</th>
+						<th>Owner</th>
+						<th>Date</th>
+						<th>Start Time</th>
+						<th>End Time</th>
+						<th>Location</th>
+						<th>Event Status</th>
+						<th>Scheduled At</th>
+						<th>Completed At</th>
+						<th>Canceled At</th>
+						<th>Actions</th>
+					</tr>
+					</thead>
+					<tbody>
+					<tr th:if="${#lists.isEmpty(events)}">
+						<td class="table-empty" colspan="11">No events scheduled.</td>
+					</tr>
+					<tr th:each="e : ${events}">
+						<td th:text="${e.subject}"></td>
+						<td th:if="${e instanceof T(lexflow.entity.scheduling.ConsultationEvent)}">
+							<a class="action-btn action-btn-view" th:href="@{/paralegal/consultations/{id}(id=${e.consultation.consultationId})}">View Consultation</a>
+						</td>
+						<td th:if="${e instanceof T(lexflow.entity.scheduling.CaseEvent)}">
+							<a class="action-btn action-btn-view" th:href="@{/paralegal/cases/{id}(id=${e.case_.caseId})}">View Case</a>
+						</td>
+						<td th:text="${#temporals.format(e.date, 'dd/MM/yyyy')}"></td>
+						<td th:text="${e.startTime}"></td>
+						<td th:text="${e.endTime}"></td>
+						<td th:text="${e.location}"></td>
+						<td><span class="badge" th:classappend="'badge-' + ${e.eventStatus}" th:text="${e.eventStatus}"></span></td>
+						<td th:text="${#temporals.format(e.scheduledAt, 'dd/MM/yyyy HH:mm')}"></td>
+						<td th:text="${e.completedAt != null ? #temporals.format(e.completedAt, 'dd/MM/yyyy HH:mm') : '–'}"></td>
+						<td th:text="${e.canceledAt != null ? #temporals.format(e.canceledAt, 'dd/MM/yyyy HH:mm') : '–'}"></td>
+						<td>
+							<a class="action-btn action-btn-view" th:href="@{/paralegal/events/{id}(id=${e.eventId})}">View</a>
+						</td>
+					</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+</body>
+</html>

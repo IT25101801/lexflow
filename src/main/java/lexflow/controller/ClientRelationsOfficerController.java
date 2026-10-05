@@ -1,7 +1,10 @@
 package lexflow.controller;
 
 import jakarta.validation.Valid;
+import lexflow.dto.consultation.SubmitWalkInConsultationRequest;
 import lexflow.dto.user.*;
+import lexflow.entity.consultation.CaseType;
+import lexflow.entity.consultation.Consultation;
 import lexflow.entity.user.Client;
 import lexflow.entity.user.ClientRelationsOfficer;
 import lexflow.entity.user.Gender;
@@ -17,14 +20,18 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
 public class ClientRelationsOfficerController {
 	
 	private final UserService userService;
+	
+	private final ConsultationService consultationService;
 	
 	private final DocumentService documentService;
 	
@@ -109,6 +116,45 @@ public class ClientRelationsOfficerController {
 		
 		redirectAttributes.addFlashAttribute("success", "Client registered successfully.");
 		return "redirect:/client-relations-officer/register-client";
+	}
+	
+	// ==================== Consultations (Submit Consultation, Consultation Requests) ====================
+	
+	@GetMapping("/client-relations-officer/consultations/new")
+	public String showConsultationForm(Model model) {
+		model.addAttribute("caseTypes", CaseType.values());
+		return "client-relations-officer/consultation-form";
+	}
+	
+	@PostMapping("/client-relations-officer/consultations")
+	public String submitConsultation(@Valid @ModelAttribute SubmitWalkInConsultationRequest form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			model.addAttribute("caseTypes", CaseType.values());
+			return "client-relations-officer/consultation-form";
+		}
+		
+		Client client;
+		try {
+			client = userService.findClientByUserCode(form.getClientCode());
+		} catch (EntityNotFoundException e) {
+			model.addAttribute("caseTypes", CaseType.values());
+			model.addAttribute("error", "No client found with code " + form.getClientCode() + ".");
+			return "client-relations-officer/consultation-form";
+		}
+		
+		List<MultipartFile> consultationFiles = form.getConsultationFiles() != null ? form.getConsultationFiles() : List.of();
+		
+		try {
+			consultationService.submit(client, form.getCaseType(), form.getOpposingParties(), form.getDescription(), consultationFiles);
+		} catch (PersistenceException e) {
+			model.addAttribute("caseTypes", CaseType.values());
+			model.addAttribute("error", "Could not submit the consultation request. Please try again.");
+			return "client-relations-officer/consultation-form";
+		}
+		
+		redirectAttributes.addFlashAttribute("success", "Consultation request submitted successfully.");
+		return "redirect:/client-relations-officer/consultations";
 	}
 	
 }

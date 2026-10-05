@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(${user.name} + ' – LexFlow')}"></head>
+<body>
+
+<aside th:replace="~{fragments/sidebar-partner :: sidebar(${active})}"></aside>
+
+<div class="main">
+	<div th:replace="~{fragments/common :: topbar(${user.name}, null)}"></div>
+	
+	<div class="content">
+		
+		<!-- Flash Messages -->
+		<div class="flash flash-success" th:if="${success}" th:text="${success}"></div>
+		<div class="flash flash-error" th:if="${error}" th:text="${error}"></div>
+		
+		<!-- Profile Layout -->
+		<div class="profile-layout">
+			
+			<!-- Info Card -->
+			<div>
+				<div class="section-card">
+					<div class="avatar-header">
+						<div class="big-avatar" th:text="${#strings.toUpperCase(#strings.substring(user.name, 0, T(java.lang.Math).min(2, user.name.length())))}"></div>
+						<div>
+							<div class="avatar-name" th:text="${user.name}"></div>
+						</div>
+						<div th:if="${user.accountStatus.name() != 'DELETED'}" style="margin-left:auto;display:flex;gap:0.5rem;align-items:center;">
+							<button class="action-btn action-btn-edit" type="button"
+									onclick="document.getElementById('editModal').style.display='flex';">Edit
+							</button>
+							<form method="post" style="margin:0;" th:action="@{/partner/users/{id}/delete(id=${user.userId})}"
+								  onsubmit="return confirm('Delete this user? This action cannot be undone.');">
+								<button class="action-btn action-btn-delete" type="submit">Delete</button>
+							</form>
+						</div>
+					</div>
+					<div class="section-title">Account Stats</div>
+					<div class="detail-row">
+						<span class="detail-label">User Code</span>
+						<span class="detail-value" th:text="${user.userCode}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Email</span>
+						<span class="detail-value" th:text="${user.email}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Role</span>
+						<span class="chip" th:text="${#strings.replace(user.role, '_', ' ')}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Account Status</span>
+						<span class="badge" th:classappend="'badge-' + ${user.accountStatus}" th:text="${user.accountStatus}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Registered At</span>
+						<span class="detail-value" th:text="${#temporals.format(user.registeredAt, 'dd/MM/yyyy HH:mm')}"></span>
+					</div>
+					<div class="section-title" style="margin-top:1.25rem;">Personal Information</div>
+					<div class="detail-row">
+						<span class="detail-label">Name</span>
+						<span class="detail-value" th:text="${user.name}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Date of Birth</span>
+						<span class="detail-value" th:text="${#temporals.format(user.dateOfBirth, 'dd/MM/yyyy')}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Gender</span>
+						<span class="detail-value" th:text="${user.gender.name()}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Addresses</span>
+						<div class="detail-value">
+							<div th:each="a : ${user.addresses}" th:text="${a}"></div>
+						</div>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">Phone Numbers</span>
+						<div class="detail-value">
+							<div th:each="p : ${user.phoneNumbers}" th:text="${p}"></div>
+						</div>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">NIC Number</span>
+						<span class="detail-value" th:text="${user.nicNumber}"></span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">NIC Document</span>
+						<span class="detail-value">
+							<a class="action-btn action-btn-view" th:if="${user.nicDocument != null}" target="_blank"
+							   th:href="@{/partner/documents/user/{id}(id=${user.nicDocument.documentId})}">View</a>
+							<span th:unless="${user.nicDocument != null}">&ndash;</span>
+						</span>
+					</div>
+					<div th:if="${isClient}">
+						<div class="section-title" style="margin-top:1.25rem;">Billing Wallet</div>
+						<div class="detail-row">
+							<span class="detail-label">Wallet Balance</span>
+							<span class="detail-value" th:text="${#numbers.formatDecimal(user.walletBalance, 1, 'COMMA', 2, 'POINT')}"></span>
+						</div>
+					</div>
+					<div th:if="${isAssociate}">
+						<div class="section-title" style="margin-top:1.25rem;">Professional Details</div>
+						<div class="detail-row">
+							<span class="detail-label">Bar Number</span>
+							<span class="detail-value" th:text="${user.barNumber}"></span>
+						</div>
+						<div class="detail-row">
+							<span class="detail-label">Bar Document</span>
+							<span class="detail-value">
+								<a class="action-btn action-btn-view" th:if="${user.barDocument != null}" target="_blank"
+								   th:href="@{/partner/documents/user/{id}(id=${user.barDocument.documentId})}">View</a>
+								<span th:unless="${user.barDocument != null}">&ndash;</span>
+							</span>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<!-- Reactivate Account -->
+			<div th:if="${user.accountStatus.name() == 'DELETED'}">
+				<div class="section-card">
+					<div class="section-title">Reactivate Account</div>
+					<form method="post" th:action="@{/partner/users/{id}/reactivate(id=${user.userId})}" style="display:flex;flex-direction:column;gap:0.9rem;">
+						<div class="field">
+							<label for="temporaryPassword">Temporary Password</label>
+							<input id="temporaryPassword" type="password" name="temporaryPassword" minlength="8" placeholder="••••••••" required/>
+							<span class="field-hint">Set a temporary password and share it with this user securely. They can change it after logging in.</span>
+						</div>
+						<button class="btn btn-primary btn-block" type="submit">Reactivate Account</button>
+					</form>
+				</div>
+			</div>
+			
+			<!-- Reset Password -->
+			<div th:if="${user.accountStatus.name() != 'DELETED'}">
+				<div class="section-card">
+					<div class="section-title">Reset Password</div>
+					<form method="post" th:action="@{/partner/users/{id}/reset-password(id=${user.userId})}" style="display:flex;flex-direction:column;gap:0.9rem;">
+						<div class="field">
+							<label for="resetTemporaryPassword">Temporary Password</label>
+							<input id="resetTemporaryPassword" type="password" name="temporaryPassword" minlength="8" placeholder="••••••••" required/>
+							<span class="field-hint">Set a temporary password and share it with this user securely.</span>
+						</div>
+						<button class="btn btn-warning btn-block" type="submit">Reset Password</button>
+					</form>
+				</div>
+			</div>
+		
+		</div>
+		
+		<!-- Consultations -->
+		<div th:if="${relatedConsultations != null}" style="margin-top:1.5rem;">
+			<div class="section-title" style="margin-bottom:0.75rem;">Consultations</div>
+			<div class="table-card">
+				<div style="overflow-x:auto;max-height:280px;overflow-y:auto;">
+					<table>
+						<thead>
+						<tr>
+							<th>Consultation Code</th>
+							<th th:unless="${isClient}">Client</th>
+							<th>Case Type</th>
+							<th>Consultation Status</th>
+							<th>Submitted At</th>
+							<th>Actions</th>
+						</tr>
+						</thead>
+						<tbody>
+						<tr th:if="${#lists.isEmpty(relatedConsultations)}">
+							<td class="table-empty" th:colspan="${isClient} ? 5 : 6">No consultations on record.</td>
+						</tr>
+						<tr th:each="c : ${relatedConsultations}">
+							<td class="cell-id" th:text="${c.consultationCode}"></td>
+							<td th:unless="${isClient}">
+								<div th:text="${c.client.name}"></div>
+								<div class="cell-sub" th:text="${c.client.userCode}"></div>
+							</td>
+							<td th:text="${#strings.replace(c.caseType, '_', ' ')}"></td>
+							<td><span class="badge" th:classappend="'badge-' + ${c.consultationStatus}" th:text="${#strings.replace(c.consultationStatus, '_', ' ')}"></span></td>
+							<td th:text="${#temporals.format(c.submittedAt, 'dd/MM/yyyy HH:mm')}" style="white-space:nowrap;"></td>
+							<td><a class="action-btn action-btn-view" th:href="@{/partner/consultations/{id}(id=${c.consultationId})}">View</a></td>
+						</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+		
+		<!-- Cases -->
+		<div th:if="${relatedCases != null}" style="margin-top:1.5rem;">
+			<div class="section-title" style="margin-bottom:0.75rem;">Cases</div>
+			<div class="table-card">
+				<div style="overflow-x:auto;max-height:280px;overflow-y:auto;">
+					<table>
+						<thead>
+						<tr>
+							<th>Case Code</th>
+							<th th:unless="${isClient}">Client</th>
+							<th>Case Status</th>
+							<th>Opened At</th>
+							<th>Resolution Status</th>
+							<th>Closed At</th>
+							<th>Actions</th>
+						</tr>
+						</thead>
+						<tbody>
+						<tr th:if="${#lists.isEmpty(relatedCases)}">
+							<td class="table-empty" th:colspan="${isClient} ? 6 : 7">No cases on record.</td>
+						</tr>
+						<tr th:each="cs : ${relatedCases}">
+							<td class="cell-id" th:text="${cs.caseCode}"></td>
+							<td th:unless="${isClient}">
+								<div th:text="${cs.client.name}"></div>
+								<div class="cell-sub" th:text="${cs.client.userCode}"></div>
+							</td>
+							<td><span class="badge" th:classappend="'badge-' + ${cs.caseStatus}" th:text="${cs.caseStatus}"></span></td>
+							<td th:text="${#temporals.format(cs.openedAt, 'dd/MM/yyyy HH:mm')}" style="white-space:nowrap;"></td>
+							<td th:text="${cs.caseResolutionStatus != null ? cs.caseResolutionStatus : '–'}"></td>
+							<td th:text="${cs.closedAt != null ? #temporals.format(cs.closedAt, 'dd/MM/yyyy HH:mm') : '–'}" style="white-space:nowrap;"></td>
+							<td><a class="action-btn action-btn-view" th:href="@{/partner/cases/{id}(id=${cs.caseId})}">View</a></td>
+						</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+		
+		<!-- Events -->
+		<div th:if="${relatedEvents != null}" style="margin-top:1.5rem;">
+			<div class="section-title" style="margin-bottom:0.75rem;">Events</div>
+			<div class="table-card">
+				<div style="overflow-x:auto;max-height:280px;overflow-y:auto;">
+					<table>
+						<thead>
+						<tr>
+							<th>Subject</th>
+							<th>Owner</th>
+							<th>Date</th>
+							<th>Start Time</th>
+							<th>Event Status</th>
+							<th>Actions</th>
+						</tr>
+						</thead>
+						<tbody>
+						<tr th:if="${#lists.isEmpty(relatedEvents)}">
+							<td class="table-empty" colspan="6">No events on record.</td>
+						</tr>
+						<tr th:each="e : ${relatedEvents}">
+							<td th:text="${e.subject}"></td>
+							<td th:if="${e instanceof T(lexflow.entity.scheduling.ConsultationEvent)}">
+								<a class="action-btn action-btn-view" th:href="@{/partner/consultations/{id}(id=${e.consultation.consultationId})}">View Consultation</a>
+							</td>
+							<td th:if="${e instanceof T(lexflow.entity.scheduling.CaseEvent)}">
+								<a class="action-btn action-btn-view" th:href="@{/partner/cases/{id}(id=${e.case_.caseId})}">View Case</a>
+							</td>
+							<td th:text="${#temporals.format(e.date, 'dd/MM/yyyy')}" style="white-space:nowrap;"></td>
+							<td th:text="${e.startTime}" style="white-space:nowrap;"></td>
+							<td><span class="badge" th:classappend="'badge-' + ${e.eventStatus}" th:text="${e.eventStatus}"></span></td>
+							<td><a class="action-btn action-btn-view" th:href="@{/partner/events/{id}(id=${e.eventId})}">View</a></td>
+						</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+		
+		<!-- Transactions -->
+		<div th:if="${relatedTransactions != null}" style="margin-top:1.5rem;">
+			<div class="section-title" style="margin-bottom:0.75rem;">Transactions</div>
+			<div class="table-card">
+				<div style="overflow-x:auto;max-height:280px;overflow-y:auto;">
+					<table class="tx-firm">
+						<thead>
+						<tr>
+							<th>Transaction Code</th>
+							<th>Amount</th>
+							<th>Transaction Type</th>
+							<th>Invoice ID</th>
+							<th>Occurred At</th>
+						</tr>
+						</thead>
+						<tbody>
+						<tr th:if="${#lists.isEmpty(relatedTransactions)}">
+							<td class="table-empty" colspan="5">No transactions on record.</td>
+						</tr>
+						<tr th:each="t : ${relatedTransactions}">
+							<td class="cell-id" th:text="${t.transactionCode}"></td>
+							<td th:text="${#numbers.formatDecimal(t.amount, 1, 'COMMA', 2, 'POINT')}"></td>
+							<td><span th:classappend="'tx-' + ${t.transactionType.name()}" th:text="${#strings.replace(t.transactionType, '_', ' ')}"></span></td>
+							<td class="cell-id" th:text="${t.invoiceId ?: '–'}"></td>
+							<td th:text="${#temporals.format(t.occurredAt, 'dd/MM/yyyy HH:mm')}" style="white-space:nowrap;"></td>
+						</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	
+	</div>
+</div>
+
+<!-- Edit Modal -->
+<div id="editModal" class="modal-overlay" onclick="if(event.target===this)this.style.display='none';">
+	<div class="modal-dialog" style="max-width:480px;width:92%;">
+		<div class="section-title">Edit User</div>
+		<form method="post" th:action="@{/partner/users/{id}/edit(id=${user.userId})}" enctype="multipart/form-data" style="display:flex;flex-direction:column;gap:0.85rem;margin-top:1rem;">
+			<div class="field">
+				<label for="name">Name</label>
+				<input id="name" type="text" name="name" th:value="${user.name}" required/>
+			</div>
+			<div class="field-row">
+				<div class="field">
+					<label for="dateOfBirth">Date of Birth</label>
+					<input id="dateOfBirth" type="date" name="dateOfBirth" th:value="${#temporals.format(user.dateOfBirth, 'yyyy-MM-dd')}" required/>
+				</div>
+				<div class="field">
+					<label for="gender">Gender</label>
+					<select id="gender" name="gender" required>
+						<option th:each="gender : ${genders}" th:selected="${gender == user.gender}" th:text="${gender.name()}" th:value="${gender.name()}"></option>
+					</select>
+				</div>
+			</div>
+			<div class="field">
+				<label>Addresses</label>
+				<div id="addressRows">
+					<div class="multi-input-row" th:each="a : ${user.addresses}">
+						<input type="text" name="addresses" th:value="${a}"/>
+						<button type="button" onclick="this.parentElement.remove();">Remove</button>
+					</div>
+				</div>
+				<button type="button" onclick="addMultiInputRow('addressRows','addresses')">+ Add Address</button>
+			</div>
+			<div class="field">
+				<label>Phone Numbers</label>
+				<div id="phoneNumberRows">
+					<div class="multi-input-row" th:each="p : ${user.phoneNumbers}">
+						<input type="text" name="phoneNumbers" th:value="${p}"/>
+						<button type="button" onclick="this.parentElement.remove();">Remove</button>
+					</div>
+				</div>
+				<button type="button" onclick="addMultiInputRow('phoneNumberRows','phoneNumbers')">+ Add Phone Number</button>
+			</div>
+			<div class="field">
+				<label for="nicFile">NIC Document</label>
+				<input id="nicFile" type="file" name="nicFile" accept=".pdf"/>
+			</div>
+			<div class="field" th:if="${isAssociate}">
+				<label for="barFile">Bar Document</label>
+				<input id="barFile" type="file" name="barFile" accept=".pdf"/>
+			</div>
+			<div class="modal-actions" style="margin-top:0.5rem;">
+				<button class="modal-btn-cancel" type="button" onclick="document.getElementById('editModal').style.display='none';">Cancel</button>
+				<button class="btn btn-warning" type="submit">Save Changes</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+</body>
+</html>

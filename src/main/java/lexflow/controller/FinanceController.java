@@ -33,6 +33,8 @@ public class FinanceController {
 	
 	private final InvoiceService invoiceService;
 	
+	private final TransactionService transactionService;
+	
 	private final DocumentService documentService;
 	
 	private final TaskService taskService;
@@ -213,6 +215,15 @@ public class FinanceController {
 	@GetMapping("/finance/documents/invoice/{id}")
 	public ResponseEntity<Resource> viewInvoiceDocument(@PathVariable("id") Long documentId, Authentication authentication) {
 		return documentService.streamInvoiceDocument(documentService.findById(documentId), currentFinanceOfficer(authentication));
+	}
+	
+	@GetMapping("/finance/transactions")
+	public String transactions(Model model) {
+		model.addAttribute("transactions", transactionService.findAll());
+		model.addAttribute("totalCharges", transactionService.totalCharges());
+		model.addAttribute("totalRefunds", transactionService.totalRefunds());
+		model.addAttribute("netRevenue", transactionService.netRevenue());
+		return "finance/transactions";
 	}
 	
 }

@@ -977,4 +977,12 @@ public class PartnerController {
 		return userDetailsView(target);
 	}
 	
+	// ==================== Schedule (Firm Events) ====================
+	
+	@GetMapping("/partner/events")
+	public String events(Model model) {
+		model.addAttribute("events", eventService.findAll());
+		return "partner/event-list";
+	}
+	
 }

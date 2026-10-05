@@ -1,12 +1,22 @@
 package lexflow.controller;
 
 import jakarta.validation.Valid;
+import lexflow.dto.case_.AddTaskRequest;
+import lexflow.dto.case_.CloseCaseRequest;
+import lexflow.dto.case_.RenameTaskRequest;
+import lexflow.dto.case_.SaveContactRequest;
 import lexflow.dto.consultation.AssignStaffRequest;
 import lexflow.dto.consultation.RejectConsultationRequest;
+import lexflow.dto.document.RenameDocumentRequest;
+import lexflow.dto.finance.CompileInvoiceRequest;
+import lexflow.dto.finance.EditBillableAmountRequest;
 import lexflow.dto.scheduling.ScheduleMeetingRequest;
 import lexflow.dto.user.*;
 import lexflow.entity.case_.Case;
+import lexflow.entity.case_.Contact;
+import lexflow.entity.case_.Task;
 import lexflow.entity.consultation.Consultation;
+import lexflow.entity.finance.InvoiceStatus;
 import lexflow.entity.scheduling.ConsultationEvent;
 import lexflow.entity.user.Role;
 import lexflow.entity.user.*;
@@ -15,6 +25,8 @@ import lexflow.exception.EntityAlreadyExistsException;
 import lexflow.exception.InvalidStateException;
 import lexflow.exception.PersistenceException;
 import lexflow.exception.document.NonPdfDocumentException;
+import lexflow.exception.finance.InsufficientFundsException;
+import lexflow.exception.finance.InvalidInvoiceStateException;
 import lexflow.security.CustomUserPrincipal;
 import lexflow.service.*;
 import lombok.RequiredArgsConstructor;
@@ -41,9 +53,15 @@ public class PartnerController {
 	
 	private final ConflictCheckService conflictCheckService;
 	
+	private final ContactService contactService;
+	
 	private final DocumentService documentService;
 	
 	private final EventService eventService;
+	
+	private final InvoiceService invoiceService;
+	
+	private final TaskService taskService;
 	
 	private final UserService userService;
 	
@@ -435,6 +453,354 @@ public class PartnerController {
 		model.addAttribute("title", "Closed Cases");
 		model.addAttribute("active", "cases-closed");
 		return "partner/case-list";
+	}
+	
+	@GetMapping("/partner/cases/{id}")
+	public String caseDetails(@PathVariable("id") Long caseId, @RequestParam(required = false) String documentKeyword, Model model) {
+		Case case_ = caseService.findById(caseId);
+		populateCaseDetailModel(case_, model);
+		
+		model.addAttribute("caseDocuments", documentService.searchCaseDocuments(case_, documentKeyword));
+		model.addAttribute("documentKeyword", documentKeyword);
+		
+		return "partner/case-details";
+	}
+	
+	private void populateCaseDetailModel(Case case_, Model model) {
+		model.addAttribute("case", case_);
+		model.addAttribute("associates", userService.findActiveAssociates());
+		model.addAttribute("paralegals", userService.findActiveParalegals());
+		model.addAttribute("stagedDocuments", documentService.findStagedDocuments(case_));
+		model.addAttribute("caseDocuments", documentService.findCaseDocuments(case_));
+		model.addAttribute("contacts", contactService.findByCase(case_));
+		
+		List<Task> tasks = taskService.findByCase(case_);
+		model.addAttribute("tasks", tasks);
+		model.addAttribute("taskDocuments", documentService.findDocumentsByTasks(tasks));
+		model.addAttribute("unbilledCharges", taskService.findUnbilledByCase(case_));
+		model.addAttribute("unpaidInvoices", invoiceService.findByCaseAndStatus(case_, InvoiceStatus.UNPAID));
+		model.addAttribute("paidInvoices", invoiceService.findByCaseAndStatus(case_, InvoiceStatus.PAID));
+		model.addAttribute("voidedInvoices", invoiceService.findByCaseAndStatus(case_, InvoiceStatus.VOIDED));
+	}
+	
+	@PostMapping("/partner/cases/{id}/close")
+	public String closeCase(@PathVariable("id") Long caseId,
+							@Valid @ModelAttribute CloseCaseRequest form, BindingResult bindingResult,
+							Model model) {
+		Case case_ = caseService.findById(caseId);
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			populateCaseDetailModel(case_, model);
+			return "partner/case-details";
+		}
+		
+		try {
+			case_ = caseService.close(case_, form.getCaseResolutionStatus());
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("success", "Case closed successfully.");
+		} catch (InvalidStateException e) {
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "partner/case-details";
+	}
+	
+	@PostMapping("/partner/cases/{id}/documents/{documentId}/accept")
+	public String acceptStagedDocument(@PathVariable("id") Long caseId, @PathVariable Long documentId, Model model) {
+		Case case_ = caseService.findById(caseId);
+		documentService.addStagedDocumentsToCase(case_, List.of(documentId));
+		
+		populateCaseDetailModel(case_, model);
+		model.addAttribute("success", "Document added to case.");
+		return "partner/case-details";
+	}
+	
+	@PostMapping("/partner/cases/{id}/documents/{documentId}/reject")
+	public String rejectStagedDocument(@PathVariable("id") Long caseId, @PathVariable Long documentId, Model model) {
+		Case case_ = caseService.findById(caseId);
+		documentService.deleteStagedDocuments(case_, List.of(documentId));
+		
+		populateCaseDetailModel(case_, model);
+		model.addAttribute("success", "Document deleted.");
+		return "partner/case-details";
+	}
+	
+	@PostMapping("/partner/cases/{id}/documents/{documentId}/rename")
+	public String renameCaseDocument(@PathVariable("id") Long caseId, @PathVariable Long documentId,
+									 @Valid @ModelAttribute RenameDocumentRequest form, BindingResult bindingResult,
+									 Model model) {
+		Case case_ = caseService.findById(caseId);
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			populateCaseDetailModel(case_, model);
+			return "partner/case-details";
+		}
+		
+		documentService.renameCaseDocument(case_, documentId, form.getOriginalFilename());
+		
+		populateCaseDetailModel(case_, model);
+		model.addAttribute("success", "Document renamed.");
+		return "partner/case-details";
+	}
+	
+	@PostMapping("/partner/cases/{id}/documents/{documentId}/delete")
+	public String deleteCaseDocument(@PathVariable("id") Long caseId, @PathVariable Long documentId, Model model) {
+		Case case_ = caseService.findById(caseId);
+		documentService.deleteStagedDocuments(case_, List.of(documentId));
+		
+		populateCaseDetailModel(case_, model);
+		model.addAttribute("success", "Document deleted.");
+		return "partner/case-details";
+	}
+	
+	@PostMapping("/partner/cases/{id}/contacts")
+	public String addContact(@PathVariable("id") Long caseId,
+							 @Valid @ModelAttribute SaveContactRequest form, BindingResult bindingResult,
+							 Model model) {
+		Case case_ = caseService.findById(caseId);
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			populateCaseDetailModel(case_, model);
+			return "partner/case-details";
+		}
+		
+		try {
+			contactService.add(case_, form.getName(), form.getPhoneNumbers(), form.getEmails(), form.getAddresses(), form.getNotes());
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("success", "Contact added.");
+		} catch (InvalidStateException e) {
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "partner/case-details";
+	}
+	
+	@PostMapping("/partner/cases/{id}/contacts/{contactId}/edit")
+	public String editContact(@PathVariable("id") Long caseId, @PathVariable Long contactId,
+							  @Valid @ModelAttribute SaveContactRequest form, BindingResult bindingResult,
+							  Model model) {
+		Case case_ = caseService.findById(caseId);
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			populateCaseDetailModel(case_, model);
+			return "partner/case-details";
+		}
+		
+		Contact contact = contactService.findById(contactId);
+		
+		try {
+			contactService.update(case_, contact, form.getName(), form.getPhoneNumbers(), form.getEmails(), form.getAddresses(), form.getNotes());
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("success", "Contact updated.");
+		} catch (InvalidStateException e) {
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "partner/case-details";
+	}
+	
+	@PostMapping("/partner/cases/{id}/tasks")
+	public String addTask(@PathVariable("id") Long caseId,
+						  @Valid @ModelAttribute AddTaskRequest form, BindingResult bindingResult,
+						  Model model) {
+		Case case_ = caseService.findById(caseId);
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			populateCaseDetailModel(case_, model);
+			return "partner/case-details";
+		}
+		
+		try {
+			taskService.add(case_, form.getTitle(), form.getDocumentingTask(), form.getSchedulingTask(), form.getBillingTask(),
+							form.getCaseFiles(),
+							form.getDate(), form.getStartTime(), form.getEndTime(), form.getLocation(), form.getNotes(),
+							form.getBillableAmount());
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("success", "Task added.");
+		} catch (InvalidStateException | BusinessRuleViolationException e) {
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "partner/case-details";
+	}
+	
+	@PostMapping("/partner/cases/{id}/tasks/{taskId}/edit-title")
+	public String editTaskTitle(@PathVariable("id") Long caseId, @PathVariable Long taskId,
+								@Valid @ModelAttribute RenameTaskRequest form, BindingResult bindingResult,
+								Model model) {
+		Case case_ = caseService.findById(caseId);
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			populateCaseDetailModel(case_, model);
+			return "partner/case-details";
+		}
+		
+		taskService.editTitle(taskService.findById(taskId), form.getTitle());
+		
+		populateCaseDetailModel(case_, model);
+		model.addAttribute("success", "Task renamed.");
+		return "partner/case-details";
+	}
+	
+	@PostMapping("/partner/cases/{id}/tasks/{taskId}/reschedule")
+	public String rescheduleTaskEvent(@PathVariable("id") Long caseId, @PathVariable Long taskId,
+									  @Valid @ModelAttribute ScheduleMeetingRequest form, BindingResult bindingResult,
+									  Model model) {
+		Case case_ = caseService.findById(caseId);
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			populateCaseDetailModel(case_, model);
+			return "partner/case-details";
+		}
+		
+		try {
+			taskService.rescheduleTaskEvent(taskService.findById(taskId), form.getSubject(), form.getDate(), form.getStartTime(), form.getEndTime(), form.getLocation(), form.getNotes());
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("success", "Event rescheduled successfully.");
+		} catch (InvalidStateException | BusinessRuleViolationException e) {
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "partner/case-details";
+	}
+	
+	@PostMapping("/partner/cases/{id}/reassign")
+	public String reassignCase(@PathVariable("id") Long caseId,
+							   @Valid @ModelAttribute AssignStaffRequest form, BindingResult bindingResult,
+							   Model model) {
+		Case case_ = caseService.findById(caseId);
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			populateCaseDetailModel(case_, model);
+			return "partner/case-details";
+		}
+		
+		Associate associate = (Associate) userService.findById(form.getAssociateId());
+		Paralegal paralegal = (Paralegal) userService.findById(form.getParalegalId());
+		
+		try {
+			case_ = caseService.reassignStaff(case_, associate, paralegal);
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("success", "Case reassigned successfully.");
+		} catch (InvalidStateException e) {
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "partner/case-details";
+	}
+	
+	@PostMapping("/partner/cases/{id}/invoices/compile")
+	public String compileInvoice(@PathVariable("id") Long caseId,
+								 @Valid @ModelAttribute CompileInvoiceRequest form,
+								 Model model) {
+		Case case_ = caseService.findById(caseId);
+		
+		try {
+			invoiceService.compile(case_, form.getTaskIds());
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("success", "Invoice compiled successfully.");
+		} catch (BusinessRuleViolationException e) {
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "partner/case-details";
+	}
+	
+	@PostMapping("/partner/cases/{id}/invoices/{invoiceId}/charge")
+	public String chargeInvoice(@PathVariable("id") Long caseId, @PathVariable Long invoiceId, Model model) {
+		Case case_ = caseService.findById(caseId);
+		
+		try {
+			invoiceService.chargeInvoice(case_, invoiceService.findById(invoiceId));
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("success", "Invoice charged successfully.");
+		} catch (InvalidInvoiceStateException | InsufficientFundsException e) {
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "partner/case-details";
+	}
+	
+	@PostMapping("/partner/cases/{id}/tasks/{taskId}/edit-billable-amount")
+	public String editBillableAmount(@PathVariable("id") Long caseId, @PathVariable Long taskId,
+									 @Valid @ModelAttribute EditBillableAmountRequest form, BindingResult bindingResult,
+									 Model model) {
+		Case case_ = caseService.findById(caseId);
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			populateCaseDetailModel(case_, model);
+			return "partner/case-details";
+		}
+		
+		try {
+			taskService.editBillableAmount(taskService.findById(taskId), form.getAmount());
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("success", "Charge amount updated.");
+		} catch (BusinessRuleViolationException e) {
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "partner/case-details";
+	}
+	
+	@PostMapping("/partner/cases/{id}/invoices/{invoiceId}/void")
+	public String voidInvoice(@PathVariable("id") Long caseId, @PathVariable Long invoiceId, Model model) {
+		Case case_ = caseService.findById(caseId);
+		
+		try {
+			invoiceService.voidInvoice(invoiceService.findById(invoiceId));
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("success", "Invoice voided. Its charges are unbilled again.");
+		} catch (InvalidInvoiceStateException e) {
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "partner/case-details";
+	}
+	
+	@PostMapping("/partner/cases/{id}/invoices/{invoiceId}/void-refund")
+	public String voidAndRefund(@PathVariable("id") Long caseId, @PathVariable Long invoiceId, Model model) {
+		Case case_ = caseService.findById(caseId);
+		
+		try {
+			invoiceService.voidAndRefundInvoice(case_, invoiceService.findById(invoiceId));
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("success", "Invoice voided and refunded. Its charges are unbilled again.");
+		} catch (InvalidInvoiceStateException e) {
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "partner/case-details";
+	}
+	
+	@GetMapping("/partner/documents/case/{id}")
+	public ResponseEntity<Resource> viewCaseDocument(@PathVariable("id") Long documentId, Authentication authentication) {
+		return documentService.streamCaseDocument(documentService.findById(documentId), currentPartner(authentication));
+	}
+	
+	@GetMapping("/partner/documents/invoice/{id}")
+	public ResponseEntity<Resource> viewInvoiceDocument(@PathVariable("id") Long documentId, Authentication authentication) {
+		return documentService.streamInvoiceDocument(documentService.findById(documentId), currentPartner(authentication));
 	}
 	
 }

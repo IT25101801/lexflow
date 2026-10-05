@@ -1,6 +1,6 @@
 package lexflow.entity.user;
 
-import lexflowdelta.entity.document.NicDocument;
+import lexflow.entity.document.NicDocument;
 import lombok.Getter;
 import lombok.Setter;
 

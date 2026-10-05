@@ -186,4 +186,22 @@ public class ClientController {
 		return documentService.streamConsultationDocument(documentService.findById(documentId), currentClient(authentication));
 	}
 	
+	// ==================== Cases (Open, Closed) ====================
+	
+	@GetMapping("/client/cases/open")
+	public String openCases(Authentication authentication, Model model) {
+		model.addAttribute("cases", caseService.findOpenForClient(currentClient(authentication)));
+		model.addAttribute("title", "Open Cases");
+		model.addAttribute("active", "cases-open");
+		return "client/case-list";
+	}
+	
+	@GetMapping("/client/cases/closed")
+	public String closedCases(Authentication authentication, Model model) {
+		model.addAttribute("cases", caseService.findClosedForClient(currentClient(authentication)));
+		model.addAttribute("title", "Closed Cases");
+		model.addAttribute("active", "cases-closed");
+		return "client/case-list";
+	}
+	
 }

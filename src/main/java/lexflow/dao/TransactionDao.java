@@ -5,7 +5,9 @@ import lexflow.entity.finance.TransactionType;
 import lexflow.entity.user.Client;
 import lexflow.entity.user.Role;
 import lexflow.exception.PersistenceException;
+import lexflow.exception.finance.InactiveClientException;
 import lexflow.exception.finance.InsufficientFundsException;
+import lexflow.exception.finance.InvalidTransactionAmountException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.stereotype.Repository;
@@ -67,9 +69,9 @@ public class TransactionDao {
 			BigDecimal balance = statement.getBigDecimal(8);
 			
 			if (statusCode == 1) {
-				throw new PersistenceException("inserting transaction: invalid amount " + transaction.getAmount());
+				throw new InvalidTransactionAmountException(transaction.getAmount());
 			} else if (statusCode == 2) {
-				throw new PersistenceException("inserting transaction: client not found or inactive (ID " + clientId + ")");
+				throw new InactiveClientException(clientId);
 			} else if (statusCode == 3) {
 				throw new InsufficientFundsException(clientId, balance, transaction.getAmount());
 			} else if (statusCode != 0) {

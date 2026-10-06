@@ -212,7 +212,7 @@ public class PartnerController {
 	
 	@GetMapping("/partner/users/associates")
 	public String associates(@RequestParam(required = false) String keyword, Model model) {
-		model.addAttribute("users", userService.search(Role.ASSOCIATE, keyword));
+		model.addAttribute("users", userService.findByRoleAndKeyword(Role.ASSOCIATE, keyword));
 		model.addAttribute("keyword", keyword);
 		model.addAttribute("title", "Associates");
 		model.addAttribute("active", "users-associates");
@@ -222,7 +222,7 @@ public class PartnerController {
 	
 	@GetMapping("/partner/users/paralegals")
 	public String paralegals(@RequestParam(required = false) String keyword, Model model) {
-		model.addAttribute("users", userService.search(Role.PARALEGAL, keyword));
+		model.addAttribute("users", userService.findByRoleAndKeyword(Role.PARALEGAL, keyword));
 		model.addAttribute("keyword", keyword);
 		model.addAttribute("title", "Paralegals");
 		model.addAttribute("active", "users-paralegals");
@@ -232,7 +232,7 @@ public class PartnerController {
 	
 	@GetMapping("/partner/users/client-relations-officers")
 	public String clientRelationsOfficers(@RequestParam(required = false) String keyword, Model model) {
-		model.addAttribute("users", userService.search(Role.CLIENT_RELATIONS_OFFICER, keyword));
+		model.addAttribute("users", userService.findByRoleAndKeyword(Role.CLIENT_RELATIONS_OFFICER, keyword));
 		model.addAttribute("keyword", keyword);
 		model.addAttribute("title", "Client Relations Officers");
 		model.addAttribute("active", "users-client-relations-officers");
@@ -242,7 +242,7 @@ public class PartnerController {
 	
 	@GetMapping("/partner/users/finance-officers")
 	public String financeOfficers(@RequestParam(required = false) String keyword, Model model) {
-		model.addAttribute("users", userService.search(Role.FINANCE_OFFICER, keyword));
+		model.addAttribute("users", userService.findByRoleAndKeyword(Role.FINANCE_OFFICER, keyword));
 		model.addAttribute("keyword", keyword);
 		model.addAttribute("title", "Finance Officers");
 		model.addAttribute("active", "users-finance-officers");
@@ -252,7 +252,7 @@ public class PartnerController {
 	
 	@GetMapping("/partner/users/clients")
 	public String clients(@RequestParam(required = false) String keyword, Model model) {
-		model.addAttribute("users", userService.search(Role.CLIENT, keyword));
+		model.addAttribute("users", userService.findByRoleAndKeyword(Role.CLIENT, keyword));
 		model.addAttribute("keyword", keyword);
 		model.addAttribute("title", "Clients");
 		model.addAttribute("active", "users-clients");
@@ -262,7 +262,7 @@ public class PartnerController {
 	
 	@GetMapping("/partner/users/partners")
 	public String partners(@RequestParam(required = false) String keyword, Authentication authentication, Model model) {
-		model.addAttribute("users", userService.search(Role.PARTNER, keyword));
+		model.addAttribute("users", userService.findByRoleAndKeyword(Role.PARTNER, keyword));
 		model.addAttribute("keyword", keyword);
 		model.addAttribute("title", "Partners");
 		model.addAttribute("currentUserEmail", authentication.getName());

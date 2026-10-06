@@ -290,7 +290,7 @@ public class UserDao {
 		return findUsers(sql, role);
 	}
 	
-	public boolean hasDeletedAccount(Role role, String email, String nicNumber) {
+	public boolean existsDeleted(Role role, String email, String nicNumber) {
 		String sql = """
 					 SELECT 1
 					 FROM users

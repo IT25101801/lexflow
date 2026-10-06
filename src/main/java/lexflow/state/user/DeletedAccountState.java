@@ -7,7 +7,7 @@ public class DeletedAccountState implements AccountState {
 	
 	@Override
 	public User reactivate(User user, UserService userService, String temporaryPassword) {
-		return userService.markActive(user, temporaryPassword);
+		return userService.applyReactivation(user, temporaryPassword);
 	}
 	
 }

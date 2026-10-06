@@ -243,7 +243,7 @@ public class FinanceOfficerController {
 	
 	@GetMapping("/finance-officer/clients")
 	public String clients(@RequestParam(required = false) String keyword, Model model) {
-		model.addAttribute("users", userService.search(Role.CLIENT, keyword));
+		model.addAttribute("users", userService.findByRoleAndKeyword(Role.CLIENT, keyword));
 		model.addAttribute("keyword", keyword);
 		model.addAttribute("title", "Clients");
 		model.addAttribute("active", "clients");

@@ -38,7 +38,7 @@ public class UserService {
 			throw new EntityAlreadyExistsException("User", email);
 		}
 		
-		if (userDao.hasDeletedAccount(Role.CLIENT, email, nicNumber)) {
+		if (userDao.existsDeleted(Role.CLIENT, email, nicNumber)) {
 			throw new DeletedAccountExistsException(Role.CLIENT, email, nicNumber);
 		}
 		
@@ -62,7 +62,7 @@ public class UserService {
 		}
 		
 		// A rehire into the same role is reactivated, not registered again; a promotion is a different role, so it registers.
-		if (userDao.hasDeletedAccount(role, email, nicNumber)) {
+		if (userDao.existsDeleted(role, email, nicNumber)) {
 			throw new DeletedAccountExistsException(role, email, nicNumber);
 		}
 		
@@ -113,7 +113,7 @@ public class UserService {
 		return client;
 	}
 	
-	public List<User> search(Role role, String keyword) {
+	public List<User> findByRoleAndKeyword(Role role, String keyword) {
 		List<User> users = userDao.findByRole(role);
 		
 		if (keyword == null || keyword.isBlank()) {
@@ -237,7 +237,7 @@ public class UserService {
 	
 	// ---- State Transitions (called by AccountState implementations) ----
 	
-	public User markActive(User user, String temporaryPassword) {
+	public User applyReactivation(User user, String temporaryPassword) {
 		String hashedPassword = passwordEncoder.encode(temporaryPassword);
 		
 		userDao.reactivateById(user.getUserId(), hashedPassword);

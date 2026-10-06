@@ -9,7 +9,7 @@ import lexflow.entity.user.Paralegal;
 import lexflow.entity.user.Role;
 import lexflow.exception.EntityNotFoundException;
 import lexflow.exception.PersistenceException;
-import lexflow.util.IdUtil;
+import lexflow.util.CodeUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.stereotype.Repository;
@@ -83,7 +83,7 @@ public class ConsultationDao {
 				
 				Long generatedId = generatedKeys.getLong(1);
 				consultation.setConsultationId(generatedId);
-				consultationCode = IdUtil.generateConsultationCode(generatedId);
+				consultationCode = CodeUtil.forConsultation(generatedId);
 			}
 			
 		} catch (SQLException e) {

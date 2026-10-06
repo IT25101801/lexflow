@@ -8,7 +8,7 @@ import lexflow.exception.user.ActiveConsultationAssignmentException;
 import lexflow.exception.user.DuplicateActiveAccountException;
 import lexflow.exception.user.OpenCaseAssignmentException;
 import lexflow.exception.user.OutstandingWalletBalanceException;
-import lexflow.util.IdUtil;
+import lexflow.util.CodeUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.stereotype.Repository;
@@ -104,7 +104,7 @@ public class UserDao {
 				
 				Long generatedId = generatedKeys.getLong(1);
 				user.setUserId(generatedId);
-				userCode = IdUtil.generateUserCode(user.getRole(), generatedId);
+				userCode = CodeUtil.forUser(user.getRole(), generatedId);
 			}
 			
 		} catch (SQLException e) {

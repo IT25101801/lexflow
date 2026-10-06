@@ -10,7 +10,7 @@ import lexflow.entity.user.Paralegal;
 import lexflow.entity.user.Role;
 import lexflow.exception.EntityNotFoundException;
 import lexflow.exception.PersistenceException;
-import lexflow.util.IdUtil;
+import lexflow.util.CodeUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.stereotype.Repository;
@@ -84,7 +84,7 @@ public class CaseDao {
 				
 				Long generatedId = generatedKeys.getLong(1);
 				case_.setCaseId(generatedId);
-				caseCode = IdUtil.generateCaseCode(generatedId);
+				caseCode = CodeUtil.forCase(generatedId);
 			}
 			
 		} catch (SQLException e) {

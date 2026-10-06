@@ -5,7 +5,7 @@ import lexflow.entity.finance.Invoice;
 import lexflow.entity.finance.InvoiceStatus;
 import lexflow.exception.EntityNotFoundException;
 import lexflow.exception.PersistenceException;
-import lexflow.util.IdUtil;
+import lexflow.util.CodeUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.stereotype.Repository;
@@ -69,7 +69,7 @@ public class InvoiceDao {
 				Long generatedId = generatedKeys.getLong(1);
 				
 				invoice.setInvoiceId(generatedId);
-				invoiceCode = IdUtil.generateInvoiceCode(generatedId);
+				invoiceCode = CodeUtil.forInvoice(generatedId);
 			}
 			
 		} catch (SQLException e) {

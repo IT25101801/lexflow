@@ -1,6 +1,5 @@
 package lexflow.controller;
 
-import lexflow.util.ValidationUtil;
 import jakarta.validation.Valid;
 import lexflow.dto.user.RegisterClientRequest;
 import lexflow.entity.user.Gender;
@@ -8,6 +7,7 @@ import lexflow.exception.BusinessRuleViolationException;
 import lexflow.exception.EntityAlreadyExistsException;
 import lexflow.exception.PersistenceException;
 import lexflow.service.UserService;
+import lexflow.util.ValidationUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

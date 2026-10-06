@@ -1,10 +1,9 @@
 package lexflow.dto.user;
 
-import lexflow.util.ValidationUtil;
-import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.*;
 import lexflow.entity.user.Gender;
 import lexflow.entity.user.Role;
+import lexflow.util.ValidationUtil;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;

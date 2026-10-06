@@ -6,11 +6,7 @@ import lexflow.entity.case_.Task;
 import lexflow.entity.finance.Invoice;
 import lexflow.entity.scheduling.CaseEvent;
 import lexflow.entity.scheduling.EventStatus;
-import lexflow.exception.case_.IncompleteBillingTaskException;
-import lexflow.exception.case_.IncompleteSchedulingTaskException;
-import lexflow.exception.case_.NoTaskTypeSelectedException;
-import lexflow.exception.case_.SchedulingTaskNotRemovableException;
-import lexflow.exception.case_.TaskNotDeletableException;
+import lexflow.exception.case_.*;
 import lexflow.exception.finance.BillableAmountNotEditableException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
@@ -226,7 +222,7 @@ public class TaskService {
 		
 		return false;
 	}
-
+	
 	private boolean isSameSchedule(CaseEvent caseEvent, LocalDate date, LocalTime startTime, LocalTime endTime, String location, String notes) {
 		String currentNotes = caseEvent.getNotes() == null || caseEvent.getNotes().isBlank() ? null : caseEvent.getNotes();
 		String newNotes = notes == null || notes.isBlank() ? null : notes;

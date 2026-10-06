@@ -1,7 +1,5 @@
 package lexflow.controller;
 
-import lexflow.dto.document.SelectDocumentsRequest;
-import lexflow.util.ValidationUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -12,6 +10,7 @@ import lexflow.dto.case_.SaveContactRequest;
 import lexflow.dto.consultation.AssignStaffRequest;
 import lexflow.dto.consultation.RejectConsultationRequest;
 import lexflow.dto.document.RenameDocumentRequest;
+import lexflow.dto.document.SelectDocumentsRequest;
 import lexflow.dto.finance.CompileInvoiceRequest;
 import lexflow.dto.finance.EditBillableAmountRequest;
 import lexflow.dto.scheduling.ScheduleMeetingRequest;
@@ -23,7 +22,6 @@ import lexflow.entity.case_.Task;
 import lexflow.entity.consultation.CaseType;
 import lexflow.entity.consultation.Consultation;
 import lexflow.entity.finance.InvoiceStatus;
-import lexflow.entity.scheduling.ConsultationEvent;
 import lexflow.entity.scheduling.Event;
 import lexflow.entity.user.*;
 import lexflow.exception.BusinessRuleViolationException;
@@ -35,6 +33,7 @@ import lexflow.exception.finance.InsufficientFundsException;
 import lexflow.exception.finance.InvalidInvoiceStateException;
 import lexflow.security.CustomUserPrincipal;
 import lexflow.service.*;
+import lexflow.util.ValidationUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
@@ -283,10 +282,10 @@ public class PartnerController {
 		model.addAttribute("consultations", consultationService.findAwaitingCase());
 		model.addAttribute("title", "Cases to Open");
 		model.addAttribute("active", "cases-to-open");
-
+		
 		return "partner/consultation-list";
 	}
-
+	
 	@GetMapping("/partner/cases/open")
 	public String openCases(Model model) {
 		model.addAttribute("cases", caseService.findAllOpen());
@@ -528,40 +527,40 @@ public class PartnerController {
 		
 		return "redirect:/partner/cases/{id}";
 	}
-
+	
 	@PostMapping("/partner/cases/{id}/documents/accept-selected")
 	public String acceptStagedDocuments(@PathVariable("id") Long caseId, @Valid @ModelAttribute SelectDocumentsRequest form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
 		Case case_ = caseService.findById(caseId);
-
+		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", ValidationUtil.allErrors(bindingResult));
 			populateCaseDetailModel(case_, model);
-
+			
 			return "partner/case-details";
 		}
-
+		
 		documentService.addStagedToCase(case_, form.getDocumentIds());
-
+		
 		redirectAttributes.addFlashAttribute("success", "Documents added to case successfully.");
-
+		
 		return "redirect:/partner/cases/{id}";
 	}
-
+	
 	@PostMapping("/partner/cases/{id}/documents/reject-selected")
 	public String rejectStagedDocuments(@PathVariable("id") Long caseId, @Valid @ModelAttribute SelectDocumentsRequest form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
 		Case case_ = caseService.findById(caseId);
-
+		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", ValidationUtil.allErrors(bindingResult));
 			populateCaseDetailModel(case_, model);
-
+			
 			return "partner/case-details";
 		}
-
+		
 		documentService.deleteStaged(case_, form.getDocumentIds());
-
+		
 		redirectAttributes.addFlashAttribute("success", "Documents deleted successfully.");
-
+		
 		return "redirect:/partner/cases/{id}";
 	}
 	

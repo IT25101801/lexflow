@@ -512,7 +512,7 @@ public class DocumentDao {
 					 SET task_id = NULL
 					 WHERE task_id = ?
 					 """;
-					
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {

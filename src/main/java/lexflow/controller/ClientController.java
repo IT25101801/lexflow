@@ -1,6 +1,5 @@
 package lexflow.controller;
 
-import lexflow.util.ValidationUtil;
 import jakarta.validation.Valid;
 import lexflow.dto.consultation.EditConsultationRequest;
 import lexflow.dto.consultation.SubmitOnlineConsultationRequest;
@@ -18,6 +17,7 @@ import lexflow.exception.case_.InvalidCaseStateException;
 import lexflow.exception.consultation.InvalidConsultationStateException;
 import lexflow.security.CustomUserPrincipal;
 import lexflow.service.*;
+import lexflow.util.ValidationUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;

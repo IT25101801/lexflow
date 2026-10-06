@@ -13,9 +13,9 @@ import java.util.Set;
 public class ValidationUtil {
 	
 	private static final List<String> REQUIRED_CODES = List.of("NotNull", "NotBlank", "NotEmpty");
-
+	
 	// Read
-
+	
 	public static List<String> allErrors(BindingResult bindingResult) {
 		List<String> errors = new ArrayList<>();
 		Object form = bindingResult.getTarget();
@@ -45,21 +45,21 @@ public class ValidationUtil {
 	}
 	
 	public static boolean hasNoRepeats(List<String> values) {
-
+		
 		if (values == null) {
 			return true;
 		}
-
+		
 		Set<String> seen = new HashSet<>();
-
+		
 		for (String value : values) {
-
+			
 			if (value != null && !value.isBlank() && !seen.add(value.trim().toLowerCase())) {
 				return false;
 			}
-
+			
 		}
-
+		
 		return true;
 	}
 	

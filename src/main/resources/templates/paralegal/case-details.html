@@ -71,7 +71,7 @@
 						Tasks
 						<button class="btn-round-add" type="button" onclick="document.getElementById('taskAddModal').style.display='flex';">+</button>
 					</div>
-<p class="empty-state" th:if="${#lists.isEmpty(tasks)}">No tasks yet.</p>
+					<p class="empty-state" th:if="${#lists.isEmpty(tasks)}">No tasks yet.</p>
 					<div class="contact-card-grid" th:unless="${#lists.isEmpty(tasks)}">
 						<div class="contact-card" th:each="task : ${tasks}">
 							<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.5rem;">
@@ -158,7 +158,8 @@
 					<div>
 						<div class="section-title" style="display:flex;align-items:center;justify-content:space-between;">
 							Documents Pending Review
-							<label th:if="${#lists.size(stagedDocuments) >= 2}" style="display:flex;align-items:center;gap:0.4rem;font-size:0.8rem;font-weight:500;"><input id="stagedSelectAll" type="checkbox" onchange="selectAllStaged(this)"/> Select all</label>
+							<label th:if="${#lists.size(stagedDocuments) >= 2}" style="display:flex;align-items:center;gap:0.4rem;font-size:0.8rem;font-weight:500;"><input id="stagedSelectAll" type="checkbox" onchange="selectAllStaged(this)"/>
+								Select all</label>
 						</div>
 						<p class="empty-state" th:if="${#lists.isEmpty(stagedDocuments)}">No documents pending review.</p>
 						<div class="item-list" th:unless="${#lists.isEmpty(stagedDocuments)}">
@@ -182,9 +183,11 @@
 							</div>
 						</div>
 						<form id="stagedBatchForm" method="post" th:action="@{/paralegal/cases/{id}/documents/accept-selected(id=${case.caseId})}" class="staged-batch-bar" style="display:none;gap:0.5rem;justify-content:flex-end;margin-top:0.75rem;">
-							<button class="action-btn action-btn-create" type="submit" th:formaction="@{/paralegal/cases/{id}/documents/accept-selected(id=${case.caseId})}">Add Selected to Case</button>
+							<button class="action-btn action-btn-create" type="submit" th:formaction="@{/paralegal/cases/{id}/documents/accept-selected(id=${case.caseId})}">Add Selected to Case
+							</button>
 							<button class="action-btn action-btn-delete" type="submit" th:formaction="@{/paralegal/cases/{id}/documents/reject-selected(id=${case.caseId})}"
-									onclick="return confirm('Delete the selected documents? This action cannot be undone.');">Delete Selected</button>
+									onclick="return confirm('Delete the selected documents? This action cannot be undone.');">Delete Selected
+							</button>
 						</form>
 					</div>
 				</div>
@@ -333,7 +336,7 @@
 			</div>
 			<p class="field-hint" th:if="${task.schedulingTask and task.scheduledEvent != null and task.scheduledEvent.eventStatus.name() != 'SCHEDULED'}">
 				The event is <span th:text="${#strings.toLowerCase(task.scheduledEvent.eventStatus)}"></span>, so its date, time and location can no longer be changed.</p>
-				
+			
 			<div class="field task-billing-fields" th:if="${task.billedInvoiceId == null}" th:style="${task.billingTask ? 'display:flex;' : 'display:none;'}">
 				<label th:for="'taskEditBillableAmount-' + ${task.taskId}">Amount</label>
 				<input th:id="'taskEditBillableAmount-' + ${task.taskId}" type="number" name="billableAmount" step="0.01" th:value="${task.billableAmount}" placeholder="Amount"/>
@@ -504,23 +507,23 @@
 	function updateStagedBatchBar() {
 		const boxes = document.querySelectorAll(".staged-select");
 		let checked = 0;
-
+		
 		for (let i = 0; i < boxes.length; i++) {
 			if (boxes[i].checked) checked++;
 		}
-
+		
 		const selectAll = document.getElementById("stagedSelectAll");
 		if (selectAll) selectAll.checked = boxes.length > 0 && checked === boxes.length;
 		document.querySelector(".staged-batch-bar").style.display = checked >= 2 ? "flex" : "none";
 	}
-
+	
 	function selectAllStaged(selectAll) {
 		const boxes = document.querySelectorAll(".staged-select");
-
+		
 		for (let i = 0; i < boxes.length; i++) {
 			boxes[i].checked = selectAll.checked;
 		}
-
+		
 		updateStagedBatchBar();
 	}
 </script>

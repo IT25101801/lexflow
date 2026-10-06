@@ -39,7 +39,7 @@ public class EventService {
 	
 	private final EventDao eventDao;
 	private final TaskDao taskDao;
-private final ConsultationService consultationService;
+	private final ConsultationService consultationService;
 	
 	// Create
 	
@@ -247,7 +247,7 @@ private final ConsultationService consultationService;
 		
 		return eventDao.update(event);
 	}
-
+	
 	// State Pattern
 	
 	public Event applyReschedule(Event event, String subject, LocalDate date, LocalTime startTime, LocalTime endTime, String location, String notes) {

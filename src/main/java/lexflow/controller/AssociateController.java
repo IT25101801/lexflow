@@ -1,7 +1,5 @@
 package lexflow.controller;
 
-import lexflow.dto.document.SelectDocumentsRequest;
-import lexflow.util.ValidationUtil;
 import jakarta.validation.Valid;
 import lexflow.dto.case_.AddTaskRequest;
 import lexflow.dto.case_.CloseCaseRequest;
@@ -9,18 +7,19 @@ import lexflow.dto.case_.EditTaskRequest;
 import lexflow.dto.case_.SaveContactRequest;
 import lexflow.dto.consultation.RejectConsultationRequest;
 import lexflow.dto.document.RenameDocumentRequest;
+import lexflow.dto.document.SelectDocumentsRequest;
 import lexflow.dto.scheduling.ScheduleMeetingRequest;
 import lexflow.dto.user.ChangePasswordRequest;
 import lexflow.entity.case_.Case;
 import lexflow.entity.case_.Task;
 import lexflow.entity.consultation.Consultation;
-import lexflow.entity.scheduling.ConsultationEvent;
 import lexflow.entity.scheduling.Event;
 import lexflow.entity.user.Associate;
 import lexflow.exception.BusinessRuleViolationException;
 import lexflow.exception.InvalidStateException;
 import lexflow.security.CustomUserPrincipal;
 import lexflow.service.*;
+import lexflow.util.ValidationUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
@@ -211,10 +210,10 @@ public class AssociateController {
 		model.addAttribute("consultations", consultationService.findAwaitingCaseForAssociate(currentAssociate(authentication)));
 		model.addAttribute("title", "Cases to Open");
 		model.addAttribute("active", "cases-to-open");
-
+		
 		return "associate/consultation-list";
 	}
-
+	
 	@GetMapping("/associate/cases/open")
 	public String openCases(Authentication authentication, Model model) {
 		model.addAttribute("cases", caseService.findOpenForAssociate(currentAssociate(authentication)));
@@ -339,14 +338,14 @@ public class AssociateController {
 		
 		return "redirect:/associate/cases/{id}";
 	}
-
+	
 	@PostMapping("/associate/cases/{id}/documents/{documentId}/delete")
 	public String deleteCaseDocument(@PathVariable("id") Long caseId, @PathVariable Long documentId, Authentication authentication, RedirectAttributes redirectAttributes) {
 		Case case_ = caseService.findOwnedByAssociate(caseId, currentAssociate(authentication));
 		documentService.deleteStaged(case_, List.of(documentId));
-
+		
 		redirectAttributes.addFlashAttribute("success", "Document deleted successfully.");
-
+		
 		return "redirect:/associate/cases/{id}";
 	}
 	
@@ -359,40 +358,40 @@ public class AssociateController {
 		
 		return "redirect:/associate/cases/{id}";
 	}
-
+	
 	@PostMapping("/associate/cases/{id}/documents/accept-selected")
 	public String acceptStagedDocuments(@PathVariable("id") Long caseId, @Valid @ModelAttribute SelectDocumentsRequest form, BindingResult bindingResult, Authentication authentication, Model model, RedirectAttributes redirectAttributes) {
 		Case case_ = caseService.findOwnedByAssociate(caseId, currentAssociate(authentication));
-
+		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", ValidationUtil.allErrors(bindingResult));
 			populateCaseDetailModel(case_, model);
-
+			
 			return "associate/case-details";
 		}
-
+		
 		documentService.addStagedToCase(case_, form.getDocumentIds());
-
+		
 		redirectAttributes.addFlashAttribute("success", "Documents added to case successfully.");
-
+		
 		return "redirect:/associate/cases/{id}";
 	}
-
+	
 	@PostMapping("/associate/cases/{id}/documents/reject-selected")
 	public String rejectStagedDocuments(@PathVariable("id") Long caseId, @Valid @ModelAttribute SelectDocumentsRequest form, BindingResult bindingResult, Authentication authentication, Model model, RedirectAttributes redirectAttributes) {
 		Case case_ = caseService.findOwnedByAssociate(caseId, currentAssociate(authentication));
-
+		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", ValidationUtil.allErrors(bindingResult));
 			populateCaseDetailModel(case_, model);
-
+			
 			return "associate/case-details";
 		}
-
+		
 		documentService.deleteStaged(case_, form.getDocumentIds());
-
+		
 		redirectAttributes.addFlashAttribute("success", "Documents deleted successfully.");
-
+		
 		return "redirect:/associate/cases/{id}";
 	}
 	

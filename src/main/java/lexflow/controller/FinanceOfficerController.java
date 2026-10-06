@@ -1,6 +1,5 @@
 package lexflow.controller;
 
-import lexflow.util.ValidationUtil;
 import jakarta.validation.Valid;
 import lexflow.dto.finance.CompileInvoiceRequest;
 import lexflow.dto.finance.EditBillableAmountRequest;
@@ -21,6 +20,7 @@ import lexflow.exception.finance.InsufficientFundsException;
 import lexflow.exception.finance.InvalidInvoiceStateException;
 import lexflow.security.CustomUserPrincipal;
 import lexflow.service.*;
+import lexflow.util.ValidationUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;

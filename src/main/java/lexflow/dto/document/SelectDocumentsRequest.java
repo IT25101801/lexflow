@@ -10,9 +10,9 @@ import java.util.List;
 @Getter
 @Setter
 public class SelectDocumentsRequest {
-
+	
 	@NotNull(message = "Select at least two documents")
 	@Size(min = 2, message = "Select at least two documents")
 	private List<Long> documentIds;
-
+	
 }

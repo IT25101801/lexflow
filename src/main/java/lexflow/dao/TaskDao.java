@@ -223,7 +223,7 @@ public class TaskDao {
 					     billed_invoice_id = ?
 					 WHERE task_id = ?
 					 """;
-					
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -261,7 +261,7 @@ public class TaskDao {
 					 SET title = ?
 					 WHERE task_id = ?
 					 """;
-					
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -285,7 +285,7 @@ public class TaskDao {
 					 FROM tasks
 					 WHERE task_id = ?
 					 """;
-					
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {

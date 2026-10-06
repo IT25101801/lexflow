@@ -26,7 +26,7 @@ public class ContactDao {
 	
 	private final DataSource dataSource;
 	
-	// ---- Create ----
+	// Create
 	
 	public Contact insert(Contact contact) {
 		String sql = """
@@ -66,7 +66,7 @@ public class ContactDao {
 		return contact;
 	}
 	
-	// ---- Read ----
+	// Read
 	
 	public Contact findById(Long contactId) {
 		String sql = """
@@ -129,7 +129,7 @@ public class ContactDao {
 		return contacts;
 	}
 	
-	// ---- Update ----
+	// Update
 	
 	public Contact update(Contact contact) {
 		String sql = """
@@ -163,7 +163,7 @@ public class ContactDao {
 		return contact;
 	}
 	
-	// ---- Private Helpers ----
+	// Private Helpers
 	
 	private void insertPhoneNumbers(Long contactId, List<String> phoneNumbers) {
 		
@@ -268,6 +268,19 @@ public class ContactDao {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
 		
+	}
+	
+	private Contact mapRow(ResultSet resultSet) throws SQLException {
+		Long contactId = resultSet.getLong("contact_id");
+		Long caseId = resultSet.getLong("case_id");
+		String name = resultSet.getString("name");
+		List<String> phoneNumbers = findPhoneNumbers(contactId);
+		List<String> emails = findEmails(contactId);
+		List<String> addresses = findAddresses(contactId);
+		String notes = resultSet.getString("notes");
+		LocalDateTime addedAt = resultSet.getTimestamp("added_at").toLocalDateTime();
+		
+		return new Contact(contactId, caseId, name, phoneNumbers, emails, addresses, notes, addedAt);
 	}
 	
 	private List<String> findPhoneNumbers(Long contactId) {
@@ -424,19 +437,6 @@ public class ContactDao {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
 		
-	}
-	
-	private Contact mapRow(ResultSet resultSet) throws SQLException {
-		Long contactId = resultSet.getLong("contact_id");
-		Long caseId = resultSet.getLong("case_id");
-		String name = resultSet.getString("name");
-		List<String> phoneNumbers = findPhoneNumbers(contactId);
-		List<String> emails = findEmails(contactId);
-		List<String> addresses = findAddresses(contactId);
-		String notes = resultSet.getString("notes");
-		LocalDateTime addedAt = resultSet.getTimestamp("added_at").toLocalDateTime();
-		
-		return new Contact(contactId, caseId, name, phoneNumbers, emails, addresses, notes, addedAt);
 	}
 	
 }

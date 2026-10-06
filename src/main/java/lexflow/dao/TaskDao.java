@@ -32,9 +32,10 @@ public class TaskDao {
 												 """;
 	
 	private final DataSource dataSource;
+	
 	private final EventDao eventDao;
 	
-	// ---- Create ----
+	// Create
 	
 	public Task insert(Task task) {
 		String sql = """
@@ -85,7 +86,7 @@ public class TaskDao {
 		return task;
 	}
 	
-	// ---- Read ----
+	// Read
 	
 	public Task findById(Long taskId) {
 		String sql = """
@@ -214,7 +215,7 @@ public class TaskDao {
 		return tasks;
 	}
 	
-	// ---- Update ----
+	// Update
 	
 	public Task update(Task task) {
 		String sql = """
@@ -255,7 +256,7 @@ public class TaskDao {
 		
 	}
 	
-	// ---- Private Helpers ----
+	// Private Helpers
 	
 	private Task mapRow(ResultSet resultSet) throws SQLException {
 		Long taskId = resultSet.getLong("task_id");

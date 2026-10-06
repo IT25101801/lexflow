@@ -27,10 +27,12 @@ import java.util.List;
 public class TaskService {
 	
 	private final TaskDao taskDao;
+	
 	private final DocumentService documentService;
+	
 	private final EventService eventService;
 	
-	// ---- Create ----
+	// Create
 	
 	@Transactional
 	public Task add(Case case_, String title, Boolean documentingTask, Boolean schedulingTask, Boolean billingTask, List<MultipartFile> caseFiles, LocalDate date, LocalTime startTime, LocalTime endTime, String location, String notes, BigDecimal billableAmount) {
@@ -63,7 +65,6 @@ public class TaskService {
 		
 		taskDao.insert(task);
 		
-		// The event holds the task's ID, so it is scheduled once the task exists; a rejected time rolls the task back too
 		if (isSchedulingTask) {
 			CaseEvent scheduledEvent = eventService.schedule(case_, task, title, date, startTime, endTime, location, notes);
 			task.setScheduledEvent(scheduledEvent);
@@ -76,7 +77,7 @@ public class TaskService {
 		return task;
 	}
 	
-	// ---- Read ----
+	// Read
 	
 	public Task findById(Long taskId) {
 		return taskDao.findById(taskId);
@@ -100,7 +101,7 @@ public class TaskService {
 		return taskDao.findUnbilledByCaseId(case_.getCaseId());
 	}
 	
-	// ---- Update ----
+	// Update
 	
 	public Task updateTitle(Task task, String title) {
 		task.setTitle(title);
@@ -150,7 +151,7 @@ public class TaskService {
 		
 	}
 	
-	// ---- Private Helpers ----
+	// Private Helpers
 	
 	private boolean hasAtLeastOneFile(List<MultipartFile> files) {
 		

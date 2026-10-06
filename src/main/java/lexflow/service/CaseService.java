@@ -26,9 +26,10 @@ import java.util.List;
 public class CaseService {
 	
 	private final CaseDao caseDao;
+	
 	private final ApplicationEventPublisher eventPublisher;
 	
-	// ---- Create ----
+	// Create
 	
 	@Transactional
 	public Case open(Consultation consultation) {
@@ -37,10 +38,14 @@ public class CaseService {
 		return caseDao.insert(case_);
 	}
 	
-	// ---- Read ----
+	// Read
 	
 	public Case findById(Long caseId) {
 		return caseDao.findById(caseId);
+	}
+	
+	public Case findByConsultation(Consultation consultation) {
+		return caseDao.findByConsultationId(consultation.getConsultationId());
 	}
 	
 	public Case findOwnedByAssociate(Long caseId, Associate associate) {
@@ -73,10 +78,6 @@ public class CaseService {
 		return case_;
 	}
 	
-	public Case findByConsultation(Consultation consultation) {
-		return caseDao.findByConsultationId(consultation.getConsultationId());
-	}
-	
 	public List<Case> findAllForAssociate(Associate associate) {
 		return caseDao.findByAssociateId(associate.getUserId());
 	}
@@ -101,27 +102,27 @@ public class CaseService {
 		return caseDao.findByAssociateIdAndStatus(associate.getUserId(), CaseStatus.OPEN);
 	}
 	
-	public List<Case> findClosedForAssociate(Associate associate) {
-		return caseDao.findByAssociateIdAndStatus(associate.getUserId(), CaseStatus.CLOSED);
-	}
-	
 	public List<Case> findOpenForParalegal(Paralegal paralegal) {
 		return caseDao.findByParalegalIdAndStatus(paralegal.getUserId(), CaseStatus.OPEN);
-	}
-	
-	public List<Case> findClosedForParalegal(Paralegal paralegal) {
-		return caseDao.findByParalegalIdAndStatus(paralegal.getUserId(), CaseStatus.CLOSED);
 	}
 	
 	public List<Case> findOpenForClient(Client client) {
 		return caseDao.findByClientIdAndStatus(client.getUserId(), CaseStatus.OPEN);
 	}
 	
+	public List<Case> findClosedForAssociate(Associate associate) {
+		return caseDao.findByAssociateIdAndStatus(associate.getUserId(), CaseStatus.CLOSED);
+	}
+	
+	public List<Case> findClosedForParalegal(Paralegal paralegal) {
+		return caseDao.findByParalegalIdAndStatus(paralegal.getUserId(), CaseStatus.CLOSED);
+	}
+	
 	public List<Case> findClosedForClient(Client client) {
 		return caseDao.findByClientIdAndStatus(client.getUserId(), CaseStatus.CLOSED);
 	}
 	
-	// ---- Update ----
+	// Update
 	
 	@Transactional
 	public Case reassignStaff(Case case_, Associate associate, Paralegal paralegal) {
@@ -133,7 +134,7 @@ public class CaseService {
 		return stateFor(case_.getCaseStatus()).close(case_, this, caseResolutionStatus);
 	}
 	
-	// ---- State Transitions (called by CaseState implementations) ----
+	// State Pattern
 	
 	public Case applyReassignment(Case case_, Associate associate, Paralegal paralegal, boolean cancelScheduledEvents) {
 		
@@ -156,8 +157,6 @@ public class CaseService {
 		
 		return caseDao.update(case_);
 	}
-	
-	// ---- Private Helpers ----
 	
 	private CaseState stateFor(CaseStatus caseStatus) {
 		

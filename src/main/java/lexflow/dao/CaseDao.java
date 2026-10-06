@@ -39,10 +39,12 @@ public class CaseDao {
 												 """;
 	
 	private final DataSource dataSource;
+	
 	private final UserDao userDao;
+	
 	private final ConsultationDao consultationDao;
 	
-	// ---- Create ----
+	// Create
 	
 	public Case insert(Case case_) {
 		String sql = """
@@ -117,7 +119,7 @@ public class CaseDao {
 		return case_;
 	}
 	
-	// ---- Read ----
+	// Read
 	
 	public Case findById(Long caseId) {
 		String sql = """
@@ -233,7 +235,7 @@ public class CaseDao {
 		return findByForeignKeyAndStatus("paralegal_id", paralegalId, caseStatus);
 	}
 	
-	// ---- Update ----
+	// Update
 	
 	public Case update(Case case_) {
 		String sql = """
@@ -277,7 +279,34 @@ public class CaseDao {
 		return case_;
 	}
 	
-	// ---- Private Helpers ----
+	// Private Helpers
+	
+	private Case mapRow(ResultSet resultSet) throws SQLException {
+		Long caseId = resultSet.getLong("case_id");
+		String caseCode = resultSet.getString("case_code");
+		Consultation consultation = consultationDao.findById(resultSet.getLong("consultation_id"));
+		Client client = (Client) userDao.findByIdAndRole(resultSet.getLong("client_id"), Role.CLIENT);
+		Associate associate = (Associate) userDao.findByIdAndRole(resultSet.getLong("associate_id"), Role.ASSOCIATE);
+		Paralegal paralegal = (Paralegal) userDao.findByIdAndRole(resultSet.getLong("paralegal_id"), Role.PARALEGAL);
+		CaseStatus caseStatus = CaseStatus.valueOf(resultSet.getString("case_status"));
+		LocalDateTime openedAt = resultSet.getTimestamp("opened_at").toLocalDateTime();
+		
+		CaseResolutionStatus caseResolutionStatus = null;
+		String caseResolutionStatusName = resultSet.getString("case_resolution_status");
+		
+		if (caseResolutionStatusName != null) {
+			caseResolutionStatus = CaseResolutionStatus.valueOf(caseResolutionStatusName);
+		}
+		
+		LocalDateTime closedAt = null;
+		Timestamp closedAtSql = resultSet.getTimestamp("closed_at");
+		
+		if (closedAtSql != null) {
+			closedAt = closedAtSql.toLocalDateTime();
+		}
+		
+		return new Case(caseId, caseCode, consultation, client, associate, paralegal, caseStatus, openedAt, caseResolutionStatus, closedAt);
+	}
 	
 	private List<Case> findByForeignKey(String column, Long userId) {
 		String sql = """
@@ -343,33 +372,6 @@ public class CaseDao {
 		}
 		
 		return cases;
-	}
-	
-	private Case mapRow(ResultSet resultSet) throws SQLException {
-		Long caseId = resultSet.getLong("case_id");
-		String caseCode = resultSet.getString("case_code");
-		Consultation consultation = consultationDao.findById(resultSet.getLong("consultation_id"));
-		Client client = (Client) userDao.findByIdAndRole(resultSet.getLong("client_id"), Role.CLIENT);
-		Associate associate = (Associate) userDao.findByIdAndRole(resultSet.getLong("associate_id"), Role.ASSOCIATE);
-		Paralegal paralegal = (Paralegal) userDao.findByIdAndRole(resultSet.getLong("paralegal_id"), Role.PARALEGAL);
-		CaseStatus caseStatus = CaseStatus.valueOf(resultSet.getString("case_status"));
-		LocalDateTime openedAt = resultSet.getTimestamp("opened_at").toLocalDateTime();
-		
-		CaseResolutionStatus caseResolutionStatus = null;
-		String caseResolutionStatusName = resultSet.getString("case_resolution_status");
-		
-		if (caseResolutionStatusName != null) {
-			caseResolutionStatus = CaseResolutionStatus.valueOf(caseResolutionStatusName);
-		}
-		
-		LocalDateTime closedAt = null;
-		Timestamp closedAtSql = resultSet.getTimestamp("closed_at");
-		
-		if (closedAtSql != null) {
-			closedAt = closedAtSql.toLocalDateTime();
-		}
-		
-		return new Case(caseId, caseCode, consultation, client, associate, paralegal, caseStatus, openedAt, caseResolutionStatus, closedAt);
 	}
 	
 }

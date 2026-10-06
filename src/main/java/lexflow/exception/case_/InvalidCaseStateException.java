@@ -12,7 +12,7 @@ public class InvalidCaseStateException extends InvalidStateException {
 	private final CaseStatus requiredStatus;
 	
 	public InvalidCaseStateException(Long caseId, CaseStatus currentStatus, CaseStatus requiredStatus) {
-		super(String.format("Case %d cannot be processed: status must be %s, but it is currently %s", caseId, requiredStatus, currentStatus));
+		super(String.format("This case cannot be processed: status must be %s, but it is currently %s", requiredStatus, currentStatus));
 		this.caseId = caseId;
 		this.currentStatus = currentStatus;
 		this.requiredStatus = requiredStatus;

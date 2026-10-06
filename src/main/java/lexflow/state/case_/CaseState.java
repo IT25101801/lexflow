@@ -12,4 +12,6 @@ public interface CaseState {
 	
 	Case close(Case case_, CaseService caseService, CaseResolutionStatus caseResolutionStatus);
 	
+	void requireOpen(Case case_);
+	
 }

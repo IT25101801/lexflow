@@ -49,7 +49,7 @@
 			</div>
 			<div class="detail-row" th:if="${case.caseResolutionStatus != null}">
 				<span class="detail-label">Resolution Status</span>
-				<span class="detail-value" th:text="${case.caseResolutionStatus}"></span>
+				<span class="detail-value"><span class="badge" th:classappend="'badge-' + ${case.caseResolutionStatus}" th:text="${case.caseResolutionStatus}"></span></span>
 			</div>
 			<div class="detail-row" th:if="${case.closedAt != null}">
 				<span class="detail-label">Closed At</span>

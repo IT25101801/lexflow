@@ -121,6 +121,10 @@ public class CaseService {
 		return caseDao.findByClientIdAndStatus(client.getUserId(), CaseStatus.CLOSED);
 	}
 	
+	public void requireOpen(Case case_) {
+		stateFor(case_.getCaseStatus()).requireOpen(case_);
+	}
+	
 	// Update
 	
 	@Transactional

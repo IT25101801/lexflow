@@ -176,16 +176,16 @@ public class CaseDao {
 		
 	}
 	
-	public List<Case> findByClientId(Long clientId) {
-		return findByForeignKey("client_id", clientId);
-	}
-	
 	public List<Case> findByAssociateId(Long associateId) {
 		return findByForeignKey("associate_id", associateId);
 	}
 	
 	public List<Case> findByParalegalId(Long paralegalId) {
 		return findByForeignKey("paralegal_id", paralegalId);
+	}
+	
+	public List<Case> findByClientId(Long clientId) {
+		return findByForeignKey("client_id", clientId);
 	}
 	
 	public List<Case> findByStatus(CaseStatus caseStatus) {
@@ -219,16 +219,16 @@ public class CaseDao {
 		return cases;
 	}
 	
-	public List<Case> findByClientIdAndStatus(Long clientId, CaseStatus caseStatus) {
-		return findByForeignKeyAndStatus("client_id", clientId, caseStatus);
-	}
-	
 	public List<Case> findByAssociateIdAndStatus(Long associateId, CaseStatus caseStatus) {
 		return findByForeignKeyAndStatus("associate_id", associateId, caseStatus);
 	}
 	
 	public List<Case> findByParalegalIdAndStatus(Long paralegalId, CaseStatus caseStatus) {
 		return findByForeignKeyAndStatus("paralegal_id", paralegalId, caseStatus);
+	}
+	
+	public List<Case> findByClientIdAndStatus(Long clientId, CaseStatus caseStatus) {
+		return findByForeignKeyAndStatus("client_id", clientId, caseStatus);
 	}
 	
 	// Update

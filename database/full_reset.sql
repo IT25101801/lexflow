@@ -727,7 +727,7 @@ VALUES ('CON-1-93580258',  31, 'FAMILY',                'Seeking representation 
 -- Consultation Opposing Parties Data
 INSERT INTO consultation_opposing_parties (consultation_id, opposing_party)
 VALUES (1,  'Mrs. Chandrika Perera'                   ),
-       (2,  'Mr. Sunil Rathnayake (neighbour)'        ),
+       (2,  'Mr. Chamod Bandara (neighbour)'          ),
        (3,  'Attorney General'                        ),
        (4,  'Meridian Holdings (Pvt) Ltd'             ),
        (5,  'Lanka Textiles (Pvt) Ltd'                ),
@@ -878,7 +878,7 @@ VALUES (1, 'Draft settlement agreement',               1, 0, 1, 15000.00, 1,    
        (3, 'Employment tribunal filing',               1, 0, 1, 12000.00, 3,    '2025-05-19 09:00:00.000'),
        (4, 'Final settlement documentation',           1, 0, 1, 30000.00, 4,    '2025-05-25 09:00:00.000'),
        (5, 'IP registration filing',                   1, 0, 0, NULL,     NULL, '2025-05-28 09:00:00.000'),
-       (6, 'Immigration form review',                  0, 0, 1, 9500.00,  5,    '2025-05-29 09:00:00.000'),
+       (6, 'Immigration form review',                  0, 0, 1, 9500.00,  NULL, '2025-05-29 09:00:00.000'),
        (7, 'General case notes',                       1, 0, 0, NULL,     NULL, '2025-05-30 09:00:00.000'),
        (1, 'Update client contact information',        0, 0, 0, NULL,     NULL, '2025-06-01 09:00:00.000'),
        (1, 'Organize case file',                       0, 0, 0, NULL,     NULL, '2025-06-02 09:00:00.000'),
@@ -891,8 +891,8 @@ VALUES (1, 'Draft settlement agreement',               1, 0, 1, 15000.00, 1,    
        (1, 'Site visit for property inspection',       0, 1, 0, NULL,     NULL, '2025-06-10 09:00:00.000'),
        (1, 'Phone consultation fee',                   0, 0, 1, 3000.00,  NULL, '2025-06-11 09:00:00.000'),
        (1, 'Document notarization fee',                0, 0, 1, 4500.00,  NULL, '2025-06-12 09:00:00.000'),
-       (1, 'Legal research fee',                       0, 0, 1, 6000.00,  7,    '2025-06-13 09:00:00.000'),
-       (1, 'Case filing fee',                          0, 0, 1, 4000.00,  7,    '2025-06-14 09:00:00.000'),
+       (1, 'Legal research fee',                       0, 0, 1, 6000.00,  NULL, '2025-06-13 09:00:00.000'),
+       (1, 'Case filing fee',                          0, 0, 1, 4000.00,  NULL, '2025-06-14 09:00:00.000'),
        (1, 'Discovery meeting with document exchange', 1, 1, 0, NULL,     NULL, '2025-06-15 09:00:00.000'),
        (1, 'Settlement negotiation session',           1, 1, 0, NULL,     NULL, '2025-06-16 09:00:00.000'),
        (1, 'Contract drafting fee',                    1, 0, 1, 8000.00,  6,    '2025-06-17 09:00:00.000'),
@@ -900,8 +900,8 @@ VALUES (1, 'Draft settlement agreement',               1, 0, 1, 15000.00, 1,    
        (1, 'Correspondence review fee',                1, 0, 1, 2000.00,  NULL, '2025-06-19 09:00:00.000'),
        (1, 'Mediation session fee',                    0, 1, 1, 5000.00,  6,    '2025-06-20 09:00:00.000'),
        (1, 'Arbitration hearing prep fee',             0, 1, 1, 6000.00,  NULL, '2025-06-21 09:00:00.000'),
-       (1, 'Court hearing representation',             1, 1, 1, 7000.00,  8,    '2025-06-25 09:00:00.000'),
-       (1, 'Settlement conference representation',     1, 1, 1, 5000.00,  8,    '2025-06-26 09:00:00.000'),
+       (1, 'Court hearing representation',             1, 1, 1, 7000.00,  NULL, '2025-06-25 09:00:00.000'),
+       (1, 'Settlement conference representation',     1, 1, 1, 5000.00,  NULL, '2025-06-26 09:00:00.000'),
        (1, 'Trial preparation session',                1, 1, 1, 3500.00,  NULL, '2025-06-27 09:00:00.000'),
        (8, 'Prepare closing documents',                1, 0, 1, 10000.00, 9,    '2025-07-15 09:00:00.000'),
        (8, 'Final case review fee',                    0, 0, 1, 8000.00,  9,    '2025-07-16 09:00:00.000'),
@@ -936,7 +936,7 @@ VALUES ('CONSULTATION_EVENT', 'Divorce and custody consultation',         '2025-
        ('CASE_EVENT',         'Court hearing representation',             '2025-07-10', '09:00:00', '12:00:00', 'District Court, Colombo',  NULL,                                       'COMPLETED', '2025-06-25 09:00:00.000', '2025-07-10 12:00:00.000', NULL,                      NULL, 1,    31  ),
        ('CASE_EVENT',         'Settlement conference representation',     '2025-07-15', '13:00:00', '15:00:00', 'LexFlow Office, Colombo',  NULL,                                       'COMPLETED', '2025-06-26 09:00:00.000', '2025-07-15 15:00:00.000', NULL,                      NULL, 1,    32  ),
        ('CASE_EVENT',         'Trial preparation session',                '2026-12-20', '09:00:00', '11:00:00', 'LexFlow Office, Colombo',  NULL,                                       'SCHEDULED', '2025-06-27 09:00:00.000', NULL,                      NULL,                      NULL, 1,    33  ),
-       ('CONSULTATION_EVENT', 'Boundary dispute consultation',            '2026-12-22', '10:00:00', '10:30:00', 'LexFlow Office, Colombo',  NULL,                                       'SCHEDULED', '2025-08-04 11:00:00.000', NULL,                      NULL,                      16,   NULL, NULL);
+       ('CONSULTATION_EVENT', 'Boundary dispute consultation',            '2026-10-05', '10:00:00', '10:30:00', 'LexFlow Office, Colombo',  NULL,                                       'SCHEDULED', '2025-08-04 11:00:00.000', NULL,                      NULL,                      16,   NULL, NULL);
 
 -- Documents Data
 INSERT INTO documents (document_type, file_path, original_filename, uploaded_at, user_id, consultation_id, case_id, in_staging, task_id, invoice_id)
@@ -1159,6 +1159,36 @@ BEGIN
         BEGIN
             -- Reject the Update
             THROW 50003, 'A user assigned to an open case cannot be deleted.', 1;
+        END;
+END;
+GO
+
+-- Prevent Deletion of Client With an Unpaid Invoice Trigger
+CREATE TRIGGER trg_users_au_prevent_deletion_of_client_with_unpaid_invoice
+    ON users
+    AFTER UPDATE
+    AS
+BEGIN
+    -- Trigger Options
+    SET NOCOUNT ON;
+
+    -- Find Deleted Clients With an Unpaid Invoice
+    IF EXISTS (SELECT 1
+               FROM inserted i
+               INNER JOIN deleted d
+                   ON d.user_id = i.user_id
+               WHERE i.role = 'CLIENT'
+                 AND d.account_status = 'ACTIVE'
+                 AND i.account_status = 'DELETED'
+                 AND EXISTS (SELECT 1
+                             FROM invoices inv
+                             INNER JOIN cases cs
+                                 ON cs.case_id = inv.case_id
+                             WHERE inv.invoice_status = 'UNPAID'
+                               AND cs.client_id = i.user_id))
+        BEGIN
+            -- Reject the Update
+            THROW 50004, 'A client with an unpaid invoice cannot be deleted.', 1;
         END;
 END;
 GO

@@ -20,4 +20,9 @@ public class ClosedCaseState implements CaseState {
 		throw new InvalidCaseStateException(case_.getCaseId(), case_.getCaseStatus(), CaseStatus.OPEN);
 	}
 	
+	@Override
+	public void requireOpen(Case case_) {
+		throw new InvalidCaseStateException(case_.getCaseId(), case_.getCaseStatus(), CaseStatus.OPEN);
+	}
+	
 }

@@ -21,4 +21,8 @@ public class OpenCaseState implements CaseState {
 		return caseService.applyClose(case_, caseResolutionStatus);
 	}
 	
+	@Override
+	public void requireOpen(Case case_) {
+	}
+	
 }

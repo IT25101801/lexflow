@@ -163,6 +163,28 @@ public class ContactDao {
 		return contact;
 	}
 	
+	// Delete
+
+	public void deleteById(Long contactId) {
+		String sql = """
+					 DELETE
+					 FROM contacts
+					 WHERE contact_id = ?
+					 """;
+
+		Connection connection = DataSourceUtils.getConnection(dataSource);
+
+		try (PreparedStatement statement = connection.prepareStatement(sql)) {
+			statement.setLong(1, contactId);
+			statement.executeUpdate();
+		} catch (SQLException e) {
+			throw new PersistenceException("deleting contact", e);
+		} finally {
+			DataSourceUtils.releaseConnection(connection, dataSource);
+		}
+
+	}
+
 	// Private Helpers
 	
 	private void insertPhoneNumbers(Long contactId, List<String> phoneNumbers) {

@@ -13,6 +13,8 @@ public class ConflictCheckService {
 	
 	private final ConflictCheckDao conflictCheckDao;
 	
+	// Read
+	
 	public List<ConflictCheckResult> check(String keyword) {
 		
 		if (keyword == null || keyword.isBlank()) {

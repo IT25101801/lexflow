@@ -29,12 +29,16 @@ import java.util.List;
 public class ConsultationService {
 	
 	private final ConsultationDao consultationDao;
+	
 	private final CaseDao caseDao;
+	
 	private final EventDao eventDao;
+	
 	private final ApplicationEventPublisher eventPublisher;
+	
 	private final DocumentService documentService;
 	
-	// ---- Create ----
+	// Create
 	
 	@Transactional
 	public Consultation submit(Client client, CaseType caseType, List<String> opposingParties, String description, List<MultipartFile> consultationFiles) {
@@ -49,14 +53,12 @@ public class ConsultationService {
 		return consultation;
 	}
 	
-	// ---- Read ----
+	// Read
 	
 	public Consultation findById(Long consultationId) {
 		return consultationDao.findById(consultationId);
 	}
 	
-	// Ownership resolves against the opened Case once one exists, since staff assignment can
-	// move there independently of the original consultation record.
 	public Consultation findOwnedByAssociate(Long consultationId, Associate associate) {
 		Consultation consultation = findById(consultationId);
 		Case case_ = caseDao.findByConsultationId(consultationId);
@@ -91,19 +93,6 @@ public class ConsultationService {
 		}
 		
 		return consultation;
-	}
-	
-	public boolean hasCompletedMeeting(Consultation consultation) {
-		
-		for (ConsultationEvent meeting : eventDao.findByConsultationId(consultation.getConsultationId())) {
-			
-			if (meeting.getEventStatus() == EventStatus.COMPLETED) {
-				return true;
-			}
-			
-		}
-		
-		return false;
 	}
 	
 	public List<Consultation> findAll() {
@@ -143,7 +132,20 @@ public class ConsultationService {
 		return consultationDao.findByClientKeyword(keyword);
 	}
 	
-	// ---- Update ----
+	public boolean hasCompletedMeeting(Consultation consultation) {
+		
+		for (ConsultationEvent meeting : eventDao.findByConsultationId(consultation.getConsultationId())) {
+			
+			if (meeting.getEventStatus() == EventStatus.COMPLETED) {
+				return true;
+			}
+			
+		}
+		
+		return false;
+	}
+	
+	// Update
 	
 	@Transactional
 	public Consultation updateDetails(Consultation consultation, CaseType caseType, List<String> opposingParties, String description, List<MultipartFile> consultationFiles, List<Long> documentIdsToDelete, List<Long> documentIds, List<String> originalFilenames) {
@@ -180,14 +182,14 @@ public class ConsultationService {
 		return stateFor(consultation.getConsultationStatus()).associateReject(consultation, this, rejectionReason);
 	}
 	
-	// ---- Delete ----
+	// Delete
 	
 	@Transactional
 	public void delete(Consultation consultation) {
 		stateFor(consultation.getConsultationStatus()).delete(consultation, this);
 	}
 	
-	// ---- State Transitions (called by ConsultationState implementations) ----
+	// State Pattern
 	
 	public Consultation applyDetails(Consultation consultation, CaseType caseType, List<String> opposingParties, String description, List<MultipartFile> consultationFiles, List<Long> documentIdsToDelete, List<Long> documentIds, List<String> originalFilenames) {
 		consultation.setCaseType(caseType);
@@ -234,8 +236,6 @@ public class ConsultationService {
 		documentService.deleteAll(consultation);
 		consultationDao.deleteById(consultation.getConsultationId());
 	}
-	
-	// ---- Private Helpers ----
 	
 	private ConsultationState stateFor(ConsultationStatus consultationStatus) {
 		

@@ -38,9 +38,10 @@ public class ConsultationDao {
 												 """;
 	
 	private final DataSource dataSource;
+	
 	private final UserDao userDao;
 	
-	// ---- Create ----
+	// Create
 	
 	public Consultation insert(Consultation consultation) {
 		String sql = """
@@ -118,7 +119,7 @@ public class ConsultationDao {
 		return consultation;
 	}
 	
-	// ---- Read ----
+	// Read
 	
 	public Consultation findById(Long consultationId) {
 		String sql = """
@@ -275,7 +276,7 @@ public class ConsultationDao {
 		return consultations;
 	}
 	
-	// ---- Update ----
+	// Update
 	
 	public Consultation update(Consultation consultation) {
 		String sql = """
@@ -324,7 +325,7 @@ public class ConsultationDao {
 		return consultation;
 	}
 	
-	// ---- Delete ----
+	// Delete
 	
 	public void deleteById(Long consultationId) {
 		String sql = """
@@ -365,7 +366,102 @@ public class ConsultationDao {
 		
 	}
 	
-	// ---- Private Helpers ----
+	// Private Helpers
+	
+	private void insertOpposingParties(Long consultationId, List<String> opposingParties) {
+		
+		if (opposingParties == null) {
+			return;
+		}
+		
+		String sql = """
+					 INSERT INTO consultation_opposing_parties (consultation_id, opposing_party)
+					 VALUES (?, ?)
+					 """;
+		
+		Connection connection = DataSourceUtils.getConnection(dataSource);
+		
+		try (PreparedStatement statement = connection.prepareStatement(sql)) {
+			
+			for (String opposingParty : opposingParties) {
+				
+				if (opposingParty == null || opposingParty.isBlank()) {
+					continue;
+				}
+				
+				statement.setLong(1, consultationId);
+				statement.setString(2, opposingParty);
+				
+				statement.executeUpdate();
+			}
+			
+		} catch (SQLException e) {
+			throw new PersistenceException("inserting opposing parties", e);
+		} finally {
+			DataSourceUtils.releaseConnection(connection, dataSource);
+		}
+		
+	}
+	
+	private Consultation mapRow(ResultSet resultSet) throws SQLException {
+		Long consultationId = resultSet.getLong("consultation_id");
+		String consultationCode = resultSet.getString("consultation_code");
+		Client client = (Client) userDao.findByIdAndRole(resultSet.getLong("client_id"), Role.CLIENT);
+		CaseType caseType = CaseType.valueOf(resultSet.getString("case_type"));
+		List<String> opposingParties = findOpposingParties(consultationId);
+		String description = resultSet.getString("description");
+		ConsultationStatus consultationStatus = ConsultationStatus.valueOf(resultSet.getString("consultation_status"));
+		LocalDateTime submittedAt = resultSet.getTimestamp("submitted_at").toLocalDateTime();
+		
+		Associate associate = null;
+		long associateId = resultSet.getLong("associate_id");
+		
+		if (!resultSet.wasNull()) {
+			associate = (Associate) userDao.findByIdAndRole(associateId, Role.ASSOCIATE);
+		}
+		
+		Paralegal paralegal = null;
+		long paralegalId = resultSet.getLong("paralegal_id");
+		
+		if (!resultSet.wasNull()) {
+			paralegal = (Paralegal) userDao.findByIdAndRole(paralegalId, Role.PARALEGAL);
+		}
+		
+		String rejectionReason = resultSet.getString("rejection_reason");
+		
+		return new Consultation(consultationId, consultationCode, client, caseType, opposingParties, description, consultationStatus, submittedAt, associate, paralegal, rejectionReason);
+	}
+	
+	private List<String> findOpposingParties(Long consultationId) {
+		String sql = """
+					 SELECT opposing_party
+					 FROM consultation_opposing_parties
+					 WHERE consultation_id = ?
+					 """;
+		
+		List<String> opposingParties = new ArrayList<>();
+		
+		Connection connection = DataSourceUtils.getConnection(dataSource);
+		
+		try (PreparedStatement statement = connection.prepareStatement(sql)) {
+			statement.setLong(1, consultationId);
+			
+			try (ResultSet resultSet = statement.executeQuery()) {
+				
+				while (resultSet.next()) {
+					opposingParties.add(resultSet.getString("opposing_party"));
+				}
+				
+			}
+			
+		} catch (SQLException e) {
+			throw new PersistenceException("finding opposing parties", e);
+		} finally {
+			DataSourceUtils.releaseConnection(connection, dataSource);
+		}
+		
+		return opposingParties;
+	}
 	
 	private List<Consultation> findByForeignKey(String column, Long userId) {
 		String sql = """
@@ -433,72 +529,6 @@ public class ConsultationDao {
 		return consultations;
 	}
 	
-	private void insertOpposingParties(Long consultationId, List<String> opposingParties) {
-		
-		if (opposingParties == null) {
-			return;
-		}
-		
-		String sql = """
-					 INSERT INTO consultation_opposing_parties (consultation_id, opposing_party)
-					 VALUES (?, ?)
-					 """;
-		
-		Connection connection = DataSourceUtils.getConnection(dataSource);
-		
-		try (PreparedStatement statement = connection.prepareStatement(sql)) {
-			
-			for (String opposingParty : opposingParties) {
-				
-				if (opposingParty == null || opposingParty.isBlank()) {
-					continue;
-				}
-				
-				statement.setLong(1, consultationId);
-				statement.setString(2, opposingParty);
-				
-				statement.executeUpdate();
-			}
-			
-		} catch (SQLException e) {
-			throw new PersistenceException("inserting opposing parties", e);
-		} finally {
-			DataSourceUtils.releaseConnection(connection, dataSource);
-		}
-		
-	}
-	
-	private List<String> findOpposingParties(Long consultationId) {
-		String sql = """
-					 SELECT opposing_party
-					 FROM consultation_opposing_parties
-					 WHERE consultation_id = ?
-					 """;
-		
-		List<String> opposingParties = new ArrayList<>();
-		
-		Connection connection = DataSourceUtils.getConnection(dataSource);
-		
-		try (PreparedStatement statement = connection.prepareStatement(sql)) {
-			statement.setLong(1, consultationId);
-			
-			try (ResultSet resultSet = statement.executeQuery()) {
-				
-				while (resultSet.next()) {
-					opposingParties.add(resultSet.getString("opposing_party"));
-				}
-				
-			}
-			
-		} catch (SQLException e) {
-			throw new PersistenceException("finding opposing parties", e);
-		} finally {
-			DataSourceUtils.releaseConnection(connection, dataSource);
-		}
-		
-		return opposingParties;
-	}
-	
 	private void replaceOpposingParties(Long consultationId, List<String> opposingParties) {
 		String sql = """
 					 DELETE
@@ -519,35 +549,6 @@ public class ConsultationDao {
 		}
 		
 		insertOpposingParties(consultationId, opposingParties);
-	}
-	
-	private Consultation mapRow(ResultSet resultSet) throws SQLException {
-		Long consultationId = resultSet.getLong("consultation_id");
-		String consultationCode = resultSet.getString("consultation_code");
-		Client client = (Client) userDao.findByIdAndRole(resultSet.getLong("client_id"), Role.CLIENT);
-		CaseType caseType = CaseType.valueOf(resultSet.getString("case_type"));
-		List<String> opposingParties = findOpposingParties(consultationId);
-		String description = resultSet.getString("description");
-		ConsultationStatus consultationStatus = ConsultationStatus.valueOf(resultSet.getString("consultation_status"));
-		LocalDateTime submittedAt = resultSet.getTimestamp("submitted_at").toLocalDateTime();
-		
-		Associate associate = null;
-		long associateId = resultSet.getLong("associate_id");
-		
-		if (!resultSet.wasNull()) {
-			associate = (Associate) userDao.findByIdAndRole(associateId, Role.ASSOCIATE);
-		}
-		
-		Paralegal paralegal = null;
-		long paralegalId = resultSet.getLong("paralegal_id");
-		
-		if (!resultSet.wasNull()) {
-			paralegal = (Paralegal) userDao.findByIdAndRole(paralegalId, Role.PARALEGAL);
-		}
-		
-		String rejectionReason = resultSet.getString("rejection_reason");
-		
-		return new Consultation(consultationId, consultationCode, client, caseType, opposingParties, description, consultationStatus, submittedAt, associate, paralegal, rejectionReason);
 	}
 	
 }

@@ -15,13 +15,13 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-// Read-only: the conflict-of-interest search has no table of its own. One query matches a keyword against
-// every user's name, every consultation's opposing parties and every case contact's name.
 @Repository
 @RequiredArgsConstructor
 public class ConflictCheckDao {
 	
 	private final DataSource dataSource;
+	
+	// Read
 	
 	public List<ConflictCheckResult> findByKeyword(String keyword) {
 		String sql = """

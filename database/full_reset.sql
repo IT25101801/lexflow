@@ -722,12 +722,25 @@ VALUES ('CON-1-93580258',  31, 'FAMILY',                'Seeking representation 
        ('CON-17-53968217', 31, 'CORPORATE',             'Advice required on restructuring his business into a private limited company.',                                           'ACCEPTED_BY_ASSOCIATE', '2025-08-05 10:00:00.000', 11,   21,   NULL                                                                         ),
        ('CON-18-84620173', 31, 'FAMILY',                'Requesting assistance with a prenuptial agreement ahead of his upcoming marriage.',                                       'REJECTED_BY_ASSOCIATE', '2025-08-06 10:00:00.000', 11,   21,   'Matter falls outside the firm''s consultation scope for this practice area.'),
        ('CON-19-25802464', 32, 'PROPERTY',              'Dispute over tenancy rights in a rented commercial property.',                                                            'ACCEPTED_BY_ASSOCIATE', '2025-08-10 10:00:00.000', 19,   29,   NULL                                                                         ),
-       ('CON-20-97037031', 33, 'EMPLOYMENT',            'Claim for unpaid overtime and end-of-service benefits.',                                                                  'ACCEPTED_BY_ASSOCIATE', '2025-08-12 10:00:00.000', 20,   30,   NULL                                                                         );
+       ('CON-20-97037031', 33, 'EMPLOYMENT',            'Claim for unpaid overtime and end-of-service benefits.',                                                                  'ACCEPTED_BY_ASSOCIATE', '2025-08-12 10:00:00.000', 20,   30,   NULL                                                                         ),
+       ('CON-21-78271598', 31, 'PROPERTY',              'His tenant has refused to leave his Nugegoda house after the lease ended.',                                               'ACCEPTED_BY_ASSOCIATE', '2026-09-24 09:00:00.000', 11,   21,   NULL                                                                         ),
+       ('CON-22-59506165', 31, 'CIVIL',                 'A contractor abandoned the extension of his house after taking an advance.',                                              'ACCEPTED_BY_ASSOCIATE', '2026-09-25 09:00:00.000', 11,   21,   NULL                                                                         ),
+       ('CON-23-40740732', 31, 'CONTRACT_COMMERCIAL',   'A catering client has not paid six months of invoices for his business.',                                                 'ACCEPTED_BY_ASSOCIATE', '2026-09-26 09:00:00.000', 11,   21,   NULL                                                                         ),
+       ('CON-24-21975299', 31, 'CIVIL',                 'Water leaking from the apartment above has damaged his ceiling and furniture.',                                           'SCHEDULED',             '2026-09-27 09:00:00.000', 11,   21,   NULL                                                                         ),
+       ('CON-25-93209866', 31, 'CORPORATE',             'A minority shareholder is blocking the sale of his company''s warehouse.',                                                'SCHEDULED',             '2026-09-28 09:00:00.000', 11,   21,   NULL                                                                         ),
+       ('CON-26-74444433', 31, 'CIVIL',                 'A former supplier has been posting false claims about his business online.',                                              'SCHEDULED',             '2026-09-29 09:00:00.000', 11,   21,   NULL                                                                         ),
+       ('CON-27-55679000', 31, 'PROPERTY',              'A buyer withdrew from the sale of his Galle property after the deposit was paid.',                                        'ACCEPTED_BY_PARTNER',   '2026-09-30 09:00:00.000', 11,   21,   NULL                                                                         ),
+       ('CON-28-36913567', 31, 'CONTRACT_COMMERCIAL',   'A software vendor delivered an inventory system that does not work as agreed.',                                           'ACCEPTED_BY_PARTNER',   '2026-10-01 09:00:00.000', 11,   21,   NULL                                                                         ),
+       ('CON-29-18148134', 31, 'CIVIL',                 'His insurer rejected the claim for his delivery van after an accident.',                                                  'ACCEPTED_BY_PARTNER',   '2026-10-02 09:00:00.000', 11,   21,   NULL                                                                         ),
+       ('CON-30-89382701', 31, 'EMPLOYMENT',            'A former manager is using his client list to solicit his customers after resigning.',                                     'PENDING',               '2026-10-03 09:00:00.000', NULL, NULL, NULL                                                                         ),
+       ('CON-31-70617268', 36, 'CIVIL',                 'Tree roots from the neighbouring property are cracking her boundary wall and driveway.',                                  'PENDING',               '2026-10-04 09:00:00.000', NULL, NULL, NULL                                                                         ),
+       ('CON-32-51851835', 39, 'CONTRACT_COMMERCIAL',   'A tenant has stopped paying rent on her shop space for four months.',                                                     'PENDING',               '2026-10-04 15:00:00.000', NULL, NULL, NULL                                                                         ),
+       ('CON-33-33086402', 32, 'CIVIL',                 'His neighbour has built a wall that blocks the only access road to his land.',                                            'PENDING',               '2026-10-05 09:00:00.000', NULL, NULL, NULL                                                                         );
 
 -- Consultation Opposing Parties Data
 INSERT INTO consultation_opposing_parties (consultation_id, opposing_party)
 VALUES (1,  'Mrs. Chandrika Perera'                   ),
-       (2,  'Mr. Chamod Bandara (neighbour)'          ),
+       (2,  'Mr. Sunil Rathnayake (neighbour)'        ),
        (3,  'Attorney General'                        ),
        (4,  'Meridian Holdings (Pvt) Ltd'             ),
        (5,  'Lanka Textiles (Pvt) Ltd'                ),
@@ -745,7 +758,20 @@ VALUES (1,  'Mrs. Chandrika Perera'                   ),
        (17, 'Registrar of Companies (advisory matter)'),
        (18, 'Ms. R. Jayawardena (fiancee)'            ),
        (19, 'Mr. Farook Hameed (landlord)'            ),
-       (20, 'Southern Garments (Pvt) Ltd'             );
+       (20, 'Southern Garments (Pvt) Ltd'             ),
+       (21, 'Mr. Ajith Kumara (tenant)'               ),
+       (22, 'Mr. Priyantha Jayasena (contractor)'     ),
+       (23, 'Royal Events (Pvt) Ltd'                  ),
+       (24, 'Mr. Lalith Gunasekara (upstairs owner)'  ),
+       (25, 'Mr. Sunil Ekanayake (shareholder)'       ),
+       (26, 'Mr. Dinesh Rodrigo (former supplier)'    ),
+       (27, 'Mr. Roshan Silva (buyer)'                ),
+       (28, 'Codeworks Lanka (Pvt) Ltd'               ),
+       (29, 'Ceylinco Motor Insurance'                ),
+       (30, 'Mr. Kasun Dias (former manager)'         ),
+       (31, 'Ms. Poornima Mendis (neighbour)'         ),
+       (32, 'Mr. Nadun Perera (tenant)'               ),
+       (33, 'Mr. Chamod Bandara (neighbour)'          );
 
 -- Cases Data
 INSERT INTO cases (case_code, consultation_id, client_id, associate_id, paralegal_id, case_status, opened_at, case_resolution_status, closed_at)
@@ -913,7 +939,8 @@ VALUES (1, 'Draft settlement agreement',               1, 0, 1, 15000.00, 1,    
        (1, 'Client strategy meeting',                  0, 1, 0, NULL,     NULL, '2025-05-01 09:00:00.000'),
        (2, 'Merger negotiation session',               0, 1, 0, NULL,     NULL, '2025-05-20 09:00:00.000'),
        (3, 'Tribunal preparation meeting',             0, 1, 0, NULL,     NULL, '2025-05-14 09:00:00.000'),
-       (5, 'Vendor contract review',                   0, 1, 0, NULL,     NULL, '2025-05-02 09:00:00.000');
+       (5, 'Vendor contract review',                   0, 1, 0, NULL,     NULL, '2025-05-02 09:00:00.000'),
+       (1, 'Appeal preparation fee',                   0, 0, 1, 60000.00, NULL, '2026-10-05 09:00:00.000');
 
 -- Events Data
 INSERT INTO events (event_type, subject, date, start_time, end_time, location, notes, event_status, scheduled_at, completed_at, canceled_at, consultation_id, case_id, task_id)
@@ -936,18 +963,24 @@ VALUES ('CONSULTATION_EVENT', 'Divorce and custody consultation',         '2025-
        ('CASE_EVENT',         'Court hearing representation',             '2025-07-10', '09:00:00', '12:00:00', 'District Court, Colombo',  NULL,                                       'COMPLETED', '2025-06-25 09:00:00.000', '2025-07-10 12:00:00.000', NULL,                      NULL, 1,    31  ),
        ('CASE_EVENT',         'Settlement conference representation',     '2025-07-15', '13:00:00', '15:00:00', 'LexFlow Office, Colombo',  NULL,                                       'COMPLETED', '2025-06-26 09:00:00.000', '2025-07-15 15:00:00.000', NULL,                      NULL, 1,    32  ),
        ('CASE_EVENT',         'Trial preparation session',                '2026-12-20', '09:00:00', '11:00:00', 'LexFlow Office, Colombo',  NULL,                                       'SCHEDULED', '2025-06-27 09:00:00.000', NULL,                      NULL,                      NULL, 1,    33  ),
-       ('CONSULTATION_EVENT', 'Boundary dispute consultation',            '2026-10-05', '10:00:00', '10:30:00', 'LexFlow Office, Colombo',  NULL,                                       'SCHEDULED', '2025-08-04 11:00:00.000', NULL,                      NULL,                      16,   NULL, NULL);
+       ('CONSULTATION_EVENT', 'Boundary dispute consultation',            '2026-12-22', '10:00:00', '10:30:00', 'LexFlow Office, Colombo',  NULL,                                       'SCHEDULED', '2025-08-04 11:00:00.000', NULL,                      NULL,                      16,   NULL, NULL),
+       ('CONSULTATION_EVENT', 'Tenant eviction consultation',             '2026-09-28', '10:00:00', '10:30:00', 'LexFlow Office, Colombo',  NULL,                                       'COMPLETED', '2026-09-24 11:00:00.000', '2026-09-28 10:30:00.000', NULL,                      21,   NULL, NULL),
+       ('CONSULTATION_EVENT', 'Abandoned construction consultation',      '2026-09-29', '10:00:00', '10:30:00', 'LexFlow Office, Colombo',  NULL,                                       'COMPLETED', '2026-09-25 11:00:00.000', '2026-09-29 10:30:00.000', NULL,                      22,   NULL, NULL),
+       ('CONSULTATION_EVENT', 'Unpaid invoices consultation',             '2026-09-30', '10:00:00', '10:30:00', 'LexFlow Office, Colombo',  NULL,                                       'COMPLETED', '2026-09-26 11:00:00.000', '2026-09-30 10:30:00.000', NULL,                      23,   NULL, NULL),
+       ('CONSULTATION_EVENT', 'Water damage consultation',                '2026-10-05', '11:00:00', '11:30:00', 'LexFlow Office, Colombo',  NULL,                                       'SCHEDULED', '2026-09-30 11:00:00.000', NULL,                      NULL,                      24,   NULL, NULL),
+       ('CONSULTATION_EVENT', 'Shareholder dispute consultation',         '2026-10-05', '14:00:00', '14:30:00', 'LexFlow Office, Colombo',  NULL,                                       'SCHEDULED', '2026-10-01 11:00:00.000', NULL,                      NULL,                      25,   NULL, NULL),
+       ('CONSULTATION_EVENT', 'Online defamation consultation',           '2026-10-05', '15:30:00', '16:00:00', 'LexFlow Office, Colombo',  NULL,                                       'SCHEDULED', '2026-10-02 11:00:00.000', NULL,                      NULL,                      26,   NULL, NULL);
 
 -- Documents Data
 INSERT INTO documents (document_type, file_path, original_filename, uploaded_at, user_id, consultation_id, case_id, in_staging, task_id, invoice_id)
-VALUES ('NIC_DOCUMENT',          'uploads/seed/nic-1.pdf',                   'nadeesha_perera_nic.pdf',  '2025-01-10 09:05:00.000', 1,    NULL, NULL, NULL, NULL, NULL),
-       ('BAR_DOCUMENT',          'uploads/seed/bar-1.pdf',                   'nadeesha_perera_bar.pdf',  '2025-01-10 09:06:00.000', 1,    NULL, NULL, NULL, NULL, NULL),
-       ('NIC_DOCUMENT',          'uploads/seed/nic-11.pdf',                  'ruwan_senanayake_nic.pdf', '2025-02-01 09:05:00.000', 11,   NULL, NULL, NULL, NULL, NULL),
-       ('BAR_DOCUMENT',          'uploads/seed/bar-11.pdf',                  'ruwan_senanayake_bar.pdf', '2025-02-01 09:06:00.000', 11,   NULL, NULL, NULL, NULL, NULL),
-       ('NIC_DOCUMENT',          'uploads/seed/nic-31.pdf',                  'lal_yapa_nic.pdf',         '2025-03-01 09:05:00.000', 31,   NULL, NULL, NULL, NULL, NULL),
-       ('CONSULTATION_DOCUMENT', 'uploads/seed/consult-1.pdf',               'initial_intake_form.pdf',  '2025-04-15 10:05:00.000', NULL, 1,    NULL, NULL, NULL, NULL),
-       ('CASE_DOCUMENT',         'uploads/seed/case-1-settlement-draft.pdf', 'settlement_draft.pdf',     '2025-05-10 09:10:00.000', NULL, NULL, 1,    0,    1,    NULL),
-       ('CASE_DOCUMENT',         'uploads/seed/case-1-staged-notes.pdf',     'client_notes.pdf',         '2025-05-12 09:10:00.000', NULL, NULL, 1,    1,    NULL, NULL),
+VALUES ('NIC_DOCUMENT',          'uploads/seed/nic-1.pdf',                   'Nadeesha Perera NIC.pdf',  '2025-01-10 09:05:00.000', 1,    NULL, NULL, NULL, NULL, NULL),
+       ('BAR_DOCUMENT',          'uploads/seed/bar-1.pdf',                   'Nadeesha Perera Bar.pdf',  '2025-01-10 09:06:00.000', 1,    NULL, NULL, NULL, NULL, NULL),
+       ('NIC_DOCUMENT',          'uploads/seed/nic-11.pdf',                  'Ruwan Senanayake NIC.pdf', '2025-02-01 09:05:00.000', 11,   NULL, NULL, NULL, NULL, NULL),
+       ('BAR_DOCUMENT',          'uploads/seed/bar-11.pdf',                  'Ruwan Senanayake Bar.pdf', '2025-02-01 09:06:00.000', 11,   NULL, NULL, NULL, NULL, NULL),
+       ('NIC_DOCUMENT',          'uploads/seed/nic-31.pdf',                  'Lal Yapa NIC.pdf',         '2025-03-01 09:05:00.000', 31,   NULL, NULL, NULL, NULL, NULL),
+       ('CONSULTATION_DOCUMENT', 'uploads/seed/consult-1.pdf',               'Initial Intake Form.pdf',  '2025-04-15 10:05:00.000', NULL, 1,    NULL, NULL, NULL, NULL),
+       ('CASE_DOCUMENT',         'uploads/seed/case-1-settlement-draft.pdf', 'Settlement Draft.pdf',     '2025-05-10 09:10:00.000', NULL, NULL, 1,    0,    1,    NULL),
+       ('CASE_DOCUMENT',         'uploads/seed/case-1-staged-notes.pdf',     'Client Notes.pdf',         '2025-05-12 09:10:00.000', NULL, NULL, 1,    1,    NULL, NULL),
        ('INVOICE_DOCUMENT',      'uploads/seed/invoice-3.pdf',               'invoice_INV-3.pdf',        '2025-06-03 09:00:00.000', NULL, NULL, NULL, NULL, NULL, 3   ),
        ('INVOICE_DOCUMENT',      'uploads/seed/invoice-4.pdf',               'invoice_INV-4.pdf',        '2025-06-04 09:00:00.000', NULL, NULL, NULL, NULL, NULL, 4   );
 

@@ -148,15 +148,15 @@ public class TaskService {
 	
 	// Private Helpers
 	
-	private boolean hasAtLeastOneFile(List<MultipartFile> files) {
+	private boolean hasAtLeastOneFile(List<MultipartFile> caseFiles) {
 		
-		if (files == null) {
+		if (caseFiles == null) {
 			return false;
 		}
 		
-		for (MultipartFile file : files) {
+		for (MultipartFile caseFile : caseFiles) {
 			
-			if (file != null && !file.isEmpty()) {
+			if (caseFile != null && !caseFile.isEmpty()) {
 				return true;
 			}
 			

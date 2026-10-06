@@ -38,7 +38,8 @@
 						</td>
 						<td th:text="${#strings.replace(consultation.caseType, '_', ' ')}"></td>
 						<td th:text="${#lists.size(consultation.opposingParties) > 1 ? consultation.opposingParties[0] + ' et al.' : consultation.opposingParties[0]}"></td>
-						<td><span class="badge" th:classappend="'badge-' + ${consultation.consultationStatus}" th:text="${#strings.replace(consultation.consultationStatus, '_', ' ')}"></span></td>
+						<td><span class="badge" th:classappend="'badge-' + ${consultation.consultationStatus}" th:text="${#strings.replace(consultation.consultationStatus, '_', ' ')}"></span>
+						</td>
 						<td th:text="${#temporals.format(consultation.submittedAt, 'dd/MM/yyyy HH:mm')}"></td>
 						<td>
 							<span th:if="${consultation.associate == null}">–</span>

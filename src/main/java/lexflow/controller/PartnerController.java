@@ -22,7 +22,6 @@ import lexflow.entity.consultation.CaseType;
 import lexflow.entity.consultation.Consultation;
 import lexflow.entity.finance.InvoiceStatus;
 import lexflow.entity.scheduling.ConsultationEvent;
-import lexflow.entity.user.Role;
 import lexflow.entity.user.*;
 import lexflow.exception.BusinessRuleViolationException;
 import lexflow.exception.EntityAlreadyExistsException;

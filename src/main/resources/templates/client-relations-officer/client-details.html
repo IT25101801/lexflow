@@ -155,7 +155,8 @@
 						<tr th:each="consultation : ${relatedConsultations}">
 							<td class="cell-id" th:text="${consultation.consultationCode}"></td>
 							<td th:text="${#strings.replace(consultation.caseType, '_', ' ')}"></td>
-							<td><span class="badge" th:classappend="'badge-' + ${consultation.consultationStatus}" th:text="${#strings.replace(consultation.consultationStatus, '_', ' ')}"></span></td>
+							<td><span class="badge" th:classappend="'badge-' + ${consultation.consultationStatus}" th:text="${#strings.replace(consultation.consultationStatus, '_', ' ')}"></span>
+							</td>
 							<td th:text="${#temporals.format(consultation.submittedAt, 'dd/MM/yyyy HH:mm')}" style="white-space:nowrap;"></td>
 							<td><a class="action-btn action-btn-view" th:href="@{/client-relations-officer/consultations/{id}(id=${consultation.consultationId})}">View</a></td>
 						</tr>

@@ -28,11 +28,13 @@ public class ContactDao {
 	private final DataSource dataSource;
 	
 	// Create
+	
 	public Contact insert(Contact contact) {
 		String sql = """
 					 INSERT INTO contacts (case_id, name, notes, added_at)
 					 VALUES (?, ?, ?, ?)
 					 """;
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -66,12 +68,14 @@ public class ContactDao {
 	}
 	
 	// Read
+	
 	public Contact findById(Long contactId) {
 		String sql = """
 					 SELECT %s
 					 FROM contacts
 					 WHERE contact_id = ?
 					 """.formatted(SELECT_COLUMNS);
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -101,6 +105,7 @@ public class ContactDao {
 					 WHERE case_id = ?
 					 ORDER BY added_at DESC
 					 """.formatted(SELECT_COLUMNS);
+		
 		List<Contact> contacts = new ArrayList<>();
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
@@ -125,6 +130,7 @@ public class ContactDao {
 	}
 	
 	// Update
+	
 	public Contact update(Contact contact) {
 		String sql = """
 					 UPDATE contacts
@@ -132,6 +138,7 @@ public class ContactDao {
 					     notes = ?
 					 WHERE contact_id = ?
 					 """;
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -157,6 +164,7 @@ public class ContactDao {
 	}
 	
 	// Private Helpers
+	
 	private void insertPhoneNumbers(Long contactId, List<String> phoneNumbers) {
 		
 		if (phoneNumbers == null) {
@@ -167,6 +175,7 @@ public class ContactDao {
 					 INSERT INTO contact_phone_numbers (contact_id, phone_number)
 					 VALUES (?, ?)
 					 """;
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -201,6 +210,7 @@ public class ContactDao {
 					 INSERT INTO contact_emails (contact_id, email)
 					 VALUES (?, ?)
 					 """;
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -235,6 +245,7 @@ public class ContactDao {
 					 INSERT INTO contact_addresses (contact_id, address)
 					 VALUES (?, ?)
 					 """;
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -278,6 +289,7 @@ public class ContactDao {
 					 FROM contact_phone_numbers
 					 WHERE contact_id = ?
 					 """;
+		
 		List<String> phoneNumbers = new ArrayList<>();
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
@@ -307,6 +319,7 @@ public class ContactDao {
 					 FROM contact_emails
 					 WHERE contact_id = ?
 					 """;
+		
 		List<String> emails = new ArrayList<>();
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
@@ -336,6 +349,7 @@ public class ContactDao {
 					 FROM contact_addresses
 					 WHERE contact_id = ?
 					 """;
+		
 		List<String> addresses = new ArrayList<>();
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
@@ -365,11 +379,11 @@ public class ContactDao {
 					 FROM contact_phone_numbers
 					 WHERE contact_id = ?
 					 """;
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
 			statement.setLong(1, contactId);
-			
 			statement.executeUpdate();
 		} catch (SQLException e) {
 			throw new PersistenceException("deleting contact phone numbers", e);
@@ -385,11 +399,11 @@ public class ContactDao {
 					 FROM contact_emails
 					 WHERE contact_id = ?
 					 """;
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
 			statement.setLong(1, contactId);
-			
 			statement.executeUpdate();
 		} catch (SQLException e) {
 			throw new PersistenceException("deleting contact emails", e);
@@ -405,11 +419,11 @@ public class ContactDao {
 					 FROM contact_addresses
 					 WHERE contact_id = ?
 					 """;
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
 			statement.setLong(1, contactId);
-			
 			statement.executeUpdate();
 		} catch (SQLException e) {
 			throw new PersistenceException("deleting contact addresses", e);

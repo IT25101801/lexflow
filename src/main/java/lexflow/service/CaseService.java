@@ -26,10 +26,10 @@ import java.util.List;
 public class CaseService {
 	
 	private final CaseDao caseDao;
-	
 	private final ApplicationEventPublisher eventPublisher;
 	
 	// Create
+	
 	@Transactional
 	public Case open(Consultation consultation) {
 		Case case_ = new Case(consultation, consultation.getClient(), consultation.getAssociate(), consultation.getParalegal(), LocalDateTime.now());
@@ -38,6 +38,7 @@ public class CaseService {
 	}
 	
 	// Read
+	
 	public Case findById(Long caseId) {
 		return caseDao.findById(caseId);
 	}
@@ -121,6 +122,7 @@ public class CaseService {
 	}
 	
 	// Update
+	
 	@Transactional
 	public Case reassignStaff(Case case_, Associate associate, Paralegal paralegal) {
 		return stateFor(case_.getCaseStatus()).reassignStaff(case_, this, associate, paralegal);
@@ -132,6 +134,7 @@ public class CaseService {
 	}
 	
 	// State Pattern
+	
 	public Case applyReassignment(Case case_, Associate associate, Paralegal paralegal, boolean cancelScheduledEvents) {
 		
 		if (cancelScheduledEvents) {

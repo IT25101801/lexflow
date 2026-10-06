@@ -32,15 +32,16 @@ public class TaskDao {
 												 """;
 	
 	private final DataSource dataSource;
-	
 	private final EventDao eventDao;
 	
 	// Create
+	
 	public Task insert(Task task) {
 		String sql = """
 					 INSERT INTO tasks (case_id, title, documenting_task, scheduling_task, billing_task, billable_amount, billed_invoice_id, logged_at)
 					 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 					 """;
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -63,7 +64,6 @@ public class TaskDao {
 			}
 			
 			statement.setTimestamp(8, Timestamp.valueOf(task.getLoggedAt()));
-			
 			statement.executeUpdate();
 			
 			try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
@@ -85,12 +85,14 @@ public class TaskDao {
 	}
 	
 	// Read
+	
 	public Task findById(Long taskId) {
 		String sql = """
 					 SELECT %s
 					 FROM tasks
 					 WHERE task_id = ?
 					 """.formatted(SELECT_COLUMNS);
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -120,6 +122,7 @@ public class TaskDao {
 					 WHERE case_id = ?
 					 ORDER BY logged_at DESC
 					 """.formatted(SELECT_COLUMNS);
+		
 		List<Task> tasks = new ArrayList<>();
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
@@ -152,6 +155,7 @@ public class TaskDao {
 					   AND billed_invoice_id IS NULL
 					 ORDER BY logged_at DESC
 					 """.formatted(SELECT_COLUMNS);
+		
 		List<Task> tasks = new ArrayList<>();
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
@@ -182,6 +186,7 @@ public class TaskDao {
 					 WHERE billed_invoice_id = ?
 					 ORDER BY logged_at DESC
 					 """.formatted(SELECT_COLUMNS);
+		
 		List<Task> tasks = new ArrayList<>();
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
@@ -206,6 +211,7 @@ public class TaskDao {
 	}
 	
 	// Update
+	
 	public Task update(Task task) {
 		String sql = """
 					 UPDATE tasks
@@ -214,6 +220,7 @@ public class TaskDao {
 					     billed_invoice_id = ?
 					 WHERE task_id = ?
 					 """;
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -232,7 +239,6 @@ public class TaskDao {
 			}
 			
 			statement.setLong(4, task.getTaskId());
-			
 			statement.executeUpdate();
 		} catch (SQLException e) {
 			throw new PersistenceException("updating task", e);
@@ -244,6 +250,7 @@ public class TaskDao {
 	}
 	
 	// Private Helpers
+	
 	private Task mapRow(ResultSet resultSet) throws SQLException {
 		Long taskId = resultSet.getLong("task_id");
 		Long caseId = resultSet.getLong("case_id");

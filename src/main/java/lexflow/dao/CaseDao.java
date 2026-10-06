@@ -39,17 +39,17 @@ public class CaseDao {
 												 """;
 	
 	private final DataSource dataSource;
-	
 	private final UserDao userDao;
-	
 	private final ConsultationDao consultationDao;
 	
 	// Create
+	
 	public Case insert(Case case_) {
 		String sql = """
 					 INSERT INTO cases (consultation_id, client_id, associate_id, paralegal_id, case_status, opened_at, case_resolution_status, closed_at)
 					 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 					 """;
+		
 		String caseCode;
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
@@ -117,12 +117,14 @@ public class CaseDao {
 	}
 	
 	// Read
+	
 	public Case findById(Long caseId) {
 		String sql = """
 					 SELECT %s
 					 FROM cases
 					 WHERE case_id = ?
 					 """.formatted(SELECT_COLUMNS);
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -151,6 +153,7 @@ public class CaseDao {
 					 FROM cases
 					 WHERE consultation_id = ?
 					 """.formatted(SELECT_COLUMNS);
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -192,6 +195,7 @@ public class CaseDao {
 					 WHERE case_status = ?
 					 ORDER BY opened_at DESC
 					 """.formatted(SELECT_COLUMNS);
+		
 		List<Case> cases = new ArrayList<>();
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
@@ -228,6 +232,7 @@ public class CaseDao {
 	}
 	
 	// Update
+	
 	public Case update(Case case_) {
 		String sql = """
 					 UPDATE cases
@@ -238,6 +243,7 @@ public class CaseDao {
 					     closed_at              = ?
 					 WHERE case_id = ?
 					 """;
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -258,7 +264,6 @@ public class CaseDao {
 			}
 			
 			statement.setLong(6, case_.getCaseId());
-			
 			statement.executeUpdate();
 		} catch (SQLException e) {
 			throw new PersistenceException("updating case", e);
@@ -270,6 +275,7 @@ public class CaseDao {
 	}
 	
 	// Private Helpers
+	
 	private Case mapRow(ResultSet resultSet) throws SQLException {
 		Long caseId = resultSet.getLong("case_id");
 		String caseCode = resultSet.getString("case_code");
@@ -303,6 +309,7 @@ public class CaseDao {
 					 WHERE %s = ?
 					 ORDER BY opened_at DESC
 					 """.formatted(SELECT_COLUMNS, column);
+		
 		List<Case> cases = new ArrayList<>();
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
@@ -334,6 +341,7 @@ public class CaseDao {
 					   AND case_status = ?
 					 ORDER BY opened_at DESC
 					 """.formatted(SELECT_COLUMNS, column);
+		
 		List<Case> cases = new ArrayList<>();
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		

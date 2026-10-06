@@ -19,6 +19,7 @@ public class ContactService {
 	private final ContactDao contactDao;
 	
 	// Create
+	
 	@Transactional
 	public Contact add(Case case_, String name, List<String> phoneNumbers, List<String> emails, List<String> addresses, String notes) {
 		
@@ -32,6 +33,7 @@ public class ContactService {
 	}
 	
 	// Read
+	
 	public Contact findById(Long contactId) {
 		return contactDao.findById(contactId);
 	}
@@ -41,6 +43,7 @@ public class ContactService {
 	}
 	
 	// Update
+	
 	@Transactional
 	public Contact update(Case case_, Contact contact, String name, List<String> phoneNumbers, List<String> emails, List<String> addresses, String notes) {
 		

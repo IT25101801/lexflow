@@ -38,17 +38,17 @@ public class EventDao {
 												 """;
 	
 	private final DataSource dataSource;
-	
 	private final ConsultationDao consultationDao;
-	
 	private final CaseDao caseDao;
 	
 	// Create
+	
 	public Event insert(Event event) {
 		String sql = """
 					 INSERT INTO events (event_type, subject, date, start_time, end_time, location, notes, event_status, scheduled_at, consultation_id, case_id, task_id)
 					 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 					 """;
+		
 		Long consultationId = null;
 		Long caseId = null;
 		Long taskId = null;
@@ -113,12 +113,14 @@ public class EventDao {
 	}
 	
 	// Read
+	
 	public Event findById(Long eventId) {
 		String sql = """
 					 SELECT %s
 					 FROM events
 					 WHERE event_id = ?
 					 """.formatted(SELECT_COLUMNS);
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -147,6 +149,7 @@ public class EventDao {
 					 FROM events
 					 WHERE task_id = ?
 					 """.formatted(SELECT_COLUMNS);
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -176,6 +179,7 @@ public class EventDao {
 					 ORDER BY date DESC,
 					          start_time DESC
 					 """.formatted(SELECT_COLUMNS);
+		
 		List<Event> events = new ArrayList<>();
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
@@ -205,6 +209,7 @@ public class EventDao {
 					 WHERE consultation_id = ?
 					 ORDER BY scheduled_at DESC
 					 """.formatted(SELECT_COLUMNS);
+		
 		List<ConsultationEvent> events = new ArrayList<>();
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
@@ -235,6 +240,7 @@ public class EventDao {
 					 WHERE case_id = ?
 					 ORDER BY scheduled_at DESC
 					 """.formatted(SELECT_COLUMNS);
+		
 		List<CaseEvent> events = new ArrayList<>();
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
@@ -259,6 +265,7 @@ public class EventDao {
 	}
 	
 	// Update
+	
 	public Event update(Event event) {
 		String sql = """
 					 UPDATE events
@@ -273,6 +280,7 @@ public class EventDao {
 					     canceled_at  = ?
 					 WHERE event_id = ?
 					 """;
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -297,7 +305,6 @@ public class EventDao {
 			}
 			
 			statement.setLong(10, event.getEventId());
-			
 			statement.executeUpdate();
 		} catch (SQLException e) {
 			throw new PersistenceException("updating event", e);
@@ -309,6 +316,7 @@ public class EventDao {
 	}
 	
 	// Private Helpers
+	
 	private Event mapRow(ResultSet resultSet) throws SQLException {
 		Long eventId = resultSet.getLong("event_id");
 		EventType eventType = EventType.valueOf(resultSet.getString("event_type"));
@@ -339,7 +347,6 @@ public class EventDao {
 		}
 		
 		return new CaseEvent(eventId, subject, date, startTime, endTime, location, notes, eventStatus, scheduledAt, completedAt, canceledAt, caseDao.findById(resultSet.getLong("case_id")), resultSet.getLong("task_id"));
-		
 	}
 	
 }

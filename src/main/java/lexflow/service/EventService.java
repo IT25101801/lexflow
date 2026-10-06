@@ -38,19 +38,17 @@ import java.util.List;
 public class EventService {
 	
 	private final EventDao eventDao;
-	
 	private final ConsultationDao consultationDao;
-	
 	private final ConsultationService consultationService;
 	
 	// Create
+	
 	@Transactional
 	public ConsultationEvent schedule(Consultation consultation, String subject, LocalDate date, LocalTime startTime, LocalTime endTime, String location, String notes) {
 		validateSchedule(date, startTime, endTime);
 		checkAllAvailability(consultation.getAssociate(), consultation.getParalegal(), consultation.getClient(), date, startTime, endTime, null);
 		
 		consultationService.markScheduled(consultation);
-		
 		ConsultationEvent event = new ConsultationEvent(subject, date, startTime, endTime, location, notes, LocalDateTime.now(), consultation);
 		
 		return (ConsultationEvent) eventDao.insert(event);
@@ -66,6 +64,7 @@ public class EventService {
 	}
 	
 	// Read
+	
 	public Event findById(Long eventId) {
 		return eventDao.findById(eventId);
 	}
@@ -81,7 +80,6 @@ public class EventService {
 	}
 	
 	public Event findOwnedByAssociate(Long eventId, Associate associate) {
-		
 		List<Event> events = findAllForAssociate(associate);
 		
 		for (Event event : events) {
@@ -96,7 +94,6 @@ public class EventService {
 	}
 	
 	public Event findOwnedByParalegal(Long eventId, Paralegal paralegal) {
-		
 		List<Event> events = findAllForParalegal(paralegal);
 		
 		for (Event event : events) {
@@ -111,7 +108,6 @@ public class EventService {
 	}
 	
 	public Event findOwnedByClient(Long eventId, Client client) {
-		
 		List<Event> events = findAllForClient(client);
 		
 		for (Event event : events) {
@@ -201,9 +197,9 @@ public class EventService {
 	}
 	
 	// Update
+	
 	public ConsultationEvent reschedule(ConsultationEvent event, String subject, LocalDate date, LocalTime startTime, LocalTime endTime, String location, String notes) {
 		stateFor(event.getEventStatus()).guardReschedule(event);
-		
 		Consultation consultation = event.getConsultation();
 		
 		validateSchedule(date, startTime, endTime);
@@ -221,7 +217,6 @@ public class EventService {
 	
 	public CaseEvent reschedule(CaseEvent event, String subject, LocalDate date, LocalTime startTime, LocalTime endTime, String location, String notes) {
 		stateFor(event.getEventStatus()).guardReschedule(event);
-		
 		Case case_ = event.getCase_();
 		
 		validateSchedule(date, startTime, endTime);
@@ -272,6 +267,7 @@ public class EventService {
 	}
 	
 	// State Pattern
+	
 	private EventState stateFor(EventStatus eventStatus) {
 		
 		if (eventStatus == EventStatus.SCHEDULED) {
@@ -285,6 +281,7 @@ public class EventService {
 	}
 	
 	// Private Helpers
+	
 	private void validateSchedule(LocalDate date, LocalTime startTime, LocalTime endTime) {
 		
 		if (!startTime.isBefore(endTime)) {

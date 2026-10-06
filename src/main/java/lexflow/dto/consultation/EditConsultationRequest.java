@@ -1,5 +1,7 @@
 package lexflow.dto.consultation;
 
+import lexflow.util.ValidationUtil;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -31,5 +33,10 @@ public class EditConsultationRequest {
 	private List<Long> documentIds;
 	
 	private List<@Size(max = 255, message = "Original filenames must be at most 255 characters") String> originalFilenames;
+	
+	@AssertTrue(message = "Opposing parties must not repeat")
+	public boolean isOpposingPartiesUnique() {
+		return ValidationUtil.hasNoRepeats(opposingParties);
+	}
 	
 }

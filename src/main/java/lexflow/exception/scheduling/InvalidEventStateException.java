@@ -12,7 +12,7 @@ public class InvalidEventStateException extends InvalidStateException {
 	private final EventStatus requiredStatus;
 	
 	public InvalidEventStateException(Long eventId, EventStatus currentStatus, EventStatus requiredStatus) {
-		super(String.format("This event cannot be processed: status must be %s, but it is currently %s", requiredStatus, currentStatus));
+		super(String.format("This event is %s, but it must be %s to do this.", currentStatus.name().toLowerCase().replace('_', ' '), requiredStatus.name().toLowerCase().replace('_', ' ')));
 		this.eventId = eventId;
 		this.currentStatus = currentStatus;
 		this.requiredStatus = requiredStatus;

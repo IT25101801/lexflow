@@ -1,5 +1,7 @@
 package lexflow.dto.user;
 
+import lexflow.util.ValidationUtil;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.*;
 import lexflow.entity.user.Gender;
 import lombok.Getter;
@@ -35,6 +37,16 @@ public class EditProfileRequest {
 	@AssertTrue(message = "Must be at least 18 years old")
 	public boolean isAdult() {
 		return dateOfBirth == null || !dateOfBirth.isAfter(LocalDate.now().minusYears(18));
+	}
+	
+	@AssertTrue(message = "Phone numbers must not repeat")
+	public boolean isPhoneNumbersUnique() {
+		return ValidationUtil.hasNoRepeats(phoneNumbers);
+	}
+	
+	@AssertTrue(message = "Addresses must not repeat")
+	public boolean isAddressesUnique() {
+		return ValidationUtil.hasNoRepeats(addresses);
 	}
 	
 }

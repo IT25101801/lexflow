@@ -12,7 +12,7 @@ public class InvalidAccountStateException extends InvalidStateException {
 	private final AccountStatus requiredStatus;
 	
 	public InvalidAccountStateException(Long userId, AccountStatus currentStatus, AccountStatus requiredStatus) {
-		super(String.format("This user cannot be processed: account status must be %s, but it is currently %s", requiredStatus, currentStatus));
+		super(String.format("This account is %s, but it must be %s to do this.", currentStatus.name().toLowerCase().replace('_', ' '), requiredStatus.name().toLowerCase().replace('_', ' ')));
 		this.userId = userId;
 		this.currentStatus = currentStatus;
 		this.requiredStatus = requiredStatus;

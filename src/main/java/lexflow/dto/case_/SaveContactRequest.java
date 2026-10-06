@@ -1,5 +1,7 @@
 package lexflow.dto.case_;
 
+import lexflow.util.ValidationUtil;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -22,5 +24,20 @@ public class SaveContactRequest {
 	private List<@NotBlank(message = "Each address is required") @Size(max = 800, message = "Each address must be at most 800 characters") String> addresses;
 	
 	private String notes;
+	
+	@AssertTrue(message = "Phone numbers must not repeat")
+	public boolean isPhoneNumbersUnique() {
+		return ValidationUtil.hasNoRepeats(phoneNumbers);
+	}
+	
+	@AssertTrue(message = "Emails must not repeat")
+	public boolean isEmailsUnique() {
+		return ValidationUtil.hasNoRepeats(emails);
+	}
+	
+	@AssertTrue(message = "Addresses must not repeat")
+	public boolean isAddressesUnique() {
+		return ValidationUtil.hasNoRepeats(addresses);
+	}
 	
 }

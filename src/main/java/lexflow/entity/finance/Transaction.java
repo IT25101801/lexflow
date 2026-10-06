@@ -18,6 +18,7 @@ public class Transaction {
 	private final TransactionType transactionType;
 	private final Long invoiceId;
 	private final LocalDateTime occurredAt;
+	private String invoiceCode;
 	
 	public Transaction(Client client, BigDecimal amount, TransactionType transactionType, Long invoiceId, LocalDateTime occurredAt) {
 		this.client = client;

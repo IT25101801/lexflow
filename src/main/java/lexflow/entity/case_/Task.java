@@ -14,9 +14,9 @@ public class Task {
 	private Long taskId;
 	private final Long caseId;
 	private String title;
-	private final boolean documentingTask;
-	private final boolean schedulingTask;
-	private final boolean billingTask;
+	private boolean documentingTask;
+	private boolean schedulingTask;
+	private boolean billingTask;
 	private CaseEvent scheduledEvent;
 	private BigDecimal billableAmount;
 	private Long billedInvoiceId;

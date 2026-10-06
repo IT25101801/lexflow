@@ -9,7 +9,7 @@ public class IncompleteBillingTaskException extends BusinessRuleViolationExcepti
 	private final String taskTitle;
 	
 	public IncompleteBillingTaskException(String taskTitle) {
-		super(String.format("Billing task \"%s\" cannot be added: an amount is required", taskTitle));
+		super(String.format("Billing task \"%s\" cannot be saved: an amount is required", taskTitle));
 		this.taskTitle = taskTitle;
 	}
 	

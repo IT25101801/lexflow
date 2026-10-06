@@ -313,7 +313,7 @@ public class DocumentDao {
 					   AND document_type = 'CONSULTATION_DOCUMENT'
 					 """.formatted(SELECT_COLUMNS);
 		
-		List<ConsultationDocument> documents = new ArrayList<>();
+		List<ConsultationDocument> consultationDocuments = new ArrayList<>();
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -322,7 +322,7 @@ public class DocumentDao {
 			try (ResultSet resultSet = statement.executeQuery()) {
 				
 				while (resultSet.next()) {
-					documents.add((ConsultationDocument) mapRow(resultSet));
+					consultationDocuments.add((ConsultationDocument) mapRow(resultSet));
 				}
 				
 			}
@@ -333,7 +333,7 @@ public class DocumentDao {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
 		
-		return documents;
+		return consultationDocuments;
 	}
 	
 	public List<CaseDocument> findByCaseIdAndInStaging(Long caseId, boolean inStaging) {
@@ -345,7 +345,7 @@ public class DocumentDao {
 					   AND document_type = 'CASE_DOCUMENT'
 					 """.formatted(SELECT_COLUMNS);
 		
-		List<CaseDocument> documents = new ArrayList<>();
+		List<CaseDocument> caseDocuments = new ArrayList<>();
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -355,7 +355,7 @@ public class DocumentDao {
 			try (ResultSet resultSet = statement.executeQuery()) {
 				
 				while (resultSet.next()) {
-					documents.add((CaseDocument) mapRow(resultSet));
+					caseDocuments.add((CaseDocument) mapRow(resultSet));
 				}
 				
 			}
@@ -366,7 +366,7 @@ public class DocumentDao {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
 		
-		return documents;
+		return caseDocuments;
 	}
 	
 	public List<CaseDocument> findByTaskId(Long taskId) {
@@ -377,7 +377,7 @@ public class DocumentDao {
 					   AND document_type = 'CASE_DOCUMENT'
 					 """.formatted(SELECT_COLUMNS);
 		
-		List<CaseDocument> documents = new ArrayList<>();
+		List<CaseDocument> caseDocuments = new ArrayList<>();
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -386,7 +386,7 @@ public class DocumentDao {
 			try (ResultSet resultSet = statement.executeQuery()) {
 				
 				while (resultSet.next()) {
-					documents.add((CaseDocument) mapRow(resultSet));
+					caseDocuments.add((CaseDocument) mapRow(resultSet));
 				}
 				
 			}
@@ -397,7 +397,7 @@ public class DocumentDao {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
 		
-		return documents;
+		return caseDocuments;
 	}
 	
 	public List<CaseDocument> findByCaseIdAndFilenameKeyword(Long caseId, String keyword) {
@@ -410,7 +410,7 @@ public class DocumentDao {
 					   AND LOWER(original_filename) LIKE ?
 					 """.formatted(SELECT_COLUMNS);
 		
-		List<CaseDocument> documents = new ArrayList<>();
+		List<CaseDocument> caseDocuments = new ArrayList<>();
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -420,7 +420,7 @@ public class DocumentDao {
 			try (ResultSet resultSet = statement.executeQuery()) {
 				
 				while (resultSet.next()) {
-					documents.add((CaseDocument) mapRow(resultSet));
+					caseDocuments.add((CaseDocument) mapRow(resultSet));
 				}
 				
 			}
@@ -431,7 +431,7 @@ public class DocumentDao {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
 		
-		return documents;
+		return caseDocuments;
 	}
 	
 	// Update

@@ -5,15 +5,11 @@ import lexflow.entity.user.Role;
 public class CodeUtil {
 	
 	private static final long CODE_RANGE = 90_000_000L;
-	
 	private static final long MIN_CODE = 10_000_000L;
-	
 	private static final long MULTIPLIER = 71_234_567L;
-	
 	private static final long OFFSET = 12_345_691L;
 	
 	public static String forUser(Role role, Long userId) {
-		
 		String prefix = switch (role) {
 			case PARTNER -> "PRT";
 			case ASSOCIATE -> "ASC";
@@ -39,6 +35,7 @@ public class CodeUtil {
 	}
 	
 	// Private Helpers
+	
 	private static long generate(long id) {
 		return MIN_CODE + ((id % CODE_RANGE) * MULTIPLIER + OFFSET) % CODE_RANGE;
 	}

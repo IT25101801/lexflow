@@ -30,12 +30,16 @@ import java.util.List;
 public class InvoiceService {
 	
 	private final InvoiceDao invoiceDao;
+	
 	private final TaskService taskService;
+	
 	private final TransactionService transactionService;
+	
 	private final DocumentService documentService;
+	
 	private final ITemplateEngine templateEngine;
 	
-	// ---- Create ----
+	// Create
 	
 	@Transactional
 	public Invoice compile(Case case_, List<Long> taskIds) {
@@ -77,7 +81,7 @@ public class InvoiceService {
 		return invoice;
 	}
 	
-	// ---- Read ----
+	// Read
 	
 	public Invoice findById(Long invoiceId) {
 		return invoiceDao.findById(invoiceId);
@@ -87,7 +91,7 @@ public class InvoiceService {
 		return invoiceDao.findByCaseIdAndStatus(case_.getCaseId(), invoiceStatus);
 	}
 	
-	// ---- Update ----
+	// Update
 	
 	@Transactional
 	public Invoice charge(Case case_, Invoice invoice) {
@@ -104,7 +108,7 @@ public class InvoiceService {
 		return stateFor(invoice.getInvoiceStatus()).voidAndRefund(invoice, this, case_.getClient());
 	}
 	
-	// ---- State Transitions (called by InvoiceState implementations) ----
+	// State Pattern
 	
 	public Invoice applyPayment(Invoice invoice, Client client) {
 		transactionService.record(client, invoice.getTotalAmount(), TransactionType.CHARGE, invoice.getInvoiceId());
@@ -126,8 +130,6 @@ public class InvoiceService {
 		return invoiceDao.update(invoice);
 	}
 	
-	// ---- Private Helpers ----
-	
 	private InvoiceState stateFor(InvoiceStatus invoiceStatus) {
 		
 		if (invoiceStatus == InvoiceStatus.UNPAID) {
@@ -139,6 +141,8 @@ public class InvoiceService {
 		}
 		
 	}
+	
+	// Private Helpers
 	
 	private void releaseInvoiceCharges(Invoice invoice) {
 		taskService.unlinkFromInvoice(invoice.getInvoiceId());

@@ -32,9 +32,10 @@ public class InvoiceDao {
 												 """;
 	
 	private final DataSource dataSource;
+	
 	private final DocumentDao documentDao;
 	
-	// ---- Create ----
+	// Create
 	
 	public Invoice insert(Invoice invoice) {
 		String sql = """
@@ -102,7 +103,7 @@ public class InvoiceDao {
 		return invoice;
 	}
 	
-	// ---- Read ----
+	// Read
 	
 	public Invoice findById(Long invoiceId) {
 		String sql = """
@@ -167,7 +168,7 @@ public class InvoiceDao {
 		return invoices;
 	}
 	
-	// ---- Update ----
+	// Update
 	
 	public Invoice update(Invoice invoice) {
 		String sql = """
@@ -201,7 +202,7 @@ public class InvoiceDao {
 		
 	}
 	
-	// ---- Private Helpers ----
+	// Private Helpers
 	
 	private Invoice mapRow(ResultSet resultSet) throws SQLException {
 		Long invoiceId = resultSet.getLong("invoice_id");

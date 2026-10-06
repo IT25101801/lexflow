@@ -34,9 +34,10 @@ public class TransactionDao {
 												 """;
 	
 	private final DataSource dataSource;
+	
 	private final UserDao userDao;
 	
-	// ---- Create ----
+	// Create
 	
 	public Transaction insert(Transaction transaction) {
 		String sql = "{call dbo.usp_record_wallet_transaction(?, ?, ?, ?, ?, ?, ?, ?, ?)}";
@@ -91,7 +92,37 @@ public class TransactionDao {
 		
 	}
 	
-	// ---- Read ----
+	// Read
+	
+	public List<Transaction> findAll() {
+		String sql = """
+					 SELECT %s
+					 FROM transactions
+					 ORDER BY occurred_at DESC
+					 """.formatted(SELECT_COLUMNS);
+		
+		List<Transaction> transactions = new ArrayList<>();
+		
+		Connection connection = DataSourceUtils.getConnection(dataSource);
+		
+		try (PreparedStatement statement = connection.prepareStatement(sql)) {
+			
+			try (ResultSet resultSet = statement.executeQuery()) {
+				
+				while (resultSet.next()) {
+					transactions.add(mapRow(resultSet));
+				}
+				
+			}
+			
+		} catch (SQLException e) {
+			throw new PersistenceException("finding transactions", e);
+		} finally {
+			DataSourceUtils.releaseConnection(connection, dataSource);
+		}
+		
+		return transactions;
+	}
 	
 	public List<Transaction> findByClientId(Long clientId) {
 		String sql = """
@@ -150,37 +181,7 @@ public class TransactionDao {
 		
 	}
 	
-	public List<Transaction> findAll() {
-		String sql = """
-					 SELECT %s
-					 FROM transactions
-					 ORDER BY occurred_at DESC
-					 """.formatted(SELECT_COLUMNS);
-		
-		List<Transaction> transactions = new ArrayList<>();
-		
-		Connection connection = DataSourceUtils.getConnection(dataSource);
-		
-		try (PreparedStatement statement = connection.prepareStatement(sql)) {
-			
-			try (ResultSet resultSet = statement.executeQuery()) {
-				
-				while (resultSet.next()) {
-					transactions.add(mapRow(resultSet));
-				}
-				
-			}
-			
-		} catch (SQLException e) {
-			throw new PersistenceException("finding transactions", e);
-		} finally {
-			DataSourceUtils.releaseConnection(connection, dataSource);
-		}
-		
-		return transactions;
-	}
-	
-	// ---- Private Helpers ----
+	// Private Helpers
 	
 	private Transaction mapRow(ResultSet resultSet) throws SQLException {
 		Long transactionId = resultSet.getLong("transaction_id");

@@ -494,7 +494,7 @@ public class PartnerController {
 	}
 	
 	@PostMapping("/partner/cases/{id}/invoices/{invoiceId}/void-refund")
-	public String voidAndRefund(@PathVariable("id") Long caseId, @PathVariable Long invoiceId, Model model) {
+	public String voidAndRefundInvoice(@PathVariable("id") Long caseId, @PathVariable Long invoiceId, Model model) {
 		Case case_ = caseService.findById(caseId);
 		
 		try {

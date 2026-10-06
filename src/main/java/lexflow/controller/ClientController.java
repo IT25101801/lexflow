@@ -251,7 +251,7 @@ public class ClientController {
 	}
 	
 	@PostMapping("/client/transactions/top-up")
-	public String topUpByCard(@Valid @ModelAttribute TopUpByCardRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
+	public String topUpWalletByCard(@Valid @ModelAttribute TopUpByCardRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
 		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());

@@ -207,7 +207,7 @@ public class FinanceOfficerController {
 	}
 	
 	@PostMapping("/finance-officer/cases/{id}/invoices/{invoiceId}/void-refund")
-	public String voidAndRefund(@PathVariable("id") Long caseId, @PathVariable Long invoiceId, Model model) {
+	public String voidAndRefundInvoice(@PathVariable("id") Long caseId, @PathVariable Long invoiceId, Model model) {
 		Case case_ = caseService.findById(caseId);
 		
 		try {
@@ -253,7 +253,7 @@ public class FinanceOfficerController {
 	}
 	
 	@PostMapping("/finance-officer/cash-top-up")
-	public String topUpByCash(@Valid @ModelAttribute TopUpByCashRequest form, BindingResult bindingResult, Model model) {
+	public String topUpWalletByCash(@Valid @ModelAttribute TopUpByCashRequest form, BindingResult bindingResult, Model model) {
 		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
@@ -290,7 +290,7 @@ public class FinanceOfficerController {
 	}
 	
 	@PostMapping("/finance-officer/withdrawal")
-	public String withdraw(@Valid @ModelAttribute WithdrawRequest form, BindingResult bindingResult, Model model) {
+	public String withdrawFromWallet(@Valid @ModelAttribute WithdrawRequest form, BindingResult bindingResult, Model model) {
 		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());

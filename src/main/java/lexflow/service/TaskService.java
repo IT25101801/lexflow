@@ -4,6 +4,7 @@ import lexflow.dao.TaskDao;
 import lexflow.entity.case_.Case;
 import lexflow.entity.case_.CaseStatus;
 import lexflow.entity.case_.Task;
+import lexflow.entity.finance.Invoice;
 import lexflow.entity.scheduling.CaseEvent;
 import lexflow.exception.case_.IncompleteBillingTaskException;
 import lexflow.exception.case_.IncompleteDocumentingTaskException;
@@ -96,6 +97,10 @@ public class TaskService {
 	
 	public List<Task> findUnbilledByCase(Case case_) {
 		return taskDao.findUnbilledByCaseId(case_.getCaseId());
+	}
+	
+	public List<Task> findByInvoice(Invoice invoice) {
+		return taskDao.findByBilledInvoiceId(invoice.getInvoiceId());
 	}
 	
 	// Update

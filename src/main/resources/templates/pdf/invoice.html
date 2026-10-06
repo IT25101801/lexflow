@@ -6,220 +6,281 @@
 	<style>
 		@page {
 			size: A4;
-			margin: 2.2cm 2cm;
+			margin: 2cm 2.2cm 2.4cm 2.2cm;
 		}
-		
+
 		body {
 			font-family: "Helvetica", "Arial", sans-serif;
-			color: #1a1a1a;
-			font-size: 11pt;
+			color: #1c2330;
+			font-size: 10pt;
 			line-height: 1.5;
 		}
-		
-		.letterhead {
-			display: flex;
-			justify-content: space-between;
-			align-items: flex-start;
-			border-bottom: 2px solid #0a1526;
-			padding-bottom: 16px;
-			margin-bottom: 28px;
+
+		table {
+			width: 100%;
+			border-collapse: collapse;
 		}
-		
-		.firm-name {
-			font-size: 22pt;
+
+		td, th {
+			vertical-align: top;
+			padding: 0;
+		}
+
+		.letterhead td {
+			padding-bottom: 14px;
+		}
+
+		.wordmark {
+			font-size: 26pt;
 			font-weight: bold;
-			letter-spacing: -0.5px;
+			letter-spacing: -0.6px;
+			line-height: 1;
 		}
-		
-		.firm-name .flow {
-			color: #2563eb;
+
+		.wordmark .lex {
+			color: #0a1526;
 		}
-		
-		.firm-tagline {
-			font-size: 9pt;
-			color: #666666;
-			margin-top: 2px;
+
+		.wordmark .flow {
+			color: #d4af37;
 		}
-		
-		.invoice-meta {
-			text-align: right;
-		}
-		
-		.invoice-title {
-			font-size: 16pt;
-			font-weight: bold;
-			text-transform: uppercase;
-			letter-spacing: 1px;
-		}
-		
-		.invoice-code {
-			font-size: 11pt;
-			color: #444444;
-			margin-top: 4px;
-		}
-		
-		.invoice-status {
-			display: inline-block;
-			margin-top: 6px;
-			padding: 3px 10px;
-			border-radius: 3px;
-			font-size: 9pt;
-			font-weight: bold;
-			text-transform: uppercase;
-			letter-spacing: 0.5px;
-			border: 1px solid #999999;
-		}
-		
-		.parties {
-			display: flex;
-			justify-content: space-between;
-			margin-bottom: 28px;
-		}
-		
-		.party-block {
-			width: 48%;
-		}
-		
-		.party-label {
+
+		.tagline {
 			font-size: 8.5pt;
+			letter-spacing: 1.6px;
 			text-transform: uppercase;
-			letter-spacing: 0.6px;
-			color: #888888;
-			margin-bottom: 4px;
+			color: #6b7380;
+			margin-top: 6px;
 		}
-		
+
+		.document-title {
+			text-align: right;
+			font-size: 20pt;
+			font-weight: bold;
+			letter-spacing: 3px;
+			color: #0a1526;
+			line-height: 1;
+		}
+
+		.document-code {
+			text-align: right;
+			font-size: 10pt;
+			color: #4a5260;
+			margin-top: 8px;
+		}
+
+		.status {
+			text-align: right;
+			margin-top: 8px;
+		}
+
+		.status span {
+			font-size: 8pt;
+			font-weight: bold;
+			letter-spacing: 1.2px;
+			padding: 3px 10px;
+			border: 1.2px solid;
+		}
+
+		.status-unpaid {
+			color: #a16207;
+			border-color: #a16207;
+		}
+
+		.status-paid {
+			color: #15803d;
+			border-color: #15803d;
+		}
+
+		.status-voided {
+			color: #6b7380;
+			border-color: #6b7380;
+		}
+
+		.rule {
+			border-top: 2px solid #d4af37;
+			margin: 4px 0 26px 0;
+		}
+
+		.label {
+			font-size: 7.5pt;
+			letter-spacing: 1.4px;
+			text-transform: uppercase;
+			color: #6b7380;
+			padding-bottom: 5px;
+		}
+
 		.party-name {
 			font-size: 12pt;
 			font-weight: bold;
+			color: #0a1526;
 		}
-		
+
 		.party-detail {
-			color: #444444;
-			font-size: 10pt;
+			color: #4a5260;
 		}
-		
-		table.line-items {
-			width: 100%;
-			border-collapse: collapse;
-			margin-bottom: 24px;
+
+		.right {
+			text-align: right;
 		}
-		
-		table.line-items th {
-			text-align: left;
-			font-size: 8.5pt;
+
+		.details td {
+			padding-top: 2px;
+		}
+
+		.details .detail-label {
+			color: #6b7380;
+			padding-right: 12px;
+		}
+
+		.charges {
+			margin-top: 30px;
+		}
+
+		.charges th {
+			font-size: 7.5pt;
+			letter-spacing: 1.4px;
 			text-transform: uppercase;
-			letter-spacing: 0.5px;
-			color: #888888;
-			padding: 8px 6px;
+			color: #6b7380;
+			text-align: left;
+			font-weight: normal;
+			padding: 0 8px 8px 8px;
 			border-bottom: 1.5px solid #0a1526;
 		}
-		
-		table.line-items td {
-			padding: 10px 6px;
-			border-bottom: 1px solid #e0e0e0;
-			font-size: 10.5pt;
+
+		.charges td {
+			padding: 10px 8px;
+			border-bottom: 1px solid #e3e6eb;
 		}
-		
-		table.line-items th.amount-col,
-		table.line-items td.amount-col {
+
+		.charges .number {
+			width: 28px;
+			color: #6b7380;
+		}
+
+		.charges .amount {
 			text-align: right;
 			white-space: nowrap;
+			width: 120px;
 		}
-		
-		.totals {
-			width: 100%;
-			margin-top: 8px;
+
+		.charges .empty {
+			color: #6b7380;
+			font-style: italic;
 		}
-		
-		.totals-row {
-			display: flex;
-			justify-content: flex-end;
-			padding: 6px 0;
+
+		.total {
+			width: 270px;
+			margin: 18px 0 0 auto;
 		}
-		
-		.totals-label {
-			width: 140px;
-			text-align: right;
-			padding-right: 24px;
-			color: #444444;
-		}
-		
-		.totals-value {
-			width: 130px;
-			text-align: right;
-			font-weight: bold;
-		}
-		
-		.grand-total .totals-label,
-		.grand-total .totals-value {
-			font-size: 13pt;
-			font-weight: bold;
+
+		.total td {
+			padding: 12px 8px;
 			border-top: 2px solid #0a1526;
-			padding-top: 10px;
+			border-bottom: 2px solid #0a1526;
 		}
-		
-		.footer-note {
-			margin-top: 48px;
+
+		.total .total-label {
+			font-size: 9pt;
+			letter-spacing: 1.4px;
+			text-transform: uppercase;
+			color: #0a1526;
+		}
+
+		.total .total-value {
+			text-align: right;
+			font-size: 14pt;
+			font-weight: bold;
+			color: #0a1526;
+		}
+
+		.footer {
+			margin-top: 56px;
 			padding-top: 12px;
-			border-top: 1px solid #e0e0e0;
-			font-size: 8.5pt;
-			color: #888888;
+			border-top: 1px solid #e3e6eb;
+			font-size: 8pt;
+			color: #6b7380;
 			text-align: center;
 		}
 	</style>
 </head>
 <body>
 
-<div class="letterhead">
-	<div>
-		<div class="firm-name">Lex<span class="flow">Flow</span></div>
-		<div class="firm-tagline">Legal Case Management</div>
-	</div>
-	<div class="invoice-meta">
-		<div class="invoice-title">Invoice</div>
-		<div class="invoice-code" th:text="${invoice.invoiceCode}"></div>
-		<div class="invoice-status" th:text="${invoice.invoiceStatus}"></div>
-	</div>
-</div>
+<table class="letterhead">
+	<tr>
+		<td>
+			<div class="wordmark"><span class="lex">Lex</span><span class="flow">Flow</span></div>
+			<div class="tagline">Case Management</div>
+		</td>
+		<td>
+			<div class="document-title">INVOICE</div>
+			<div class="document-code" th:text="${invoice.invoiceCode}"></div>
+			<div class="status"><span th:class="${'status-' + #strings.toLowerCase(invoice.invoiceStatus.name())}" th:text="${invoice.invoiceStatus.name()}"></span></div>
+		</td>
+	</tr>
+</table>
 
-<div class="parties">
-	<div class="party-block">
-		<div class="party-label">Billed To</div>
-		<div class="party-name" th:text="${case.client.name}"></div>
-		<div class="party-detail" th:text="${case.client.email}"></div>
-	</div>
-	<div class="party-block" style="text-align:right;">
-		<div class="party-label">Case</div>
-		<div class="party-name" th:text="${case.caseCode}"></div>
-		<div class="party-detail" th:text="${'Compiled At ' + #temporals.format(invoice.compiledAt, 'dd/MM/yyyy')}"></div>
-		<div class="party-detail" th:if="${invoice.paidAt != null}" th:text="${'Paid ' + #temporals.format(invoice.paidAt, 'dd/MM/yyyy')}"></div>
-	</div>
-</div>
+<div class="rule"></div>
 
-<table class="line-items">
+<table>
+	<tr>
+		<td style="width:50%;">
+			<div class="label">Billed To</div>
+			<div class="party-name" th:text="${case.client.name}"></div>
+			<div class="party-detail" th:text="${case.client.email}"></div>
+			<div class="party-detail" th:text="${case.client.userCode}"></div>
+		</td>
+		<td class="right" style="width:50%;">
+			<div class="label">Case</div>
+			<div class="party-name" th:text="${case.caseCode}"></div>
+			<table class="details" style="width:auto;margin-left:auto;">
+				<tr>
+					<td class="detail-label">Associate</td>
+					<td class="right" th:text="${case.associate.name}"></td>
+				</tr>
+				<tr>
+					<td class="detail-label">Compiled</td>
+					<td class="right" th:text="${#temporals.format(invoice.compiledAt, 'dd MMM yyyy')}"></td>
+				</tr>
+				<tr th:if="${invoice.paidAt != null}">
+					<td class="detail-label">Paid</td>
+					<td class="right" th:text="${#temporals.format(invoice.paidAt, 'dd MMM yyyy')}"></td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+</table>
+
+<table class="charges">
 	<thead>
 	<tr>
-		<th>Description</th>
-		<th class="amount-col">Amount</th>
+		<th class="number">#</th>
+		<th>Charge</th>
+		<th class="amount" style="text-align:right;">Amount</th>
 	</tr>
 	</thead>
 	<tbody>
-	<tr th:each="task : ${tasks}">
+	<tr th:each="task, taskStatus : ${tasks}">
+		<td class="number" th:text="${taskStatus.count}"></td>
 		<td th:text="${task.title}"></td>
-		<td class="amount-col" th:text="${#numbers.formatDecimal(task.billableAmount, 1, 'COMMA', 2, 'POINT')}"></td>
+		<td class="amount" th:text="${#numbers.formatDecimal(task.billableAmount, 1, 'COMMA', 2, 'POINT')}"></td>
+	</tr>
+	<tr th:if="${#lists.isEmpty(tasks)}">
+		<td class="number"></td>
+		<td class="empty" colspan="2">The charges on this invoice were released when it was voided.</td>
 	</tr>
 	</tbody>
 </table>
 
-<div class="totals">
-	<div class="totals-row grand-total">
-		<div class="totals-label">Total Due</div>
-		<div class="totals-value" th:text="${#numbers.formatDecimal(invoice.totalAmount, 1, 'COMMA', 2, 'POINT')}"></div>
-	</div>
-</div>
+<table class="total">
+	<tr>
+		<td class="total-label">Total</td>
+		<td class="total-value" th:text="${#numbers.formatDecimal(invoice.totalAmount, 1, 'COMMA', 2, 'POINT')}"></td>
+	</tr>
+</table>
 
-<div class="footer-note">
-	This is a system-generated invoice from LexFlow. For questions regarding this invoice, please contact your assigned associate.
+<div class="footer">
+	This invoice was generated by LexFlow. For questions about it, please contact your assigned associate.
 </div>
 
 </body>

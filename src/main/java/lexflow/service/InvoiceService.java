@@ -1,5 +1,6 @@
 package lexflow.service;
 
+import lexflow.dao.CaseDao;
 import lexflow.dao.InvoiceDao;
 import lexflow.entity.case_.Case;
 import lexflow.entity.case_.Task;
@@ -30,6 +31,7 @@ import java.util.List;
 public class InvoiceService {
 	
 	private final InvoiceDao invoiceDao;
+	private final CaseDao caseDao;
 	private final TaskService taskService;
 	private final TransactionService transactionService;
 	private final DocumentService documentService;
@@ -63,12 +65,7 @@ public class InvoiceService {
 		
 		taskService.linkToInvoice(selectedTasks, invoice.getInvoiceId());
 		
-		Context context = new Context();
-		context.setVariable("invoice", invoice);
-		context.setVariable("case", case_);
-		context.setVariable("tasks", selectedTasks);
-		
-		byte[] pdfBytes = PdfUtil.render(templateEngine.process("pdf/invoice", context), invoice.getInvoiceCode());
+		byte[] pdfBytes = renderPdf(invoice, case_, selectedTasks);
 		InvoiceDocument invoiceDocument = documentService.attach(case_, invoice, pdfBytes, compiledAt);
 		invoice.setInvoiceDocument(invoiceDocument);
 		
@@ -108,23 +105,36 @@ public class InvoiceService {
 		transactionService.record(client, invoice.getTotalAmount(), TransactionType.CHARGE, invoice.getInvoiceId());
 		invoice.setInvoiceStatus(InvoiceStatus.PAID);
 		invoice.setPaidAt(LocalDateTime.now());
+		invoiceDao.update(invoice);
 		
-		return invoiceDao.update(invoice);
+		refreshDocument(invoice, taskService.findByInvoice(invoice));
+		
+		return invoice;
 	}
 	
 	public Invoice applyVoid(Invoice invoice) {
+		List<Task> tasks = taskService.findByInvoice(invoice);
 		releaseInvoiceCharges(invoice);
-		invoice.setInvoiceStatus(InvoiceStatus.VOIDED);
 		
-		return invoiceDao.update(invoice);
+		invoice.setInvoiceStatus(InvoiceStatus.VOIDED);
+		invoiceDao.update(invoice);
+		
+		refreshDocument(invoice, tasks);
+		
+		return invoice;
 	}
 	
 	public Invoice applyVoidAndRefund(Invoice invoice, Client client) {
 		transactionService.record(client, invoice.getTotalAmount(), TransactionType.REFUND, invoice.getInvoiceId());
+		List<Task> tasks = taskService.findByInvoice(invoice);
 		releaseInvoiceCharges(invoice);
-		invoice.setInvoiceStatus(InvoiceStatus.VOIDED);
 		
-		return invoiceDao.update(invoice);
+		invoice.setInvoiceStatus(InvoiceStatus.VOIDED);
+		invoiceDao.update(invoice);
+		
+		refreshDocument(invoice, tasks);
+		
+		return invoice;
 	}
 	
 	private InvoiceState stateFor(InvoiceStatus invoiceStatus) {
@@ -140,6 +150,27 @@ public class InvoiceService {
 	}
 	
 	// Private Helpers
+	
+	private byte[] renderPdf(Invoice invoice, Case case_, List<Task> tasks) {
+		Context context = new Context();
+		context.setVariable("invoice", invoice);
+		context.setVariable("case", case_);
+		context.setVariable("tasks", tasks);
+		
+		return PdfUtil.render(templateEngine.process("pdf/invoice", context), invoice.getInvoiceCode());
+	}
+	
+	private void refreshDocument(Invoice invoice, List<Task> tasks) {
+		Case case_ = caseDao.findById(invoice.getCaseId());
+		byte[] pdfBytes = renderPdf(invoice, case_, tasks);
+		
+		if (invoice.getInvoiceDocument() == null) {
+			invoice.setInvoiceDocument(documentService.attach(case_, invoice, pdfBytes, LocalDateTime.now()));
+		} else {
+			documentService.replaceInvoice(invoice, case_, pdfBytes);
+		}
+		
+	}
 	
 	private void releaseInvoiceCharges(Invoice invoice) {
 		taskService.unlinkFromInvoice(invoice.getInvoiceId());

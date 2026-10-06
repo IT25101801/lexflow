@@ -291,6 +291,19 @@ public class DocumentService {
 		
 	}
 	
+	public void replaceInvoice(Invoice invoice, Case case_, byte[] pdfBytes) {
+		InvoiceDocument currentInvoiceDocument = invoice.getInvoiceDocument();
+		String filePath = FileUtil.store(pdfBytes, case_.getCaseId(), DocumentType.INVOICE_DOCUMENT, currentInvoiceDocument.getOriginalFilename());
+		String oldFilePath = currentInvoiceDocument.getFilePath();
+		LocalDateTime uploadedAt = LocalDateTime.now();
+		documentDao.replace(currentInvoiceDocument.getDocumentId(), filePath, currentInvoiceDocument.getOriginalFilename(), uploadedAt);
+		
+		currentInvoiceDocument.setFilePath(filePath);
+		currentInvoiceDocument.setUploadedAt(uploadedAt);
+		
+		FileUtil.delete(oldFilePath);
+	}
+	
 	public void replaceBar(User user, MultipartFile barFile) {
 		
 		if (barFile == null || barFile.isEmpty()) {

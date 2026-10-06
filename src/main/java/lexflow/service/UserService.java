@@ -135,17 +135,17 @@ public class UserService {
 		}
 		
 		String lowerKeyword = keyword.toLowerCase();
-		List<User> matches = new ArrayList<>();
+		List<User> matchingUsers = new ArrayList<>();
 		
 		for (User user : users) {
 			
 			if (matchesKeyword(user, lowerKeyword)) {
-				matches.add(user);
+				matchingUsers.add(user);
 			}
 			
 		}
 		
-		return matches;
+		return matchingUsers;
 	}
 	
 	public boolean verifyPassword(User user, String rawPassword) {

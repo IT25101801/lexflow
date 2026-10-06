@@ -22,6 +22,7 @@ public class AnalyticsService {
 	private final UserDao userDao;
 	
 	// Case
+	
 	public Map<CaseResolutionStatus, Integer> caseResolutionBreakdown() {
 		return analyticsDao.countCasesByResolutionStatus();
 	}
@@ -55,6 +56,7 @@ public class AnalyticsService {
 	}
 	
 	// Invoice
+	
 	public Map<Integer, BigDecimal> revenueByMonth(int year) {
 		Map<Integer, BigDecimal> sums = analyticsDao.sumPaidRevenueByMonth(year);
 		Map<Integer, BigDecimal> filled = new LinkedHashMap<>();
@@ -80,37 +82,45 @@ public class AnalyticsService {
 	}
 	
 	// Transaction
+	
 	public Map<TransactionType, Integer> topUpCountComparison() {
 		return analyticsDao.countTopUpsByType();
 	}
 	
 	// User
+	
 	public BigDecimal totalClientWalletFloat() {
 		return analyticsDao.sumClientWalletBalance();
 	}
 	
 	// Task
+	
 	public BigDecimal billableAmountThisMonthForAssociate(Long associateId) {
 		LocalDate now = LocalDate.now();
+		
 		return analyticsDao.sumBillableAmountForAssociateInMonth(associateId, now.getYear(), now.getMonthValue());
 	}
 	
 	public BigDecimal billableAmountLastMonthForAssociate(Long associateId) {
 		LocalDate lastMonth = LocalDate.now().minusMonths(1);
+		
 		return analyticsDao.sumBillableAmountForAssociateInMonth(associateId, lastMonth.getYear(), lastMonth.getMonthValue());
 	}
 	
 	public BigDecimal billableAmountThisMonthForParalegal(Long paralegalId) {
 		LocalDate now = LocalDate.now();
+		
 		return analyticsDao.sumBillableAmountForParalegalInMonth(paralegalId, now.getYear(), now.getMonthValue());
 	}
 	
 	public BigDecimal billableAmountLastMonthForParalegal(Long paralegalId) {
 		LocalDate lastMonth = LocalDate.now().minusMonths(1);
+		
 		return analyticsDao.sumBillableAmountForParalegalInMonth(paralegalId, lastMonth.getYear(), lastMonth.getMonthValue());
 	}
 	
 	// Private Helpers
+	
 	private double winRate(Map<CaseResolutionStatus, Integer> breakdown) {
 		int total = 0;
 		int won = 0;

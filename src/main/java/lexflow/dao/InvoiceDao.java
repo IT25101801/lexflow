@@ -32,15 +32,16 @@ public class InvoiceDao {
 												 """;
 	
 	private final DataSource dataSource;
-	
 	private final DocumentDao documentDao;
 	
 	// Create
+	
 	public Invoice insert(Invoice invoice) {
 		String sql = """
 					 INSERT INTO invoices (case_id, total_amount, invoice_status, compiled_at, paid_at)
 					 VALUES (?, ?, ?, ?, ?)
 					 """;
+		
 		String invoiceCode;
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
@@ -101,12 +102,14 @@ public class InvoiceDao {
 	}
 	
 	// Read
+	
 	public Invoice findById(Long invoiceId) {
 		String sql = """
 					 SELECT %s
 					 FROM invoices
 					 WHERE invoice_id = ?
 					 """.formatted(SELECT_COLUMNS);
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -137,6 +140,7 @@ public class InvoiceDao {
 					   AND invoice_status = ?
 					 ORDER BY compiled_at DESC
 					 """.formatted(SELECT_COLUMNS);
+		
 		List<Invoice> invoices = new ArrayList<>();
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
@@ -162,6 +166,7 @@ public class InvoiceDao {
 	}
 	
 	// Update
+	
 	public Invoice update(Invoice invoice) {
 		String sql = """
 					 UPDATE invoices
@@ -169,6 +174,7 @@ public class InvoiceDao {
 					     paid_at        = ?
 					 WHERE invoice_id = ?
 					 """;
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -181,7 +187,6 @@ public class InvoiceDao {
 			}
 			
 			statement.setLong(3, invoice.getInvoiceId());
-			
 			statement.executeUpdate();
 		} catch (SQLException e) {
 			throw new PersistenceException("updating invoice", e);
@@ -193,6 +198,7 @@ public class InvoiceDao {
 	}
 	
 	// Private Helpers
+	
 	private Invoice mapRow(ResultSet resultSet) throws SQLException {
 		Long invoiceId = resultSet.getLong("invoice_id");
 		String invoiceCode = resultSet.getString("invoice_code");

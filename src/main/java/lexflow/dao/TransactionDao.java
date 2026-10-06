@@ -34,10 +34,10 @@ public class TransactionDao {
 												 """;
 	
 	private final DataSource dataSource;
-	
 	private final UserDao userDao;
 	
 	// Create
+	
 	public Transaction insert(Transaction transaction) {
 		String sql = "{call dbo.usp_record_wallet_transaction(?, ?, ?, ?, ?, ?, ?, ?, ?)}";
 		Long clientId = transaction.getClient().getUserId();
@@ -90,12 +90,14 @@ public class TransactionDao {
 	}
 	
 	// Read
+	
 	public List<Transaction> findAll() {
 		String sql = """
 					 SELECT %s
 					 FROM transactions
 					 ORDER BY occurred_at DESC
 					 """.formatted(SELECT_COLUMNS);
+		
 		List<Transaction> transactions = new ArrayList<>();
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
@@ -125,6 +127,7 @@ public class TransactionDao {
 					 WHERE client_id = ?
 					 ORDER BY occurred_at DESC
 					 """.formatted(SELECT_COLUMNS);
+		
 		List<Transaction> transactions = new ArrayList<>();
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
@@ -154,6 +157,7 @@ public class TransactionDao {
 					 FROM transactions
 					 WHERE transaction_type = ?
 					 """;
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -161,6 +165,7 @@ public class TransactionDao {
 			
 			try (ResultSet resultSet = statement.executeQuery()) {
 				resultSet.next();
+				
 				return resultSet.getBigDecimal("total_amount");
 			}
 			
@@ -173,6 +178,7 @@ public class TransactionDao {
 	}
 	
 	// Private Helpers
+	
 	private Transaction mapRow(ResultSet resultSet) throws SQLException {
 		Long transactionId = resultSet.getLong("transaction_id");
 		String transactionCode = resultSet.getString("transaction_code");

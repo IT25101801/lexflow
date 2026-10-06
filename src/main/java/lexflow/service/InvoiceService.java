@@ -30,16 +30,13 @@ import java.util.List;
 public class InvoiceService {
 	
 	private final InvoiceDao invoiceDao;
-	
 	private final TaskService taskService;
-	
 	private final TransactionService transactionService;
-	
 	private final DocumentService documentService;
-	
 	private final ITemplateEngine templateEngine;
 	
 	// Create
+	
 	@Transactional
 	public Invoice compile(Case case_, List<Long> taskIds) {
 		
@@ -79,6 +76,7 @@ public class InvoiceService {
 	}
 	
 	// Read
+	
 	public Invoice findById(Long invoiceId) {
 		return invoiceDao.findById(invoiceId);
 	}
@@ -88,6 +86,7 @@ public class InvoiceService {
 	}
 	
 	// Update
+	
 	@Transactional
 	public Invoice charge(Case case_, Invoice invoice) {
 		return stateFor(invoice.getInvoiceStatus()).charge(invoice, this, case_.getClient());
@@ -104,16 +103,19 @@ public class InvoiceService {
 	}
 	
 	// State Pattern
+	
 	public Invoice applyPayment(Invoice invoice, Client client) {
 		transactionService.record(client, invoice.getTotalAmount(), TransactionType.CHARGE, invoice.getInvoiceId());
 		invoice.setInvoiceStatus(InvoiceStatus.PAID);
 		invoice.setPaidAt(LocalDateTime.now());
+		
 		return invoiceDao.update(invoice);
 	}
 	
 	public Invoice applyVoid(Invoice invoice) {
 		releaseInvoiceCharges(invoice);
 		invoice.setInvoiceStatus(InvoiceStatus.VOIDED);
+		
 		return invoiceDao.update(invoice);
 	}
 	
@@ -121,6 +123,7 @@ public class InvoiceService {
 		transactionService.record(client, invoice.getTotalAmount(), TransactionType.REFUND, invoice.getInvoiceId());
 		releaseInvoiceCharges(invoice);
 		invoice.setInvoiceStatus(InvoiceStatus.VOIDED);
+		
 		return invoiceDao.update(invoice);
 	}
 	
@@ -137,6 +140,7 @@ public class InvoiceService {
 	}
 	
 	// Private Helpers
+	
 	private void releaseInvoiceCharges(Invoice invoice) {
 		taskService.unlinkFromInvoice(invoice.getInvoiceId());
 	}

@@ -18,6 +18,7 @@ public class TransactionService {
 	private final TransactionDao transactionDao;
 	
 	// Create
+	
 	public Transaction record(Client client, BigDecimal amount, TransactionType transactionType, Long invoiceId) {
 		Transaction transaction = new Transaction(client, amount, transactionType, invoiceId, LocalDateTime.now());
 		
@@ -37,6 +38,7 @@ public class TransactionService {
 	}
 	
 	// Read
+	
 	public List<Transaction> findAll() {
 		return transactionDao.findAll();
 	}
@@ -46,6 +48,7 @@ public class TransactionService {
 	}
 	
 	// Firm Revenue
+	
 	public BigDecimal totalCharges() {
 		return transactionDao.sumAmountByType(TransactionType.CHARGE);
 	}

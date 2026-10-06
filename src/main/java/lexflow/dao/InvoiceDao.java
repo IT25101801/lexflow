@@ -36,15 +36,12 @@ public class InvoiceDao {
 	private final DocumentDao documentDao;
 	
 	// Create
-	
 	public Invoice insert(Invoice invoice) {
 		String sql = """
 					 INSERT INTO invoices (case_id, total_amount, invoice_status, compiled_at, paid_at)
 					 VALUES (?, ?, ?, ?, ?)
 					 """;
-		
 		String invoiceCode;
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -104,14 +101,12 @@ public class InvoiceDao {
 	}
 	
 	// Read
-	
 	public Invoice findById(Long invoiceId) {
 		String sql = """
 					 SELECT %s
 					 FROM invoices
 					 WHERE invoice_id = ?
 					 """.formatted(SELECT_COLUMNS);
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -142,9 +137,7 @@ public class InvoiceDao {
 					   AND invoice_status = ?
 					 ORDER BY compiled_at DESC
 					 """.formatted(SELECT_COLUMNS);
-		
 		List<Invoice> invoices = new ArrayList<>();
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -169,7 +162,6 @@ public class InvoiceDao {
 	}
 	
 	// Update
-	
 	public Invoice update(Invoice invoice) {
 		String sql = """
 					 UPDATE invoices
@@ -177,7 +169,6 @@ public class InvoiceDao {
 					     paid_at        = ?
 					 WHERE invoice_id = ?
 					 """;
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -192,18 +183,16 @@ public class InvoiceDao {
 			statement.setLong(3, invoice.getInvoiceId());
 			
 			statement.executeUpdate();
-			
-			return invoice;
 		} catch (SQLException e) {
 			throw new PersistenceException("updating invoice", e);
 		} finally {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
 		
+		return invoice;
 	}
 	
 	// Private Helpers
-	
 	private Invoice mapRow(ResultSet resultSet) throws SQLException {
 		Long invoiceId = resultSet.getLong("invoice_id");
 		String invoiceCode = resultSet.getString("invoice_code");
@@ -211,9 +200,7 @@ public class InvoiceDao {
 		BigDecimal totalAmount = resultSet.getBigDecimal("total_amount");
 		InvoiceStatus invoiceStatus = InvoiceStatus.valueOf(resultSet.getString("invoice_status"));
 		LocalDateTime compiledAt = resultSet.getTimestamp("compiled_at").toLocalDateTime();
-		
 		InvoiceDocument invoiceDocument = documentDao.findByInvoiceId(invoiceId);
-		
 		LocalDateTime paidAt = null;
 		Timestamp paidAtSql = resultSet.getTimestamp("paid_at");
 		

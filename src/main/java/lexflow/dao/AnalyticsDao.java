@@ -24,8 +24,7 @@ public class AnalyticsDao {
 	
 	private final DataSource dataSource;
 	
-	// ---- Case ----
-	
+	// Case
 	public Map<CaseResolutionStatus, Integer> countCasesByResolutionStatus() {
 		String sql = """
 					 SELECT case_resolution_status,
@@ -120,8 +119,7 @@ public class AnalyticsDao {
 		return countByUserId(sql, "paralegal_id", "counting closed cases by paralegal");
 	}
 	
-	// ---- Invoice ----
-	
+	// Invoice
 	public Map<Integer, BigDecimal> sumPaidRevenueByMonth(int year) {
 		String sql = """
 					 SELECT MONTH(paid_at)    AS month_number,
@@ -131,9 +129,7 @@ public class AnalyticsDao {
 					   AND YEAR(paid_at) = ?
 					 GROUP BY MONTH(paid_at)
 					 """;
-		
 		Map<Integer, BigDecimal> sums = new HashMap<>();
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -168,9 +164,7 @@ public class AnalyticsDao {
 					 WHERE i.invoice_status = 'PAID'
 					 GROUP BY cn.case_type
 					 """;
-		
 		Map<CaseType, BigDecimal> sums = new EnumMap<>(CaseType.class);
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -178,8 +172,7 @@ public class AnalyticsDao {
 			try (ResultSet resultSet = statement.executeQuery()) {
 				
 				while (resultSet.next()) {
-					CaseType caseType = CaseType.valueOf(resultSet.getString("case_type"));
-					sums.put(caseType, resultSet.getBigDecimal("total_revenue"));
+					sums.put(CaseType.valueOf(resultSet.getString("case_type")), resultSet.getBigDecimal("total_revenue"));
 				}
 				
 			}
@@ -199,7 +192,6 @@ public class AnalyticsDao {
 					 FROM invoices
 					 WHERE invoice_status = 'UNPAID'
 					 """;
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -232,8 +224,7 @@ public class AnalyticsDao {
 		return averageDuration(sql, null);
 	}
 	
-	// ---- Transaction ----
-	
+	// Transaction
 	public Map<TransactionType, Integer> countTopUpsByType() {
 		String sql = """
 					 SELECT transaction_type,
@@ -242,9 +233,7 @@ public class AnalyticsDao {
 					 WHERE transaction_type IN ('CARD_TOP_UP', 'CASH_TOP_UP')
 					 GROUP BY transaction_type
 					 """;
-		
 		Map<TransactionType, Integer> counts = new EnumMap<>(TransactionType.class);
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -267,15 +256,13 @@ public class AnalyticsDao {
 		return counts;
 	}
 	
-	// ---- User ----
-	
+	// User
 	public BigDecimal sumClientWalletBalance() {
 		String sql = """
 					 SELECT SUM(wallet_balance) AS total_wallet_balance
 					 FROM users
 					 WHERE role = 'CLIENT'
 					 """;
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -298,8 +285,7 @@ public class AnalyticsDao {
 		
 	}
 	
-	// ---- Task ----
-	
+	// Task
 	public BigDecimal sumBillableAmountForAssociateInMonth(Long associateId, int year, int month) {
 		String sql = """
 					 SELECT SUM(tk.billable_amount) AS total_billable_amount
@@ -330,11 +316,9 @@ public class AnalyticsDao {
 		return sumBillableAmountForStaffInMonth(sql, paralegalId, year, month);
 	}
 	
-	// ---- Private Helpers ----
-	
+	// Private Helpers
 	private Map<CaseResolutionStatus, Integer> countByResolutionStatus(String sql, Long userId) {
 		Map<CaseResolutionStatus, Integer> counts = new EnumMap<>(CaseResolutionStatus.class);
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -381,7 +365,7 @@ public class AnalyticsDao {
 			}
 			
 		} catch (SQLException e) {
-			throw new PersistenceException("averaging duration", e);
+			throw new PersistenceException("averaging case duration", e);
 		} finally {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
@@ -416,7 +400,6 @@ public class AnalyticsDao {
 	
 	private Map<Long, Integer> countByUserId(String sql, String columnName, String errorContext) {
 		Map<Long, Integer> counts = new HashMap<>();
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {

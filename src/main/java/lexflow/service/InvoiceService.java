@@ -40,7 +40,6 @@ public class InvoiceService {
 	private final ITemplateEngine templateEngine;
 	
 	// Create
-	
 	@Transactional
 	public Invoice compile(Case case_, List<Long> taskIds) {
 		
@@ -72,9 +71,7 @@ public class InvoiceService {
 		context.setVariable("case", case_);
 		context.setVariable("tasks", toLink);
 		
-		String html = templateEngine.process("pdf/invoice", context);
-		byte[] pdfBytes = PdfUtil.render(html, invoice.getInvoiceCode());
-		
+		byte[] pdfBytes = PdfUtil.render(templateEngine.process("pdf/invoice", context), invoice.getInvoiceCode());
 		InvoiceDocument invoiceDocument = documentService.attach(case_, invoice, pdfBytes, compiledAt);
 		invoice.setInvoiceDocument(invoiceDocument);
 		
@@ -82,7 +79,6 @@ public class InvoiceService {
 	}
 	
 	// Read
-	
 	public Invoice findById(Long invoiceId) {
 		return invoiceDao.findById(invoiceId);
 	}
@@ -92,7 +88,6 @@ public class InvoiceService {
 	}
 	
 	// Update
-	
 	@Transactional
 	public Invoice charge(Case case_, Invoice invoice) {
 		return stateFor(invoice.getInvoiceStatus()).charge(invoice, this, case_.getClient());
@@ -109,7 +104,6 @@ public class InvoiceService {
 	}
 	
 	// State Pattern
-	
 	public Invoice applyPayment(Invoice invoice, Client client) {
 		transactionService.record(client, invoice.getTotalAmount(), TransactionType.CHARGE, invoice.getInvoiceId());
 		invoice.setInvoiceStatus(InvoiceStatus.PAID);
@@ -143,7 +137,6 @@ public class InvoiceService {
 	}
 	
 	// Private Helpers
-	
 	private void releaseInvoiceCharges(Invoice invoice) {
 		taskService.unlinkFromInvoice(invoice.getInvoiceId());
 	}

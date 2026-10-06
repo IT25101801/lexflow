@@ -4,8 +4,8 @@ import lexflow.entity.finance.Transaction;
 import lexflow.entity.finance.TransactionType;
 import lexflow.entity.user.Client;
 import lexflow.entity.user.Role;
+import lexflow.exception.EntityNotFoundException;
 import lexflow.exception.PersistenceException;
-import lexflow.exception.finance.InactiveClientException;
 import lexflow.exception.finance.InsufficientFundsException;
 import lexflow.exception.finance.InvalidTransactionAmountException;
 import lombok.RequiredArgsConstructor;
@@ -38,12 +38,9 @@ public class TransactionDao {
 	private final UserDao userDao;
 	
 	// Create
-	
 	public Transaction insert(Transaction transaction) {
 		String sql = "{call dbo.usp_record_wallet_transaction(?, ?, ?, ?, ?, ?, ?, ?, ?)}";
-		
 		Long clientId = transaction.getClient().getUserId();
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (CallableStatement statement = connection.prepareCall(sql)) {
@@ -72,7 +69,7 @@ public class TransactionDao {
 			if (statusCode == 1) {
 				throw new InvalidTransactionAmountException(transaction.getAmount());
 			} else if (statusCode == 2) {
-				throw new InactiveClientException(clientId);
+				throw new EntityNotFoundException("Client", clientId.toString());
 			} else if (statusCode == 3) {
 				throw new InsufficientFundsException(clientId, balance, transaction.getAmount());
 			} else if (statusCode != 0) {
@@ -93,16 +90,13 @@ public class TransactionDao {
 	}
 	
 	// Read
-	
 	public List<Transaction> findAll() {
 		String sql = """
 					 SELECT %s
 					 FROM transactions
 					 ORDER BY occurred_at DESC
 					 """.formatted(SELECT_COLUMNS);
-		
 		List<Transaction> transactions = new ArrayList<>();
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -131,9 +125,7 @@ public class TransactionDao {
 					 WHERE client_id = ?
 					 ORDER BY occurred_at DESC
 					 """.formatted(SELECT_COLUMNS);
-		
 		List<Transaction> transactions = new ArrayList<>();
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -162,7 +154,6 @@ public class TransactionDao {
 					 FROM transactions
 					 WHERE transaction_type = ?
 					 """;
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -182,14 +173,12 @@ public class TransactionDao {
 	}
 	
 	// Private Helpers
-	
 	private Transaction mapRow(ResultSet resultSet) throws SQLException {
 		Long transactionId = resultSet.getLong("transaction_id");
 		String transactionCode = resultSet.getString("transaction_code");
 		Client client = (Client) userDao.findByIdAndRole(resultSet.getLong("client_id"), Role.CLIENT);
 		BigDecimal amount = resultSet.getBigDecimal("amount");
 		TransactionType transactionType = TransactionType.valueOf(resultSet.getString("transaction_type"));
-		
 		Long invoiceId = resultSet.getLong("invoice_id");
 		
 		if (resultSet.wasNull()) {

@@ -21,8 +21,7 @@ public class AnalyticsService {
 	private final AnalyticsDao analyticsDao;
 	private final UserDao userDao;
 	
-	// ---- Case ----
-	
+	// Case
 	public Map<CaseResolutionStatus, Integer> caseResolutionBreakdown() {
 		return analyticsDao.countCasesByResolutionStatus();
 	}
@@ -55,8 +54,7 @@ public class AnalyticsService {
 		return analyticsDao.averageCaseDurationDaysForParalegal(paralegalId);
 	}
 	
-	// ---- Invoice ----
-	
+	// Invoice
 	public Map<Integer, BigDecimal> revenueByMonth(int year) {
 		Map<Integer, BigDecimal> sums = analyticsDao.sumPaidRevenueByMonth(year);
 		Map<Integer, BigDecimal> filled = new LinkedHashMap<>();
@@ -81,20 +79,17 @@ public class AnalyticsService {
 		return analyticsDao.averageDaysToPayment();
 	}
 	
-	// ---- Transaction ----
-	
+	// Transaction
 	public Map<TransactionType, Integer> topUpCountComparison() {
 		return analyticsDao.countTopUpsByType();
 	}
 	
-	// ---- User ----
-	
+	// User
 	public BigDecimal totalClientWalletFloat() {
 		return analyticsDao.sumClientWalletBalance();
 	}
 	
-	// ---- Task ----
-	
+	// Task
 	public BigDecimal billableAmountThisMonthForAssociate(Long associateId) {
 		LocalDate now = LocalDate.now();
 		return analyticsDao.sumBillableAmountForAssociateInMonth(associateId, now.getYear(), now.getMonthValue());
@@ -115,8 +110,7 @@ public class AnalyticsService {
 		return analyticsDao.sumBillableAmountForParalegalInMonth(paralegalId, lastMonth.getYear(), lastMonth.getMonthValue());
 	}
 	
-	// ---- Private Helpers ----
-	
+	// Private Helpers
 	private double winRate(Map<CaseResolutionStatus, Integer> breakdown) {
 		int total = 0;
 		int won = 0;
@@ -141,8 +135,7 @@ public class AnalyticsService {
 		Map<User, Integer> workload = new LinkedHashMap<>();
 		
 		for (Map.Entry<Long, Integer> entry : countsByUserId.entrySet()) {
-			User staff = userDao.findById(entry.getKey());
-			workload.put(staff, entry.getValue());
+			workload.put(userDao.findById(entry.getKey()), entry.getValue());
 		}
 		
 		return workload;

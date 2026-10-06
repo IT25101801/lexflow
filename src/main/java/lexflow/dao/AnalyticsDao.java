@@ -343,8 +343,8 @@ public class AnalyticsDao {
 			try (ResultSet resultSet = statement.executeQuery()) {
 				
 				while (resultSet.next()) {
-					CaseResolutionStatus resolutionStatus = CaseResolutionStatus.valueOf(resultSet.getString("case_resolution_status"));
-					counts.put(resolutionStatus, resultSet.getInt("case_count"));
+					CaseResolutionStatus caseResolutionStatus = CaseResolutionStatus.valueOf(resultSet.getString("case_resolution_status"));
+					counts.put(caseResolutionStatus, resultSet.getInt("case_count"));
 				}
 				
 			}

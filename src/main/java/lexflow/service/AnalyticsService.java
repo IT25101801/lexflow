@@ -59,14 +59,14 @@ public class AnalyticsService {
 	
 	public Map<Integer, BigDecimal> revenueByMonth(int year) {
 		Map<Integer, BigDecimal> sums = analyticsDao.sumPaidRevenueByMonth(year);
-		Map<Integer, BigDecimal> filled = new LinkedHashMap<>();
+		Map<Integer, BigDecimal> monthlyRevenue = new LinkedHashMap<>();
 		
 		for (int month = 1; month <= 12; month++) {
 			BigDecimal total = sums.get(month);
-			filled.put(month, total != null ? total : BigDecimal.ZERO);
+			monthlyRevenue.put(month, total != null ? total : BigDecimal.ZERO);
 		}
 		
-		return filled;
+		return monthlyRevenue;
 	}
 	
 	public Map<CaseType, BigDecimal> revenueByCaseType() {
@@ -121,11 +121,11 @@ public class AnalyticsService {
 	
 	// Private Helpers
 	
-	private double winRate(Map<CaseResolutionStatus, Integer> breakdown) {
+	private double winRate(Map<CaseResolutionStatus, Integer> caseResolutionBreakdown) {
 		int total = 0;
 		int won = 0;
 		
-		for (Map.Entry<CaseResolutionStatus, Integer> entry : breakdown.entrySet()) {
+		for (Map.Entry<CaseResolutionStatus, Integer> entry : caseResolutionBreakdown.entrySet()) {
 			total += entry.getValue();
 			
 			if (entry.getKey() == CaseResolutionStatus.WON) {

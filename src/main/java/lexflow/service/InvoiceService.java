@@ -44,15 +44,15 @@ public class InvoiceService {
 			throw new NoChargesSelectedException(case_.getCaseId());
 		}
 		
-		List<Task> unbilled = taskService.findUnbilledByCase(case_);
+		List<Task> unbilledTasks = taskService.findUnbilledByCase(case_);
 		BigDecimal total = BigDecimal.ZERO;
-		List<Task> toLink = new ArrayList<>();
+		List<Task> selectedTasks = new ArrayList<>();
 		
-		for (Task task : unbilled) {
+		for (Task task : unbilledTasks) {
 			
 			if (taskIds.contains(task.getTaskId())) {
 				total = total.add(task.getBillableAmount());
-				toLink.add(task);
+				selectedTasks.add(task);
 			}
 			
 		}
@@ -61,12 +61,12 @@ public class InvoiceService {
 		Invoice invoice = new Invoice(case_.getCaseId(), total, compiledAt);
 		invoiceDao.insert(invoice);
 		
-		taskService.linkToInvoice(toLink, invoice.getInvoiceId());
+		taskService.linkToInvoice(selectedTasks, invoice.getInvoiceId());
 		
 		Context context = new Context();
 		context.setVariable("invoice", invoice);
 		context.setVariable("case", case_);
-		context.setVariable("tasks", toLink);
+		context.setVariable("tasks", selectedTasks);
 		
 		byte[] pdfBytes = PdfUtil.render(templateEngine.process("pdf/invoice", context), invoice.getInvoiceCode());
 		InvoiceDocument invoiceDocument = documentService.attach(case_, invoice, pdfBytes, compiledAt);

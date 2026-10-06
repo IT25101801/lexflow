@@ -54,13 +54,11 @@ public class UserDao {
 	private final DocumentDao documentDao;
 	
 	// Create
-	
 	public User insert(User user) {
 		String sql = """
 					 INSERT INTO users (role, email, password, name, date_of_birth, gender, nic_number, account_status, registered_at, bar_number, wallet_balance)
 					 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 					 """;
-		
 		String barNumber = null;
 		BigDecimal walletBalance = null;
 		String userCode;
@@ -150,14 +148,12 @@ public class UserDao {
 	}
 	
 	// Read
-	
 	public User findById(Long userId) {
 		String sql = """
 					 SELECT %s
 					 FROM users
 					 WHERE user_id = ?
 					 """.formatted(SELECT_COLUMNS);
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -187,7 +183,6 @@ public class UserDao {
 					 WHERE email = ?
 					   AND account_status = 'ACTIVE'
 					 """.formatted(SELECT_COLUMNS);
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -216,7 +211,6 @@ public class UserDao {
 					 FROM users
 					 WHERE user_code = ?
 					 """.formatted(SELECT_COLUMNS);
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -246,7 +240,6 @@ public class UserDao {
 					 WHERE user_id = ?
 					   AND role = ?
 					 """.formatted(SELECT_COLUMNS);
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -302,7 +295,6 @@ public class UserDao {
 					   AND account_status = 'DELETED'
 					   AND (email = ? OR nic_number = ?)
 					 """;
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -315,7 +307,7 @@ public class UserDao {
 			}
 			
 		} catch (SQLException e) {
-			throw new PersistenceException("checking for a deleted account", e);
+			throw new PersistenceException("checking for a deleted user", e);
 		} finally {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
@@ -323,7 +315,6 @@ public class UserDao {
 	}
 	
 	// Update
-	
 	public User update(User user) {
 		String sql = """
 					 UPDATE users
@@ -335,7 +326,6 @@ public class UserDao {
 					     wallet_balance = ?
 					 WHERE user_id = ?
 					 """;
-		
 		String barNumber = null;
 		BigDecimal walletBalance = null;
 		
@@ -389,7 +379,6 @@ public class UserDao {
 					     password       = ?
 					 WHERE user_id = ?
 					 """;
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -411,14 +400,12 @@ public class UserDao {
 	}
 	
 	// Delete
-	
 	public void deleteById(Long userId) {
 		String sql = """
 					 UPDATE users
 					 SET account_status = 'DELETED'
 					 WHERE user_id = ?
 					 """;
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -443,7 +430,6 @@ public class UserDao {
 	}
 	
 	// Private Helpers
-	
 	private RuntimeException toDuplicateActiveAccountException(SQLException e, User user) {
 		String message = e.getMessage();
 		
@@ -470,7 +456,6 @@ public class UserDao {
 					 INSERT INTO user_phone_numbers (user_id, phone_number)
 					 VALUES (?, ?)
 					 """;
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -488,7 +473,7 @@ public class UserDao {
 			}
 			
 		} catch (SQLException e) {
-			throw new PersistenceException("inserting phone numbers", e);
+			throw new PersistenceException("inserting user phone numbers", e);
 		} finally {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
@@ -505,7 +490,6 @@ public class UserDao {
 					 INSERT INTO user_addresses (user_id, address)
 					 VALUES (?, ?)
 					 """;
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -523,7 +507,7 @@ public class UserDao {
 			}
 			
 		} catch (SQLException e) {
-			throw new PersistenceException("inserting addresses", e);
+			throw new PersistenceException("inserting user addresses", e);
 		} finally {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
@@ -576,9 +560,7 @@ public class UserDao {
 					 FROM user_addresses
 					 WHERE user_id = ?
 					 """;
-		
 		List<String> addresses = new ArrayList<>();
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -593,7 +575,7 @@ public class UserDao {
 			}
 			
 		} catch (SQLException e) {
-			throw new PersistenceException("finding addresses", e);
+			throw new PersistenceException("finding user addresses", e);
 		} finally {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
@@ -607,9 +589,7 @@ public class UserDao {
 					 FROM user_phone_numbers
 					 WHERE user_id = ?
 					 """;
-		
 		List<String> phoneNumbers = new ArrayList<>();
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -624,7 +604,7 @@ public class UserDao {
 			}
 			
 		} catch (SQLException e) {
-			throw new PersistenceException("finding phone numbers", e);
+			throw new PersistenceException("finding user phone numbers", e);
 		} finally {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
@@ -634,7 +614,6 @@ public class UserDao {
 	
 	private List<User> findUsers(String sql, Role role) {
 		List<User> users = new ArrayList<>();
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -663,7 +642,6 @@ public class UserDao {
 					 FROM user_phone_numbers
 					 WHERE user_id = ?
 					 """;
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -671,7 +649,7 @@ public class UserDao {
 			
 			statement.executeUpdate();
 		} catch (SQLException e) {
-			throw new PersistenceException("clearing phone numbers", e);
+			throw new PersistenceException("replacing user phone numbers", e);
 		} finally {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
@@ -685,7 +663,6 @@ public class UserDao {
 					 FROM user_addresses
 					 WHERE user_id = ?
 					 """;
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -693,7 +670,7 @@ public class UserDao {
 			
 			statement.executeUpdate();
 		} catch (SQLException e) {
-			throw new PersistenceException("clearing addresses", e);
+			throw new PersistenceException("replacing user addresses", e);
 		} finally {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
@@ -715,7 +692,6 @@ public class UserDao {
 	
 	private List<String> findCodesForUser(String sql, Long userId, String operation) {
 		List<String> codes = new ArrayList<>();
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {

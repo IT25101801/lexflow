@@ -32,7 +32,6 @@ public class UserService {
 	private final PasswordEncoder passwordEncoder;
 	
 	// Create
-	
 	@Transactional
 	public Client register(String email, String password, String name, LocalDate dateOfBirth, Gender gender, List<String> addresses, List<String> phoneNumbers, String nicNumber, MultipartFile nicFile) {
 		
@@ -45,10 +44,7 @@ public class UserService {
 		}
 		
 		LocalDateTime registeredAt = LocalDateTime.now();
-		String hashedPassword = passwordEncoder.encode(password);
-		
-		Client client = new Client(email, hashedPassword, name, dateOfBirth, gender, addresses, phoneNumbers, nicNumber, registeredAt);
-		
+		Client client = new Client(email, passwordEncoder.encode(password), name, dateOfBirth, gender, addresses, phoneNumbers, nicNumber, registeredAt);
 		Client insertedClient = (Client) userDao.insert(client);
 		
 		documentService.attachNic(insertedClient, nicFile, registeredAt);
@@ -68,11 +64,7 @@ public class UserService {
 		}
 		
 		LocalDateTime registeredAt = LocalDateTime.now();
-		
-		String hashedPassword = passwordEncoder.encode(password);
-		
-		User user = StaffFactory.create(role, email, hashedPassword, name, dateOfBirth, gender, addresses, phoneNumbers, nicNumber, registeredAt, barNumber);
-		
+		User user = StaffFactory.create(role, email, passwordEncoder.encode(password), name, dateOfBirth, gender, addresses, phoneNumbers, nicNumber, registeredAt, barNumber);
 		User insertedUser = userDao.insert(user);
 		
 		documentService.attachNic(insertedUser, nicFile, registeredAt);
@@ -85,7 +77,6 @@ public class UserService {
 	}
 	
 	// Read
-	
 	public User findById(Long userId) {
 		return userDao.findById(userId);
 	}
@@ -116,8 +107,9 @@ public class UserService {
 	
 	public List<Associate> findActiveAssociates() {
 		List<Associate> associates = new ArrayList<>();
+		List<User> users = userDao.findActiveByRole(Role.ASSOCIATE);
 		
-		for (User user : userDao.findActiveByRole(Role.ASSOCIATE)) {
+		for (User user : users) {
 			associates.add((Associate) user);
 		}
 		
@@ -126,8 +118,9 @@ public class UserService {
 	
 	public List<Paralegal> findActiveParalegals() {
 		List<Paralegal> paralegals = new ArrayList<>();
+		List<User> users = userDao.findActiveByRole(Role.PARALEGAL);
 		
-		for (User user : userDao.findActiveByRole(Role.PARALEGAL)) {
+		for (User user : users) {
 			paralegals.add((Paralegal) user);
 		}
 		
@@ -160,7 +153,6 @@ public class UserService {
 	}
 	
 	// Update
-	
 	@Transactional
 	public User updateDetails(User user, String name, LocalDate dateOfBirth, Gender gender, List<String> addresses, List<String> phoneNumbers, MultipartFile nicFile, MultipartFile barFile) {
 		documentService.requirePdf(nicFile, "NIC");
@@ -193,13 +185,11 @@ public class UserService {
 	}
 	
 	// Delete
-	
 	public void delete(User user) {
 		userDao.deleteById(user.getUserId());
 	}
 	
 	// State Pattern
-	
 	public User applyReactivation(User user, String temporaryPassword) {
 		String hashedPassword = passwordEncoder.encode(temporaryPassword);
 		
@@ -222,7 +212,6 @@ public class UserService {
 	}
 	
 	// Private Helpers
-	
 	private User findByEmailOrNull(String email) {
 		
 		try {

@@ -102,13 +102,13 @@ public class TaskService {
 	
 	// ---- Update ----
 	
-	public Task editTitle(Task task, String title) {
+	public Task updateTitle(Task task, String title) {
 		task.setTitle(title);
 		
 		return taskDao.update(task);
 	}
 	
-	public Task editBillableAmount(Task task, BigDecimal billableAmount) {
+	public Task updateBillableAmount(Task task, BigDecimal billableAmount) {
 		
 		if (task.getBillableAmount() == null || task.getBilledInvoiceId() != null) {
 			throw new BillableAmountNotEditableException(task.getTaskId());
@@ -119,7 +119,7 @@ public class TaskService {
 		return taskDao.update(task);
 	}
 	
-	public CaseEvent rescheduleTaskEvent(Task task, String subject, LocalDate date, LocalTime startTime, LocalTime endTime, String location, String notes) {
+	public CaseEvent rescheduleEvent(Task task, String subject, LocalDate date, LocalTime startTime, LocalTime endTime, String location, String notes) {
 		
 		if (!task.isSchedulingTask() || task.getScheduledEvent() == null) {
 			throw new AccessDeniedException("Task has no scheduled event.");

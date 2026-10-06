@@ -182,7 +182,7 @@ public class FinanceOfficerController {
 		}
 		
 		try {
-			taskService.editBillableAmount(taskService.findById(taskId), form.getAmount());
+			taskService.updateBillableAmount(taskService.findById(taskId), form.getAmount());
 			populateCaseDetailModel(case_, model);
 			model.addAttribute("success", "Charge amount updated.");
 		} catch (BusinessRuleViolationException e) {

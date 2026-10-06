@@ -229,7 +229,7 @@ public class ParalegalController {
 			return "paralegal/case-details";
 		}
 		
-		taskService.editTitle(taskService.findOwnedByCase(taskId, case_), form.getTitle());
+		taskService.updateTitle(taskService.findOwnedByCase(taskId, case_), form.getTitle());
 		
 		populateCaseDetailModel(case_, model);
 		model.addAttribute("success", "Task renamed.");
@@ -248,7 +248,7 @@ public class ParalegalController {
 		}
 		
 		try {
-			taskService.rescheduleTaskEvent(taskService.findOwnedByCase(taskId, case_), form.getSubject(), form.getDate(), form.getStartTime(), form.getEndTime(), form.getLocation(), form.getNotes());
+			taskService.rescheduleEvent(taskService.findOwnedByCase(taskId, case_), form.getSubject(), form.getDate(), form.getStartTime(), form.getEndTime(), form.getLocation(), form.getNotes());
 			populateCaseDetailModel(case_, model);
 			model.addAttribute("success", "Event rescheduled successfully.");
 		} catch (InvalidStateException | BusinessRuleViolationException e) {

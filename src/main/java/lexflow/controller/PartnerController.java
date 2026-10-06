@@ -657,7 +657,7 @@ public class PartnerController {
 			return "partner/case-details";
 		}
 		
-		taskService.editTitle(taskService.findById(taskId), form.getTitle());
+		taskService.updateTitle(taskService.findById(taskId), form.getTitle());
 		
 		populateCaseDetailModel(case_, model);
 		model.addAttribute("success", "Task renamed.");
@@ -677,7 +677,7 @@ public class PartnerController {
 		}
 		
 		try {
-			taskService.rescheduleTaskEvent(taskService.findById(taskId), form.getSubject(), form.getDate(), form.getStartTime(), form.getEndTime(), form.getLocation(), form.getNotes());
+			taskService.rescheduleEvent(taskService.findById(taskId), form.getSubject(), form.getDate(), form.getStartTime(), form.getEndTime(), form.getLocation(), form.getNotes());
 			populateCaseDetailModel(case_, model);
 			model.addAttribute("success", "Event rescheduled successfully.");
 		} catch (InvalidStateException | BusinessRuleViolationException e) {
@@ -762,7 +762,7 @@ public class PartnerController {
 		}
 		
 		try {
-			taskService.editBillableAmount(taskService.findById(taskId), form.getAmount());
+			taskService.updateBillableAmount(taskService.findById(taskId), form.getAmount());
 			populateCaseDetailModel(case_, model);
 			model.addAttribute("success", "Charge amount updated.");
 		} catch (BusinessRuleViolationException e) {

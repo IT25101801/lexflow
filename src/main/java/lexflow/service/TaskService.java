@@ -33,7 +33,6 @@ public class TaskService {
 	private final EventService eventService;
 	
 	// Create
-	
 	@Transactional
 	public Task add(Case case_, String title, Boolean documentingTask, Boolean schedulingTask, Boolean billingTask, List<MultipartFile> caseFiles, LocalDate date, LocalTime startTime, LocalTime endTime, String location, String notes, BigDecimal billableAmount) {
 		
@@ -60,7 +59,6 @@ public class TaskService {
 		}
 		
 		LocalDateTime loggedAt = LocalDateTime.now();
-		
 		Task task = new Task(case_.getCaseId(), title, isDocumentingTask, isSchedulingTask, isBillingTask, isBillingTask ? billableAmount : null, loggedAt);
 		
 		taskDao.insert(task);
@@ -78,7 +76,6 @@ public class TaskService {
 	}
 	
 	// Read
-	
 	public Task findById(Long taskId) {
 		return taskDao.findById(taskId);
 	}
@@ -102,7 +99,6 @@ public class TaskService {
 	}
 	
 	// Update
-	
 	public Task updateTitle(Task task, String title) {
 		task.setTitle(title);
 		
@@ -152,7 +148,6 @@ public class TaskService {
 	}
 	
 	// Private Helpers
-	
 	private boolean hasAtLeastOneFile(List<MultipartFile> files) {
 		
 		if (files == null) {

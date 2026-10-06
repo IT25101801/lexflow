@@ -36,13 +36,11 @@ public class TaskDao {
 	private final EventDao eventDao;
 	
 	// Create
-	
 	public Task insert(Task task) {
 		String sql = """
 					 INSERT INTO tasks (case_id, title, documenting_task, scheduling_task, billing_task, billable_amount, billed_invoice_id, logged_at)
 					 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 					 """;
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -87,14 +85,12 @@ public class TaskDao {
 	}
 	
 	// Read
-	
 	public Task findById(Long taskId) {
 		String sql = """
 					 SELECT %s
 					 FROM tasks
 					 WHERE task_id = ?
 					 """.formatted(SELECT_COLUMNS);
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -124,9 +120,7 @@ public class TaskDao {
 					 WHERE case_id = ?
 					 ORDER BY logged_at DESC
 					 """.formatted(SELECT_COLUMNS);
-		
 		List<Task> tasks = new ArrayList<>();
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -158,9 +152,7 @@ public class TaskDao {
 					   AND billed_invoice_id IS NULL
 					 ORDER BY logged_at DESC
 					 """.formatted(SELECT_COLUMNS);
-		
 		List<Task> tasks = new ArrayList<>();
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -190,9 +182,7 @@ public class TaskDao {
 					 WHERE billed_invoice_id = ?
 					 ORDER BY logged_at DESC
 					 """.formatted(SELECT_COLUMNS);
-		
 		List<Task> tasks = new ArrayList<>();
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -216,7 +206,6 @@ public class TaskDao {
 	}
 	
 	// Update
-	
 	public Task update(Task task) {
 		String sql = """
 					 UPDATE tasks
@@ -225,7 +214,6 @@ public class TaskDao {
 					     billed_invoice_id = ?
 					 WHERE task_id = ?
 					 """;
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -246,18 +234,16 @@ public class TaskDao {
 			statement.setLong(4, task.getTaskId());
 			
 			statement.executeUpdate();
-			
-			return task;
 		} catch (SQLException e) {
 			throw new PersistenceException("updating task", e);
 		} finally {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
 		
+		return task;
 	}
 	
 	// Private Helpers
-	
 	private Task mapRow(ResultSet resultSet) throws SQLException {
 		Long taskId = resultSet.getLong("task_id");
 		Long caseId = resultSet.getLong("case_id");
@@ -265,7 +251,6 @@ public class TaskDao {
 		boolean documentingTask = resultSet.getBoolean("documenting_task");
 		boolean schedulingTask = resultSet.getBoolean("scheduling_task");
 		boolean billingTask = resultSet.getBoolean("billing_task");
-		
 		CaseEvent scheduledEvent = null;
 		
 		if (schedulingTask) {
@@ -273,7 +258,6 @@ public class TaskDao {
 		}
 		
 		BigDecimal billableAmount = resultSet.getBigDecimal("billable_amount");
-		
 		Long billedInvoiceId = resultSet.getLong("billed_invoice_id");
 		
 		if (resultSet.wasNull()) {

@@ -45,15 +45,12 @@ public class CaseDao {
 	private final ConsultationDao consultationDao;
 	
 	// Create
-	
 	public Case insert(Case case_) {
 		String sql = """
 					 INSERT INTO cases (consultation_id, client_id, associate_id, paralegal_id, case_status, opened_at, case_resolution_status, closed_at)
 					 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 					 """;
-		
 		String caseCode;
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -120,14 +117,12 @@ public class CaseDao {
 	}
 	
 	// Read
-	
 	public Case findById(Long caseId) {
 		String sql = """
 					 SELECT %s
 					 FROM cases
 					 WHERE case_id = ?
 					 """.formatted(SELECT_COLUMNS);
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -156,7 +151,6 @@ public class CaseDao {
 					 FROM cases
 					 WHERE consultation_id = ?
 					 """.formatted(SELECT_COLUMNS);
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -198,9 +192,7 @@ public class CaseDao {
 					 WHERE case_status = ?
 					 ORDER BY opened_at DESC
 					 """.formatted(SELECT_COLUMNS);
-		
 		List<Case> cases = new ArrayList<>();
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -215,7 +207,7 @@ public class CaseDao {
 			}
 			
 		} catch (SQLException e) {
-			throw new PersistenceException("finding cases", e);
+			throw new PersistenceException("finding cases by status", e);
 		} finally {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
@@ -236,7 +228,6 @@ public class CaseDao {
 	}
 	
 	// Update
-	
 	public Case update(Case case_) {
 		String sql = """
 					 UPDATE cases
@@ -247,7 +238,6 @@ public class CaseDao {
 					     closed_at              = ?
 					 WHERE case_id = ?
 					 """;
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -280,7 +270,6 @@ public class CaseDao {
 	}
 	
 	// Private Helpers
-	
 	private Case mapRow(ResultSet resultSet) throws SQLException {
 		Long caseId = resultSet.getLong("case_id");
 		String caseCode = resultSet.getString("case_code");
@@ -290,7 +279,6 @@ public class CaseDao {
 		Paralegal paralegal = (Paralegal) userDao.findByIdAndRole(resultSet.getLong("paralegal_id"), Role.PARALEGAL);
 		CaseStatus caseStatus = CaseStatus.valueOf(resultSet.getString("case_status"));
 		LocalDateTime openedAt = resultSet.getTimestamp("opened_at").toLocalDateTime();
-		
 		CaseResolutionStatus caseResolutionStatus = null;
 		String caseResolutionStatusName = resultSet.getString("case_resolution_status");
 		
@@ -315,9 +303,7 @@ public class CaseDao {
 					 WHERE %s = ?
 					 ORDER BY opened_at DESC
 					 """.formatted(SELECT_COLUMNS, column);
-		
 		List<Case> cases = new ArrayList<>();
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -332,7 +318,7 @@ public class CaseDao {
 			}
 			
 		} catch (SQLException e) {
-			throw new PersistenceException("finding cases", e);
+			throw new PersistenceException("finding cases by " + column, e);
 		} finally {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
@@ -348,9 +334,7 @@ public class CaseDao {
 					   AND case_status = ?
 					 ORDER BY opened_at DESC
 					 """.formatted(SELECT_COLUMNS, column);
-		
 		List<Case> cases = new ArrayList<>();
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -366,7 +350,7 @@ public class CaseDao {
 			}
 			
 		} catch (SQLException e) {
-			throw new PersistenceException("finding cases", e);
+			throw new PersistenceException("finding cases by " + column + " and status", e);
 		} finally {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}

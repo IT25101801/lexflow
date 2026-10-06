@@ -21,21 +21,21 @@
 			<div class="stat-card">
 				<div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
 				<div>
-					<div class="stat-value" th:text="${avgCaseDurationDays != null ? #numbers.formatDecimal(avgCaseDurationDays, 1, 1) + ' days' : '–'}"></div>
+					<div class="stat-value" th:text="${averageCaseDurationDays != null ? #numbers.formatDecimal(averageCaseDurationDays, 1, 1) + ' days' : '–'}"></div>
 					<div class="stat-label">Avg. Case Duration</div>
 				</div>
 			</div>
 			<div class="stat-card">
 				<div class="stat-icon"><i class="bi bi-cash-stack"></i></div>
 				<div>
-					<div class="stat-value" th:text="${#numbers.formatDecimal(billableThisMonth, 1, 'COMMA', 2, 'POINT')}"></div>
+					<div class="stat-value" th:text="${#numbers.formatDecimal(billableAmountThisMonth, 1, 'COMMA', 2, 'POINT')}"></div>
 					<div class="stat-label">Billable This Month</div>
 				</div>
 			</div>
 			<div class="stat-card">
 				<div class="stat-icon"><i class="bi bi-clock-history"></i></div>
 				<div>
-					<div class="stat-value" th:text="${#numbers.formatDecimal(billableLastMonth, 1, 'COMMA', 2, 'POINT')}"></div>
+					<div class="stat-value" th:text="${#numbers.formatDecimal(billableAmountLastMonth, 1, 'COMMA', 2, 'POINT')}"></div>
 					<div class="stat-label">Billable Last Month</div>
 				</div>
 			</div>

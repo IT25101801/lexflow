@@ -19,7 +19,7 @@
 			<i class="bi bi-exclamation-circle"></i>
 			<span>Registration failed:</span>
 			<ul style="margin:0.25rem 0 0 1.25rem;">
-				<li th:each="msg : ${validationErrors}" th:text="${msg}"></li>
+				<li th:each="validationError : ${validationErrors}" th:text="${validationError}"></li>
 			</ul>
 		</div>
 		

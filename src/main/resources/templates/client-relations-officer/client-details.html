@@ -72,13 +72,13 @@
 					<div class="detail-row">
 						<span class="detail-label">Addresses</span>
 						<div class="detail-value">
-							<div th:each="a : ${user.addresses}" th:text="${a}"></div>
+							<div th:each="address : ${user.addresses}" th:text="${address}"></div>
 						</div>
 					</div>
 					<div class="detail-row">
 						<span class="detail-label">Phone Numbers</span>
 						<div class="detail-value">
-							<div th:each="p : ${user.phoneNumbers}" th:text="${p}"></div>
+							<div th:each="phoneNumber : ${user.phoneNumbers}" th:text="${phoneNumber}"></div>
 						</div>
 					</div>
 					<div class="detail-row">
@@ -152,12 +152,12 @@
 						<tr th:if="${#lists.isEmpty(relatedConsultations)}">
 							<td class="table-empty" colspan="5">No consultations on record.</td>
 						</tr>
-						<tr th:each="c : ${relatedConsultations}">
-							<td class="cell-id" th:text="${c.consultationCode}"></td>
-							<td th:text="${#strings.replace(c.caseType, '_', ' ')}"></td>
-							<td><span class="badge" th:classappend="'badge-' + ${c.consultationStatus}" th:text="${#strings.replace(c.consultationStatus, '_', ' ')}"></span></td>
-							<td th:text="${#temporals.format(c.submittedAt, 'dd/MM/yyyy HH:mm')}" style="white-space:nowrap;"></td>
-							<td><a class="action-btn action-btn-view" th:href="@{/client-relations-officer/consultations/{id}(id=${c.consultationId})}">View</a></td>
+						<tr th:each="consultation : ${relatedConsultations}">
+							<td class="cell-id" th:text="${consultation.consultationCode}"></td>
+							<td th:text="${#strings.replace(consultation.caseType, '_', ' ')}"></td>
+							<td><span class="badge" th:classappend="'badge-' + ${consultation.consultationStatus}" th:text="${#strings.replace(consultation.consultationStatus, '_', ' ')}"></span></td>
+							<td th:text="${#temporals.format(consultation.submittedAt, 'dd/MM/yyyy HH:mm')}" style="white-space:nowrap;"></td>
+							<td><a class="action-btn action-btn-view" th:href="@{/client-relations-officer/consultations/{id}(id=${consultation.consultationId})}">View</a></td>
 						</tr>
 						</tbody>
 					</table>
@@ -184,12 +184,12 @@
 						<tr th:if="${#lists.isEmpty(relatedCases)}">
 							<td class="table-empty" colspan="5">No cases on record.</td>
 						</tr>
-						<tr th:each="cs : ${relatedCases}">
-							<td class="cell-id" th:text="${cs.caseCode}"></td>
-							<td><span class="badge" th:classappend="'badge-' + ${cs.caseStatus}" th:text="${cs.caseStatus}"></span></td>
-							<td th:text="${#temporals.format(cs.openedAt, 'dd/MM/yyyy HH:mm')}" style="white-space:nowrap;"></td>
-							<td th:text="${cs.caseResolutionStatus != null ? cs.caseResolutionStatus : '–'}"></td>
-							<td th:text="${cs.closedAt != null ? #temporals.format(cs.closedAt, 'dd/MM/yyyy HH:mm') : '–'}" style="white-space:nowrap;"></td>
+						<tr th:each="case : ${relatedCases}">
+							<td class="cell-id" th:text="${case.caseCode}"></td>
+							<td><span class="badge" th:classappend="'badge-' + ${case.caseStatus}" th:text="${case.caseStatus}"></span></td>
+							<td th:text="${#temporals.format(case.openedAt, 'dd/MM/yyyy HH:mm')}" style="white-space:nowrap;"></td>
+							<td th:text="${case.caseResolutionStatus != null ? case.caseResolutionStatus : '–'}"></td>
+							<td th:text="${case.closedAt != null ? #temporals.format(case.closedAt, 'dd/MM/yyyy HH:mm') : '–'}" style="white-space:nowrap;"></td>
 						</tr>
 						</tbody>
 					</table>
@@ -217,19 +217,19 @@
 						<tr th:if="${#lists.isEmpty(relatedEvents)}">
 							<td class="table-empty" colspan="6">No events on record.</td>
 						</tr>
-						<tr th:each="e : ${relatedEvents}">
-							<td th:text="${e.subject}"></td>
-							<td th:if="${e instanceof T(lexflow.entity.scheduling.ConsultationEvent)}">
-								<a class="action-btn action-btn-view" th:href="@{/client-relations-officer/consultations/{id}(id=${e.consultation.consultationId})}">View Consultation</a>
+						<tr th:each="event : ${relatedEvents}">
+							<td th:text="${event.subject}"></td>
+							<td th:if="${event instanceof T(lexflow.entity.scheduling.ConsultationEvent)}">
+								<a class="action-btn action-btn-view" th:href="@{/client-relations-officer/consultations/{id}(id=${event.consultation.consultationId})}">View Consultation</a>
 							</td>
-							<td th:unless="${e instanceof T(lexflow.entity.scheduling.ConsultationEvent)}">&ndash;</td>
-							<td th:text="${#temporals.format(e.date, 'dd/MM/yyyy')}" style="white-space:nowrap;"></td>
-							<td th:text="${e.startTime}" style="white-space:nowrap;"></td>
-							<td><span class="badge" th:classappend="'badge-' + ${e.eventStatus}" th:text="${e.eventStatus}"></span></td>
+							<td th:unless="${event instanceof T(lexflow.entity.scheduling.ConsultationEvent)}">&ndash;</td>
+							<td th:text="${#temporals.format(event.date, 'dd/MM/yyyy')}" style="white-space:nowrap;"></td>
+							<td th:text="${event.startTime}" style="white-space:nowrap;"></td>
+							<td><span class="badge" th:classappend="'badge-' + ${event.eventStatus}" th:text="${event.eventStatus}"></span></td>
 							<td>
-								<a class="action-btn action-btn-view" th:if="${e instanceof T(lexflow.entity.scheduling.ConsultationEvent)}"
-								   th:href="@{/client-relations-officer/events/{id}(id=${e.eventId})}">View</a>
-								<span th:unless="${e instanceof T(lexflow.entity.scheduling.ConsultationEvent)}">&ndash;</span>
+								<a class="action-btn action-btn-view" th:if="${event instanceof T(lexflow.entity.scheduling.ConsultationEvent)}"
+								   th:href="@{/client-relations-officer/events/{id}(id=${event.eventId})}">View</a>
+								<span th:unless="${event instanceof T(lexflow.entity.scheduling.ConsultationEvent)}">&ndash;</span>
 							</td>
 						</tr>
 						</tbody>
@@ -257,12 +257,12 @@
 						<tr th:if="${#lists.isEmpty(relatedTransactions)}">
 							<td class="table-empty" colspan="5">No transactions on record.</td>
 						</tr>
-						<tr th:each="t : ${relatedTransactions}">
-							<td class="cell-id" th:text="${t.transactionCode}"></td>
-							<td th:text="${#numbers.formatDecimal(t.amount, 1, 'COMMA', 2, 'POINT')}"></td>
-							<td><span th:classappend="'tx-' + ${t.transactionType.name()}" th:text="${#strings.replace(t.transactionType, '_', ' ')}"></span></td>
-							<td class="cell-id" th:text="${t.invoiceId ?: '–'}"></td>
-							<td th:text="${#temporals.format(t.occurredAt, 'dd/MM/yyyy HH:mm')}" style="white-space:nowrap;"></td>
+						<tr th:each="transaction : ${relatedTransactions}">
+							<td class="cell-id" th:text="${transaction.transactionCode}"></td>
+							<td th:text="${#numbers.formatDecimal(transaction.amount, 1, 'COMMA', 2, 'POINT')}"></td>
+							<td><span th:classappend="'tx-' + ${transaction.transactionType.name()}" th:text="${#strings.replace(transaction.transactionType, '_', ' ')}"></span></td>
+							<td class="cell-id" th:text="${transaction.invoiceId ?: '–'}"></td>
+							<td th:text="${#temporals.format(transaction.occurredAt, 'dd/MM/yyyy HH:mm')}" style="white-space:nowrap;"></td>
 						</tr>
 						</tbody>
 					</table>
@@ -297,8 +297,8 @@
 			<div class="field">
 				<label>Addresses</label>
 				<div id="addressRows">
-					<div class="multi-input-row" th:each="a : ${user.addresses}">
-						<input type="text" name="addresses" th:value="${a}"/>
+					<div class="multi-input-row" th:each="address : ${user.addresses}">
+						<input type="text" name="addresses" th:value="${address}"/>
 						<button type="button" onclick="this.parentElement.remove();">Remove</button>
 					</div>
 				</div>
@@ -307,8 +307,8 @@
 			<div class="field">
 				<label>Phone Numbers</label>
 				<div id="phoneNumberRows">
-					<div class="multi-input-row" th:each="p : ${user.phoneNumbers}">
-						<input type="text" name="phoneNumbers" th:value="${p}"/>
+					<div class="multi-input-row" th:each="phoneNumber : ${user.phoneNumbers}">
+						<input type="text" name="phoneNumbers" th:value="${phoneNumber}"/>
 						<button type="button" onclick="this.parentElement.remove();">Remove</button>
 					</div>
 				</div>

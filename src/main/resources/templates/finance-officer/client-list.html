@@ -31,18 +31,18 @@
 					<tr th:if="${#lists.isEmpty(users)}">
 						<td class="table-empty" colspan="10" th:text="${keyword != null and !#strings.isEmpty(keyword)} ? 'No clients match your search.' : 'No clients yet.'"></td>
 					</tr>
-					<tr th:each="u : ${users}">
-						<td class="cell-id" th:text="${u.userCode}"></td>
-						<td th:text="${u.email}"></td>
-						<td th:text="${u.name}"></td>
-						<td th:text="${#temporals.format(u.dateOfBirth, 'dd/MM/yyyy')}"></td>
-						<td th:text="${u.gender.name()}"></td>
-						<td th:text="${u.nicNumber}"></td>
-						<td th:text="${#numbers.formatDecimal(u.walletBalance, 1, 'COMMA', 2, 'POINT')}"></td>
-						<td><span class="badge" th:classappend="'badge-' + ${u.accountStatus}" th:text="${u.accountStatus}"></span></td>
-						<td th:text="${#temporals.format(u.registeredAt, 'dd/MM/yyyy HH:mm')}"></td>
+					<tr th:each="user : ${users}">
+						<td class="cell-id" th:text="${user.userCode}"></td>
+						<td th:text="${user.email}"></td>
+						<td th:text="${user.name}"></td>
+						<td th:text="${#temporals.format(user.dateOfBirth, 'dd/MM/yyyy')}"></td>
+						<td th:text="${user.gender.name()}"></td>
+						<td th:text="${user.nicNumber}"></td>
+						<td th:text="${#numbers.formatDecimal(user.walletBalance, 1, 'COMMA', 2, 'POINT')}"></td>
+						<td><span class="badge" th:classappend="'badge-' + ${user.accountStatus}" th:text="${user.accountStatus}"></span></td>
+						<td th:text="${#temporals.format(user.registeredAt, 'dd/MM/yyyy HH:mm')}"></td>
 						<td>
-							<a class="action-btn action-btn-view" th:href="@{/finance-officer/clients/{id}(id=${u.userId})}">View</a>
+							<a class="action-btn action-btn-view" th:href="@{/finance-officer/clients/{id}(id=${user.userId})}">View</a>
 						</td>
 					</tr>
 					</tbody>

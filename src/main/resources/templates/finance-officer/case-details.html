@@ -70,23 +70,23 @@
 		
 		<div class="section-card">
 			<div class="section-title">Unbilled Charges</div>
-			<p class="empty-state" th:if="${#lists.isEmpty(unbilledCharges)}">No unbilled charges.</p>
+			<p class="empty-state" th:if="${#lists.isEmpty(unbilledTasks)}">No unbilled charges.</p>
 			<div style="display:none;">
-				<form th:each="t : ${unbilledCharges}" method="post" th:id="'editAmountForm-' + ${t.taskId}"
-					  th:action="@{/finance-officer/cases/{id}/tasks/{taskId}/edit-billable-amount(id=${case.caseId},taskId=${t.taskId})}"></form>
+				<form th:each="task : ${unbilledTasks}" method="post" th:id="'editAmountForm-' + ${task.taskId}"
+					  th:action="@{/finance-officer/cases/{id}/tasks/{taskId}/edit-billable-amount(id=${case.caseId},taskId=${task.taskId})}"></form>
 			</div>
-			<form th:unless="${#lists.isEmpty(unbilledCharges)}" th:action="@{/finance-officer/cases/{id}/invoices/compile(id=${case.caseId})}" method="post">
+			<form th:unless="${#lists.isEmpty(unbilledTasks)}" th:action="@{/finance-officer/cases/{id}/invoices/compile(id=${case.caseId})}" method="post">
 				<div style="display:flex;flex-direction:column;gap:0.75rem;">
-					<div class="contact-card" th:each="t : ${unbilledCharges}" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;">
+					<div class="contact-card" th:each="task : ${unbilledTasks}" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;">
 						<label style="display:flex;align-items:center;gap:0.75rem;min-width:0;">
-							<input type="checkbox" name="taskIds" th:value="${t.taskId}"/>
-							<span th:text="${t.title}"></span>
+							<input type="checkbox" name="taskIds" th:value="${task.taskId}"/>
+							<span th:text="${task.title}"></span>
 						</label>
 						<div style="display:flex;align-items:center;gap:1rem;flex-shrink:0;">
-							<span class="detail-value" th:text="${#numbers.formatDecimal(t.billableAmount, 1, 'COMMA', 2, 'POINT')}"></span>
+							<span class="detail-value" th:text="${#numbers.formatDecimal(task.billableAmount, 1, 'COMMA', 2, 'POINT')}"></span>
 							<button class="action-btn action-btn-edit" type="button"
-									th:attr="data-action=@{/finance-officer/cases/{id}/tasks/{taskId}/edit-billable-amount(id=${case.caseId},taskId=${t.taskId})}"
-									th:data-amount="${t.billableAmount}"
+									th:attr="data-action=@{/finance-officer/cases/{id}/tasks/{taskId}/edit-billable-amount(id=${case.caseId},taskId=${task.taskId})}"
+									th:data-amount="${task.billableAmount}"
 									onclick="openAmountModal(this)">Edit
 							</button>
 						</div>
@@ -100,15 +100,15 @@
 			<div class="section-title">Unpaid Invoices</div>
 			<p class="empty-state" th:if="${#lists.isEmpty(unpaidInvoices)}">No unpaid invoices.</p>
 			<div style="display:flex;flex-direction:column;gap:0.75rem;" th:unless="${#lists.isEmpty(unpaidInvoices)}">
-				<div class="contact-card" th:each="inv : ${unpaidInvoices}" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;">
-					<span th:text="${inv.invoiceCode}"></span>
+				<div class="contact-card" th:each="invoice : ${unpaidInvoices}" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;">
+					<span th:text="${invoice.invoiceCode}"></span>
 					<div style="display:flex;align-items:center;gap:0.75rem;flex-shrink:0;">
-						<span class="detail-value" th:text="${#numbers.formatDecimal(inv.totalAmount, 1, 'COMMA', 2, 'POINT')}"></span>
-						<a class="action-btn action-btn-view" th:href="@{/finance-officer/documents/invoice/{id}(id=${inv.invoiceDocument != null ? inv.invoiceDocument.documentId : 0})}" target="_blank">View</a>
-						<form method="post" th:action="@{/finance-officer/cases/{id}/invoices/{invoiceId}/charge(id=${case.caseId},invoiceId=${inv.invoiceId})}">
+						<span class="detail-value" th:text="${#numbers.formatDecimal(invoice.totalAmount, 1, 'COMMA', 2, 'POINT')}"></span>
+						<a class="action-btn action-btn-view" th:href="@{/finance-officer/documents/invoice/{id}(id=${invoice.invoiceDocument != null ? invoice.invoiceDocument.documentId : 0})}" target="_blank">View</a>
+						<form method="post" th:action="@{/finance-officer/cases/{id}/invoices/{invoiceId}/charge(id=${case.caseId},invoiceId=${invoice.invoiceId})}">
 							<button class="action-btn action-btn-create" type="submit">Charge</button>
 						</form>
-						<form method="post" th:action="@{/finance-officer/cases/{id}/invoices/{invoiceId}/void(id=${case.caseId},invoiceId=${inv.invoiceId})}">
+						<form method="post" th:action="@{/finance-officer/cases/{id}/invoices/{invoiceId}/void(id=${case.caseId},invoiceId=${invoice.invoiceId})}">
 							<button class="action-btn action-btn-delete" type="submit">Void</button>
 						</form>
 					</div>
@@ -120,15 +120,15 @@
 			<div class="section-title">Paid Invoices</div>
 			<p class="empty-state" th:if="${#lists.isEmpty(paidInvoices)}">No paid invoices.</p>
 			<div style="display:flex;flex-direction:column;gap:0.75rem;" th:unless="${#lists.isEmpty(paidInvoices)}">
-				<div class="contact-card" th:each="inv : ${paidInvoices}" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;">
+				<div class="contact-card" th:each="invoice : ${paidInvoices}" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;">
 					<span>
-						<span th:text="${inv.invoiceCode}"></span>
-						<span class="cell-sub">paid <span th:text="${#temporals.format(inv.paidAt, 'dd/MM/yyyy')}"></span></span>
+						<span th:text="${invoice.invoiceCode}"></span>
+						<span class="cell-sub">paid <span th:text="${#temporals.format(invoice.paidAt, 'dd/MM/yyyy')}"></span></span>
 					</span>
 					<div style="display:flex;align-items:center;gap:0.75rem;flex-shrink:0;">
-						<span class="detail-value" th:text="${#numbers.formatDecimal(inv.totalAmount, 1, 'COMMA', 2, 'POINT')}"></span>
-						<a class="action-btn action-btn-view" th:href="@{/finance-officer/documents/invoice/{id}(id=${inv.invoiceDocument != null ? inv.invoiceDocument.documentId : 0})}" target="_blank">View</a>
-						<form method="post" th:action="@{/finance-officer/cases/{id}/invoices/{invoiceId}/void-refund(id=${case.caseId},invoiceId=${inv.invoiceId})}">
+						<span class="detail-value" th:text="${#numbers.formatDecimal(invoice.totalAmount, 1, 'COMMA', 2, 'POINT')}"></span>
+						<a class="action-btn action-btn-view" th:href="@{/finance-officer/documents/invoice/{id}(id=${invoice.invoiceDocument != null ? invoice.invoiceDocument.documentId : 0})}" target="_blank">View</a>
+						<form method="post" th:action="@{/finance-officer/cases/{id}/invoices/{invoiceId}/void-refund(id=${case.caseId},invoiceId=${invoice.invoiceId})}">
 							<button class="action-btn action-btn-delete" type="submit">Void &amp; Refund</button>
 						</form>
 					</div>
@@ -140,11 +140,11 @@
 			<div class="section-title">Voided Invoices</div>
 			<p class="empty-state" th:if="${#lists.isEmpty(voidedInvoices)}">No voided invoices.</p>
 			<div style="display:flex;flex-direction:column;gap:0.75rem;" th:unless="${#lists.isEmpty(voidedInvoices)}">
-				<div class="contact-card" th:each="inv : ${voidedInvoices}" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;">
-					<span th:text="${inv.invoiceCode}"></span>
+				<div class="contact-card" th:each="invoice : ${voidedInvoices}" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;">
+					<span th:text="${invoice.invoiceCode}"></span>
 					<div style="display:flex;align-items:center;gap:0.75rem;flex-shrink:0;">
-						<span class="detail-value" th:text="${#numbers.formatDecimal(inv.totalAmount, 1, 'COMMA', 2, 'POINT')}"></span>
-						<a class="action-btn action-btn-view" th:href="@{/finance-officer/documents/invoice/{id}(id=${inv.invoiceDocument != null ? inv.invoiceDocument.documentId : 0})}" target="_blank">View</a>
+						<span class="detail-value" th:text="${#numbers.formatDecimal(invoice.totalAmount, 1, 'COMMA', 2, 'POINT')}"></span>
+						<a class="action-btn action-btn-view" th:href="@{/finance-officer/documents/invoice/{id}(id=${invoice.invoiceDocument != null ? invoice.invoiceDocument.documentId : 0})}" target="_blank">View</a>
 					</div>
 				</div>
 			</div>

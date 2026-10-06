@@ -81,62 +81,62 @@
 						<button class="btn-round-add" type="button" onclick="document.getElementById('taskAddModal').style.display='flex';">+</button>
 					</div>
 					<div style="display:none;">
-						<form th:each="t : ${tasks}" method="post" th:id="'editTitleForm-' + ${t.taskId}"
-							  th:action="@{/partner/cases/{id}/tasks/{taskId}/edit-title(id=${case.caseId},taskId=${t.taskId})}"></form>
+						<form th:each="task : ${tasks}" method="post" th:id="'editTitleForm-' + ${task.taskId}"
+							  th:action="@{/partner/cases/{id}/tasks/{taskId}/edit-title(id=${case.caseId},taskId=${task.taskId})}"></form>
 					</div>
 					<p class="empty-state" th:if="${#lists.isEmpty(tasks)}">No tasks logged for this case yet.</p>
 					<div class="contact-card-grid" th:unless="${#lists.isEmpty(tasks)}">
-						<div class="contact-card" th:each="t : ${tasks}">
+						<div class="contact-card" th:each="task : ${tasks}">
 							<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.5rem;">
-								<div class="item-title" th:text="${t.title}"></div>
+								<div class="item-title" th:text="${task.title}"></div>
 								<button type="button" class="action-btn action-btn-edit"
-										th:attr="data-action=@{/partner/cases/{id}/tasks/{taskId}/edit-title(id=${case.caseId},taskId=${t.taskId})}"
-										th:data-title="${t.title}"
+										th:attr="data-action=@{/partner/cases/{id}/tasks/{taskId}/edit-title(id=${case.caseId},taskId=${task.taskId})}"
+										th:data-title="${task.title}"
 										onclick="openTaskTitleModal(this)">Edit
 								</button>
 							</div>
 							<div class="detail-row" style="margin-top:0.5rem;">
 								<span class="detail-label">Task Type</span>
 								<span class="detail-value">
-									<span th:if="${t.documentingTask}">Documenting</span><span th:if="${t.documentingTask and (t.schedulingTask or t.billingTask)}">, </span><span th:if="${t.schedulingTask}">Scheduling</span><span th:if="${t.schedulingTask and t.billingTask}">, </span><span th:if="${t.billingTask}">Billing</span>
+									<span th:if="${task.documentingTask}">Documenting</span><span th:if="${task.documentingTask and (task.schedulingTask or task.billingTask)}">, </span><span th:if="${task.schedulingTask}">Scheduling</span><span th:if="${task.schedulingTask and task.billingTask}">, </span><span th:if="${task.billingTask}">Billing</span>
 								</span>
 							</div>
-							<div class="detail-row" th:if="${t.documentingTask}">
+							<div class="detail-row" th:if="${task.documentingTask}">
 								<span class="detail-label">Documents</span>
 								<div class="detail-value">
-									<div th:if="${#lists.isEmpty(taskDocuments.get(t.taskId))}">&ndash;</div>
-									<div th:each="d : ${taskDocuments.get(t.taskId)}">
-										<a th:href="@{/partner/documents/case/{id}(id=${d.documentId})}" th:text="${d.originalFilename}" target="_blank"></a>
+									<div th:if="${#lists.isEmpty(taskDocuments.get(task.taskId))}">&ndash;</div>
+									<div th:each="taskDocument : ${taskDocuments.get(task.taskId)}">
+										<a th:href="@{/partner/documents/case/{id}(id=${taskDocument.documentId})}" th:text="${taskDocument.originalFilename}" target="_blank"></a>
 									</div>
 								</div>
 							</div>
-							<div class="detail-row" th:if="${t.schedulingTask}">
+							<div class="detail-row" th:if="${task.schedulingTask}">
 								<span class="detail-label">Scheduled</span>
-								<span class="detail-value" th:if="${t.scheduledEvent != null}">
-									<span th:text="${#temporals.format(t.scheduledEvent.date, 'dd/MM/yyyy')}"></span> ·
-									<span th:text="${t.scheduledEvent.startTime}"></span>–<span th:text="${t.scheduledEvent.endTime}"></span> ·
-									<span th:text="${t.scheduledEvent.location}"></span><span th:if="${t.scheduledEvent.notes}"> · <span th:text="${t.scheduledEvent.notes}"></span></span>
+								<span class="detail-value" th:if="${task.scheduledEvent != null}">
+									<span th:text="${#temporals.format(task.scheduledEvent.date, 'dd/MM/yyyy')}"></span> ·
+									<span th:text="${task.scheduledEvent.startTime}"></span>–<span th:text="${task.scheduledEvent.endTime}"></span> ·
+									<span th:text="${task.scheduledEvent.location}"></span><span th:if="${task.scheduledEvent.notes}"> · <span th:text="${task.scheduledEvent.notes}"></span></span>
 								</span>
 							</div>
-							<div class="detail-row" th:if="${t.schedulingTask and t.scheduledEvent != null}">
+							<div class="detail-row" th:if="${task.schedulingTask and task.scheduledEvent != null}">
 								<span class="detail-label">Event Status</span>
 								<span class="detail-value" style="display:flex;align-items:center;gap:0.5rem;">
-									<span class="badge" th:classappend="'badge-' + ${t.scheduledEvent.eventStatus}" th:text="${t.scheduledEvent.eventStatus}"></span>
-									<button th:if="${t.scheduledEvent.eventStatus.name() == 'SCHEDULED'}" type="button" class="action-btn action-btn-edit"
-											th:attr="data-action=@{/partner/cases/{id}/tasks/{taskId}/reschedule(id=${case.caseId},taskId=${t.taskId})}"
-											th:data-subject="${t.scheduledEvent.subject}"
-											th:data-date="${#temporals.format(t.scheduledEvent.date, 'yyyy-MM-dd')}"
-											th:data-starttime="${t.scheduledEvent.startTime}"
-											th:data-endtime="${t.scheduledEvent.endTime}"
-											th:data-location="${t.scheduledEvent.location}"
-											th:data-notes="${t.scheduledEvent.notes}"
+									<span class="badge" th:classappend="'badge-' + ${task.scheduledEvent.eventStatus}" th:text="${task.scheduledEvent.eventStatus}"></span>
+									<button th:if="${task.scheduledEvent.eventStatus.name() == 'SCHEDULED'}" type="button" class="action-btn action-btn-edit"
+											th:attr="data-action=@{/partner/cases/{id}/tasks/{taskId}/reschedule(id=${case.caseId},taskId=${task.taskId})}"
+											th:data-subject="${task.scheduledEvent.subject}"
+											th:data-date="${#temporals.format(task.scheduledEvent.date, 'yyyy-MM-dd')}"
+											th:data-starttime="${task.scheduledEvent.startTime}"
+											th:data-endtime="${task.scheduledEvent.endTime}"
+											th:data-location="${task.scheduledEvent.location}"
+											th:data-notes="${task.scheduledEvent.notes}"
 											onclick="openTaskRescheduleModal(this)">Reschedule
 									</button>
 								</span>
 							</div>
-							<div class="detail-row" th:if="${t.billingTask}">
+							<div class="detail-row" th:if="${task.billingTask}">
 								<span class="detail-label">Billable Amount</span>
-								<span class="detail-value" th:text="${#numbers.formatDecimal(t.billableAmount, 1, 'COMMA', 2, 'POINT')}"></span>
+								<span class="detail-value" th:text="${#numbers.formatDecimal(task.billableAmount, 1, 'COMMA', 2, 'POINT')}"></span>
 							</div>
 						</div>
 					</div>
@@ -153,23 +153,23 @@
 					
 					<div>
 						<div class="section-title">Unbilled Charges</div>
-						<p class="empty-state" th:if="${#lists.isEmpty(unbilledCharges)}">No unbilled charges.</p>
+						<p class="empty-state" th:if="${#lists.isEmpty(unbilledTasks)}">No unbilled charges.</p>
 						<div style="display:none;">
-							<form th:each="t : ${unbilledCharges}" method="post" th:id="'editAmountForm-' + ${t.taskId}"
-								  th:action="@{/partner/cases/{id}/tasks/{taskId}/edit-billable-amount(id=${case.caseId},taskId=${t.taskId})}"></form>
+							<form th:each="task : ${unbilledTasks}" method="post" th:id="'editAmountForm-' + ${task.taskId}"
+								  th:action="@{/partner/cases/{id}/tasks/{taskId}/edit-billable-amount(id=${case.caseId},taskId=${task.taskId})}"></form>
 						</div>
-						<form method="post" th:action="@{/partner/cases/{id}/invoices/compile(id=${case.caseId})}" th:unless="${#lists.isEmpty(unbilledCharges)}">
+						<form method="post" th:action="@{/partner/cases/{id}/invoices/compile(id=${case.caseId})}" th:unless="${#lists.isEmpty(unbilledTasks)}">
 							<div style="display:flex;flex-direction:column;gap:0.75rem;">
-								<div class="contact-card" th:each="t : ${unbilledCharges}" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;">
+								<div class="contact-card" th:each="task : ${unbilledTasks}" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;">
 									<label style="display:flex;align-items:center;gap:0.75rem;min-width:0;">
-										<input type="checkbox" name="taskIds" th:value="${t.taskId}"/>
-										<span th:text="${t.title}"></span>
+										<input type="checkbox" name="taskIds" th:value="${task.taskId}"/>
+										<span th:text="${task.title}"></span>
 									</label>
 									<div style="display:flex;align-items:center;gap:1rem;flex-shrink:0;">
-										<span class="detail-value" th:text="${#numbers.formatDecimal(t.billableAmount, 1, 'COMMA', 2, 'POINT')}"></span>
+										<span class="detail-value" th:text="${#numbers.formatDecimal(task.billableAmount, 1, 'COMMA', 2, 'POINT')}"></span>
 										<button type="button" class="action-btn action-btn-edit"
-												th:attr="data-action=@{/partner/cases/{id}/tasks/{taskId}/edit-billable-amount(id=${case.caseId},taskId=${t.taskId})}"
-												th:data-amount="${t.billableAmount}"
+												th:attr="data-action=@{/partner/cases/{id}/tasks/{taskId}/edit-billable-amount(id=${case.caseId},taskId=${task.taskId})}"
+												th:data-amount="${task.billableAmount}"
 												onclick="openAmountModal(this)">Edit
 										</button>
 									</div>
@@ -183,15 +183,15 @@
 						<div class="section-title">Unpaid Invoices</div>
 						<p class="empty-state" th:if="${#lists.isEmpty(unpaidInvoices)}">No unpaid invoices.</p>
 						<div th:unless="${#lists.isEmpty(unpaidInvoices)}" style="display:flex;flex-direction:column;gap:0.75rem;">
-							<div class="contact-card" th:each="inv : ${unpaidInvoices}" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;">
-								<span th:text="${inv.invoiceCode}"></span>
+							<div class="contact-card" th:each="invoice : ${unpaidInvoices}" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;">
+								<span th:text="${invoice.invoiceCode}"></span>
 								<div style="display:flex;align-items:center;gap:0.75rem;flex-shrink:0;">
-									<span class="detail-value" th:text="${#numbers.formatDecimal(inv.totalAmount, 1, 'COMMA', 2, 'POINT')}"></span>
-									<a class="action-btn action-btn-view" th:href="@{/partner/documents/invoice/{id}(id=${inv.invoiceDocument != null ? inv.invoiceDocument.documentId : 0})}" target="_blank">View</a>
-									<form method="post" th:action="@{/partner/cases/{id}/invoices/{invoiceId}/charge(id=${case.caseId},invoiceId=${inv.invoiceId})}">
+									<span class="detail-value" th:text="${#numbers.formatDecimal(invoice.totalAmount, 1, 'COMMA', 2, 'POINT')}"></span>
+									<a class="action-btn action-btn-view" th:href="@{/partner/documents/invoice/{id}(id=${invoice.invoiceDocument != null ? invoice.invoiceDocument.documentId : 0})}" target="_blank">View</a>
+									<form method="post" th:action="@{/partner/cases/{id}/invoices/{invoiceId}/charge(id=${case.caseId},invoiceId=${invoice.invoiceId})}">
 										<button class="action-btn action-btn-create" type="submit">Charge</button>
 									</form>
-									<form method="post" th:action="@{/partner/cases/{id}/invoices/{invoiceId}/void(id=${case.caseId},invoiceId=${inv.invoiceId})}">
+									<form method="post" th:action="@{/partner/cases/{id}/invoices/{invoiceId}/void(id=${case.caseId},invoiceId=${invoice.invoiceId})}">
 										<button class="action-btn action-btn-delete" type="submit">Void</button>
 									</form>
 								</div>
@@ -203,15 +203,15 @@
 						<div class="section-title">Paid Invoices</div>
 						<p class="empty-state" th:if="${#lists.isEmpty(paidInvoices)}">No paid invoices.</p>
 						<div th:unless="${#lists.isEmpty(paidInvoices)}" style="display:flex;flex-direction:column;gap:0.75rem;">
-							<div class="contact-card" th:each="inv : ${paidInvoices}" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;">
+							<div class="contact-card" th:each="invoice : ${paidInvoices}" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;">
 								<span>
-									<span th:text="${inv.invoiceCode}"></span>
-									<span class="cell-sub">paid <span th:text="${#temporals.format(inv.paidAt, 'dd/MM/yyyy')}"></span></span>
+									<span th:text="${invoice.invoiceCode}"></span>
+									<span class="cell-sub">paid <span th:text="${#temporals.format(invoice.paidAt, 'dd/MM/yyyy')}"></span></span>
 								</span>
 								<div style="display:flex;align-items:center;gap:0.75rem;flex-shrink:0;">
-									<span class="detail-value" th:text="${#numbers.formatDecimal(inv.totalAmount, 1, 'COMMA', 2, 'POINT')}"></span>
-									<a class="action-btn action-btn-view" th:href="@{/partner/documents/invoice/{id}(id=${inv.invoiceDocument != null ? inv.invoiceDocument.documentId : 0})}" target="_blank">View</a>
-									<form method="post" th:action="@{/partner/cases/{id}/invoices/{invoiceId}/void-refund(id=${case.caseId},invoiceId=${inv.invoiceId})}">
+									<span class="detail-value" th:text="${#numbers.formatDecimal(invoice.totalAmount, 1, 'COMMA', 2, 'POINT')}"></span>
+									<a class="action-btn action-btn-view" th:href="@{/partner/documents/invoice/{id}(id=${invoice.invoiceDocument != null ? invoice.invoiceDocument.documentId : 0})}" target="_blank">View</a>
+									<form method="post" th:action="@{/partner/cases/{id}/invoices/{invoiceId}/void-refund(id=${case.caseId},invoiceId=${invoice.invoiceId})}">
 										<button class="action-btn action-btn-delete" type="submit">Void &amp; Refund</button>
 									</form>
 								</div>
@@ -223,11 +223,11 @@
 						<div class="section-title">Voided Invoices</div>
 						<p class="empty-state" th:if="${#lists.isEmpty(voidedInvoices)}">No voided invoices.</p>
 						<div th:unless="${#lists.isEmpty(voidedInvoices)}" style="display:flex;flex-direction:column;gap:0.75rem;">
-							<div class="contact-card" th:each="inv : ${voidedInvoices}" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;">
-								<span th:text="${inv.invoiceCode}"></span>
+							<div class="contact-card" th:each="invoice : ${voidedInvoices}" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;">
+								<span th:text="${invoice.invoiceCode}"></span>
 								<div style="display:flex;align-items:center;gap:0.75rem;flex-shrink:0;">
-									<span class="detail-value" th:text="${#numbers.formatDecimal(inv.totalAmount, 1, 'COMMA', 2, 'POINT')}"></span>
-									<a class="action-btn action-btn-view" th:href="@{/partner/documents/invoice/{id}(id=${inv.invoiceDocument != null ? inv.invoiceDocument.documentId : 0})}" target="_blank">View</a>
+									<span class="detail-value" th:text="${#numbers.formatDecimal(invoice.totalAmount, 1, 'COMMA', 2, 'POINT')}"></span>
+									<a class="action-btn action-btn-view" th:href="@{/partner/documents/invoice/{id}(id=${invoice.invoiceDocument != null ? invoice.invoiceDocument.documentId : 0})}" target="_blank">View</a>
 								</div>
 							</div>
 						</div>
@@ -249,16 +249,16 @@
 						<p class="empty-state" th:if="${#lists.isEmpty(caseDocuments) and (documentKeyword == null or #strings.isEmpty(documentKeyword))}">No documents added to the case yet.</p>
 						<p class="empty-state" th:if="${#lists.isEmpty(caseDocuments) and documentKeyword != null and !#strings.isEmpty(documentKeyword)}">No documents match
 							"<span th:text="${documentKeyword}"></span>".</p>
-						<div class="item-row" th:each="d : ${caseDocuments}">
+						<div class="item-row" th:each="caseDocument : ${caseDocuments}">
 							<div class="item-main">
-								<a class="item-title" th:href="@{/partner/documents/case/{id}(id=${d.documentId})}" th:text="${d.originalFilename}" target="_blank"></a>
+								<a class="item-title" th:href="@{/partner/documents/case/{id}(id=${caseDocument.documentId})}" th:text="${caseDocument.originalFilename}" target="_blank"></a>
 							</div>
 							<div class="item-actions">
 								<button type="button" class="action-btn action-btn-edit"
-										th:attr="data-action=@{/partner/cases/{id}/documents/{documentId}/rename(id=${case.caseId},documentId=${d.documentId})}"
-										th:data-filename="${d.originalFilename}" onclick="openRenameModal(this)">Rename
+										th:attr="data-action=@{/partner/cases/{id}/documents/{documentId}/rename(id=${case.caseId},documentId=${caseDocument.documentId})}"
+										th:data-filename="${caseDocument.originalFilename}" onclick="openRenameModal(this)">Rename
 								</button>
-								<form method="post" th:action="@{/partner/cases/{id}/documents/{documentId}/delete(id=${case.caseId},documentId=${d.documentId})}"
+								<form method="post" th:action="@{/partner/cases/{id}/documents/{documentId}/delete(id=${case.caseId},documentId=${caseDocument.documentId})}"
 									  onsubmit="return confirm('Delete this document? This action cannot be undone.');">
 									<button class="action-btn action-btn-delete" type="submit">Delete</button>
 								</form>
@@ -269,19 +269,19 @@
 						<div class="section-title">Documents Pending Review</div>
 						<p class="empty-state" th:if="${#lists.isEmpty(stagedDocuments)}">No documents awaiting review.</p>
 						<div class="item-list" th:unless="${#lists.isEmpty(stagedDocuments)}">
-							<div class="item-row" th:each="d : ${stagedDocuments}">
+							<div class="item-row" th:each="stagedDocument : ${stagedDocuments}">
 								<div class="item-main">
-									<a class="item-title" th:href="@{/partner/documents/case/{id}(id=${d.documentId})}" th:text="${d.originalFilename}" target="_blank"></a>
+									<a class="item-title" th:href="@{/partner/documents/case/{id}(id=${stagedDocument.documentId})}" th:text="${stagedDocument.originalFilename}" target="_blank"></a>
 								</div>
 								<div class="item-actions">
-									<form method="post" th:action="@{/partner/cases/{id}/documents/{documentId}/accept(id=${case.caseId},documentId=${d.documentId})}">
+									<form method="post" th:action="@{/partner/cases/{id}/documents/{documentId}/accept(id=${case.caseId},documentId=${stagedDocument.documentId})}">
 										<button class="action-btn action-btn-create" type="submit">Add to Case</button>
 									</form>
 									<button type="button" class="action-btn action-btn-edit"
-											th:attr="data-action=@{/partner/cases/{id}/documents/{documentId}/rename(id=${case.caseId},documentId=${d.documentId})}"
-											th:data-filename="${d.originalFilename}" onclick="openRenameModal(this)">Rename
+											th:attr="data-action=@{/partner/cases/{id}/documents/{documentId}/rename(id=${case.caseId},documentId=${stagedDocument.documentId})}"
+											th:data-filename="${stagedDocument.originalFilename}" onclick="openRenameModal(this)">Rename
 									</button>
-									<form method="post" th:action="@{/partner/cases/{id}/documents/{documentId}/reject(id=${case.caseId},documentId=${d.documentId})}"
+									<form method="post" th:action="@{/partner/cases/{id}/documents/{documentId}/reject(id=${case.caseId},documentId=${stagedDocument.documentId})}"
 										  onsubmit="return confirm('Delete this document? This action cannot be undone.');">
 										<button class="action-btn action-btn-delete" type="submit">Delete</button>
 									</form>
@@ -301,43 +301,43 @@
 					</div>
 					<p class="empty-state" th:if="${#lists.isEmpty(contacts)}">No contacts logged for this case yet.</p>
 					<div class="contact-card-grid" th:unless="${#lists.isEmpty(contacts)}">
-						<div class="contact-card" th:each="c : ${contacts}">
+						<div class="contact-card" th:each="contact : ${contacts}">
 							<div style="display:flex;justify-content:flex-end;margin-bottom:0.5rem;">
 								<button type="button" class="action-btn action-btn-edit"
-										th:attr="data-action=@{/partner/cases/{id}/contacts/{contactId}/edit(id=${case.caseId},contactId=${c.contactId})}"
-										th:data-name="${c.name}"
-										th:data-phones="${#strings.listJoin(c.phoneNumbers, '|')}"
-										th:data-emails="${#strings.listJoin(c.emails, '|')}"
-										th:data-addresses="${#strings.listJoin(c.addresses, '|')}"
-										th:data-notes="${c.notes}"
+										th:attr="data-action=@{/partner/cases/{id}/contacts/{contactId}/edit(id=${case.caseId},contactId=${contact.contactId})}"
+										th:data-name="${contact.name}"
+										th:data-phones="${#strings.listJoin(contact.phoneNumbers, '|')}"
+										th:data-emails="${#strings.listJoin(contact.emails, '|')}"
+										th:data-addresses="${#strings.listJoin(contact.addresses, '|')}"
+										th:data-notes="${contact.notes}"
 										onclick="openContactEditModal(this)">Edit
 								</button>
 							</div>
 							<div class="detail-row">
 								<span class="detail-label">Name</span>
-								<span class="detail-value" th:text="${c.name} ?: '–'"></span>
+								<span class="detail-value" th:text="${contact.name} ?: '–'"></span>
 							</div>
-							<div class="detail-row" th:unless="${#lists.isEmpty(c.phoneNumbers)}">
+							<div class="detail-row" th:unless="${#lists.isEmpty(contact.phoneNumbers)}">
 								<span class="detail-label">Phone Numbers</span>
 								<div class="detail-value">
-									<div th:each="p : ${c.phoneNumbers}" th:text="${p}"></div>
+									<div th:each="phoneNumber : ${contact.phoneNumbers}" th:text="${phoneNumber}"></div>
 								</div>
 							</div>
-							<div class="detail-row" th:unless="${#lists.isEmpty(c.emails)}">
+							<div class="detail-row" th:unless="${#lists.isEmpty(contact.emails)}">
 								<span class="detail-label">Emails</span>
 								<div class="detail-value">
-									<div th:each="e : ${c.emails}" th:text="${e}"></div>
+									<div th:each="email : ${contact.emails}" th:text="${email}"></div>
 								</div>
 							</div>
-							<div class="detail-row" th:unless="${#lists.isEmpty(c.addresses)}">
+							<div class="detail-row" th:unless="${#lists.isEmpty(contact.addresses)}">
 								<span class="detail-label">Addresses</span>
 								<div class="detail-value">
-									<div th:each="a : ${c.addresses}" th:text="${a}"></div>
+									<div th:each="address : ${contact.addresses}" th:text="${address}"></div>
 								</div>
 							</div>
-							<div th:if="${c.notes}" style="padding-top:0.75rem;">
+							<div th:if="${contact.notes}" style="padding-top:0.75rem;">
 								<div class="detail-label" style="margin-bottom:0.35rem;">Notes</div>
-								<div th:text="${c.notes}" style="font-size:0.88rem;line-height:1.6;color:var(--text);"></div>
+								<div th:text="${contact.notes}" style="font-size:0.88rem;line-height:1.6;color:var(--text);"></div>
 							</div>
 						</div>
 					</div>
@@ -352,15 +352,15 @@
 								<div class="field">
 									<label for="associateId">Associate</label>
 									<select id="associateId" name="associateId" required>
-										<option th:each="a : ${associates}" th:value="${a.userId}" th:text="${a.name} + ' (' + ${a.userCode} + ')'"
-												th:selected="${case.associate != null and case.associate.userId == a.userId}"></option>
+										<option th:each="associate : ${associates}" th:value="${associate.userId}" th:text="${associate.name} + ' (' + ${associate.userCode} + ')'"
+												th:selected="${case.associate != null and case.associate.userId == associate.userId}"></option>
 									</select>
 								</div>
 								<div class="field">
 									<label for="paralegalId">Paralegal</label>
 									<select id="paralegalId" name="paralegalId" required>
-										<option th:each="p : ${paralegals}" th:value="${p.userId}" th:text="${p.name} + ' (' + ${p.userCode} + ')'"
-												th:selected="${case.paralegal != null and case.paralegal.userId == p.userId}"></option>
+										<option th:each="paralegal : ${paralegals}" th:value="${paralegal.userId}" th:text="${paralegal.name} + ' (' + ${paralegal.userCode} + ')'"
+												th:selected="${case.paralegal != null and case.paralegal.userId == paralegal.userId}"></option>
 									</select>
 								</div>
 							</div>

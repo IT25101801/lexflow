@@ -34,24 +34,24 @@
 					<tr th:if="${#lists.isEmpty(users)}">
 						<td class="table-empty" colspan="10" th:text="${keyword != null and !#strings.isEmpty(keyword)} ? 'No partners match your search.' : 'No partners yet.'"></td>
 					</tr>
-					<tr th:each="u : ${users}">
-						<td class="cell-id" th:text="${u.userCode}"></td>
-						<td th:text="${u.email}"></td>
+					<tr th:each="user : ${users}">
+						<td class="cell-id" th:text="${user.userCode}"></td>
+						<td th:text="${user.email}"></td>
 						<td>
-							<div th:text="${u.name}"></div>
-							<div class="cell-sub" th:if="${u.email == currentUserEmail}">You</div>
+							<div th:text="${user.name}"></div>
+							<div class="cell-sub" th:if="${user.email == currentUserEmail}">You</div>
 						</td>
-						<td th:text="${#temporals.format(u.dateOfBirth, 'dd/MM/yyyy')}"></td>
-						<td th:text="${u.gender.name()}"></td>
-						<td th:text="${u.nicNumber}"></td>
-						<td th:text="${u.barNumber}"></td>
-						<td><span class="badge" th:classappend="'badge-' + ${u.accountStatus}" th:text="${u.accountStatus}"></span></td>
-						<td th:text="${#temporals.format(u.registeredAt, 'dd/MM/yyyy HH:mm')}"></td>
+						<td th:text="${#temporals.format(user.dateOfBirth, 'dd/MM/yyyy')}"></td>
+						<td th:text="${user.gender.name()}"></td>
+						<td th:text="${user.nicNumber}"></td>
+						<td th:text="${user.barNumber}"></td>
+						<td><span class="badge" th:classappend="'badge-' + ${user.accountStatus}" th:text="${user.accountStatus}"></span></td>
+						<td th:text="${#temporals.format(user.registeredAt, 'dd/MM/yyyy HH:mm')}"></td>
 						<td>
-							<a class="action-btn action-btn-view" th:href="@{/partner/users/{id}(id=${u.userId})}">View</a>
-							<a class="action-btn action-btn-edit" th:if="${u.email == currentUserEmail and u.accountStatus.name() == 'ACTIVE'}" th:href="@{/partner/users/{id}(id=${u.userId})}">Edit</a>
-							<form class="form-inline" method="post" th:if="${u.email == currentUserEmail and u.accountStatus.name() == 'ACTIVE'}"
-								  th:action="@{/partner/users/{id}/delete(id=${u.userId})}"
+							<a class="action-btn action-btn-view" th:href="@{/partner/users/{id}(id=${user.userId})}">View</a>
+							<a class="action-btn action-btn-edit" th:if="${user.email == currentUserEmail and user.accountStatus.name() == 'ACTIVE'}" th:href="@{/partner/users/{id}(id=${user.userId})}">Edit</a>
+							<form class="form-inline" method="post" th:if="${user.email == currentUserEmail and user.accountStatus.name() == 'ACTIVE'}"
+								  th:action="@{/partner/users/{id}/delete(id=${user.userId})}"
 								  onsubmit="return confirm('Delete your account? This action cannot be undone. You will be logged out.');">
 								<button class="action-btn action-btn-delete" type="submit">Delete</button>
 							</form>

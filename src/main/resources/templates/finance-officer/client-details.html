@@ -59,13 +59,13 @@
 					<div class="detail-row">
 						<span class="detail-label">Addresses</span>
 						<div class="detail-value">
-							<div th:each="a : ${user.addresses}" th:text="${a}"></div>
+							<div th:each="address : ${user.addresses}" th:text="${address}"></div>
 						</div>
 					</div>
 					<div class="detail-row">
 						<span class="detail-label">Phone Numbers</span>
 						<div class="detail-value">
-							<div th:each="p : ${user.phoneNumbers}" th:text="${p}"></div>
+							<div th:each="phoneNumber : ${user.phoneNumbers}" th:text="${phoneNumber}"></div>
 						</div>
 					</div>
 					<div class="detail-row">
@@ -102,13 +102,13 @@
 						<tr th:if="${#lists.isEmpty(relatedCases)}">
 							<td class="table-empty" colspan="6">No cases on record.</td>
 						</tr>
-						<tr th:each="cs : ${relatedCases}">
-							<td class="cell-id" th:text="${cs.caseCode}"></td>
-							<td><span class="badge" th:classappend="'badge-' + ${cs.caseStatus}" th:text="${cs.caseStatus}"></span></td>
-							<td th:text="${#temporals.format(cs.openedAt, 'dd/MM/yyyy HH:mm')}" style="white-space:nowrap;"></td>
-							<td th:text="${cs.caseResolutionStatus != null ? cs.caseResolutionStatus : '–'}"></td>
-							<td th:text="${cs.closedAt != null ? #temporals.format(cs.closedAt, 'dd/MM/yyyy HH:mm') : '–'}" style="white-space:nowrap;"></td>
-							<td><a class="action-btn action-btn-view" th:href="@{/finance-officer/cases/{id}(id=${cs.caseId})}">View</a></td>
+						<tr th:each="case : ${relatedCases}">
+							<td class="cell-id" th:text="${case.caseCode}"></td>
+							<td><span class="badge" th:classappend="'badge-' + ${case.caseStatus}" th:text="${case.caseStatus}"></span></td>
+							<td th:text="${#temporals.format(case.openedAt, 'dd/MM/yyyy HH:mm')}" style="white-space:nowrap;"></td>
+							<td th:text="${case.caseResolutionStatus != null ? case.caseResolutionStatus : '–'}"></td>
+							<td th:text="${case.closedAt != null ? #temporals.format(case.closedAt, 'dd/MM/yyyy HH:mm') : '–'}" style="white-space:nowrap;"></td>
+							<td><a class="action-btn action-btn-view" th:href="@{/finance-officer/cases/{id}(id=${case.caseId})}">View</a></td>
 						</tr>
 						</tbody>
 					</table>
@@ -135,12 +135,12 @@
 						<tr th:if="${#lists.isEmpty(relatedTransactions)}">
 							<td class="table-empty" colspan="5">No transactions on record.</td>
 						</tr>
-						<tr th:each="t : ${relatedTransactions}">
-							<td class="cell-id" th:text="${t.transactionCode}"></td>
-							<td th:text="${#numbers.formatDecimal(t.amount, 1, 'COMMA', 2, 'POINT')}"></td>
-							<td><span th:classappend="'tx-' + ${t.transactionType.name()}" th:text="${#strings.replace(t.transactionType, '_', ' ')}"></span></td>
-							<td class="cell-id" th:text="${t.invoiceId ?: '–'}"></td>
-							<td th:text="${#temporals.format(t.occurredAt, 'dd/MM/yyyy HH:mm')}" style="white-space:nowrap;"></td>
+						<tr th:each="transaction : ${relatedTransactions}">
+							<td class="cell-id" th:text="${transaction.transactionCode}"></td>
+							<td th:text="${#numbers.formatDecimal(transaction.amount, 1, 'COMMA', 2, 'POINT')}"></td>
+							<td><span th:classappend="'tx-' + ${transaction.transactionType.name()}" th:text="${#strings.replace(transaction.transactionType, '_', ' ')}"></span></td>
+							<td class="cell-id" th:text="${transaction.invoiceId ?: '–'}"></td>
+							<td th:text="${#temporals.format(transaction.occurredAt, 'dd/MM/yyyy HH:mm')}" style="white-space:nowrap;"></td>
 						</tr>
 						</tbody>
 					</table>

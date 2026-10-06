@@ -72,13 +72,13 @@
 					<div class="detail-row">
 						<span class="detail-label">Addresses</span>
 						<div class="detail-value">
-							<div th:each="a : ${user.addresses}" th:text="${a}"></div>
+							<div th:each="address : ${user.addresses}" th:text="${address}"></div>
 						</div>
 					</div>
 					<div class="detail-row">
 						<span class="detail-label">Phone Numbers</span>
 						<div class="detail-value">
-							<div th:each="p : ${user.phoneNumbers}" th:text="${p}"></div>
+							<div th:each="phoneNumber : ${user.phoneNumbers}" th:text="${phoneNumber}"></div>
 						</div>
 					</div>
 					<div class="detail-row">
@@ -167,8 +167,8 @@
 			<div class="field">
 				<label>Addresses</label>
 				<div id="addressRows">
-					<div class="multi-input-row" th:each="a : ${user.addresses}">
-						<input type="text" name="addresses" th:value="${a}"/>
+					<div class="multi-input-row" th:each="address : ${user.addresses}">
+						<input type="text" name="addresses" th:value="${address}"/>
 						<button type="button" onclick="this.parentElement.remove();">Remove</button>
 					</div>
 				</div>
@@ -177,8 +177,8 @@
 			<div class="field">
 				<label>Phone Numbers</label>
 				<div id="phoneNumberRows">
-					<div class="multi-input-row" th:each="p : ${user.phoneNumbers}">
-						<input type="text" name="phoneNumbers" th:value="${p}"/>
+					<div class="multi-input-row" th:each="phoneNumber : ${user.phoneNumbers}">
+						<input type="text" name="phoneNumbers" th:value="${phoneNumber}"/>
 						<button type="button" onclick="this.parentElement.remove();">Remove</button>
 					</div>
 				</div>

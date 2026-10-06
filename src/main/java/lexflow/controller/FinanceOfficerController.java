@@ -131,7 +131,7 @@ public class FinanceOfficerController {
 	private void populateCaseDetailModel(Case case_, Model model) {
 		model.addAttribute("case", case_);
 		model.addAttribute("tasks", taskService.findByCase(case_));
-		model.addAttribute("unbilledCharges", taskService.findUnbilledByCase(case_));
+		model.addAttribute("unbilledTasks", taskService.findUnbilledByCase(case_));
 		model.addAttribute("unpaidInvoices", invoiceService.findByCaseAndStatus(case_, InvoiceStatus.UNPAID));
 		model.addAttribute("paidInvoices", invoiceService.findByCaseAndStatus(case_, InvoiceStatus.PAID));
 		model.addAttribute("voidedInvoices", invoiceService.findByCaseAndStatus(case_, InvoiceStatus.VOIDED));
@@ -353,7 +353,7 @@ public class FinanceOfficerController {
 		model.addAttribute("revenueByMonthValues", revenueByMonth.values());
 		
 		model.addAttribute("outstandingInvoiceTotal", analyticsService.outstandingInvoiceTotal());
-		model.addAttribute("avgDaysToPayment", analyticsService.averageDaysToPayment());
+		model.addAttribute("averageDaysToPayment", analyticsService.averageDaysToPayment());
 		
 		Map<TransactionType, Integer> topUps = analyticsService.topUpCountComparison();
 		model.addAttribute("cardTopUpCount", topUps.getOrDefault(TransactionType.CARD_TOP_UP, 0));

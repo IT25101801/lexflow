@@ -127,7 +127,7 @@ public class AssociateController {
 		model.addAttribute("consultation", consultation);
 		model.addAttribute("consultationDocuments", documentService.findByConsultation(consultation));
 		model.addAttribute("meetings", eventService.findByConsultation(consultation));
-		model.addAttribute("meetingCompleted", consultationService.hasCompletedMeeting(consultation));
+		model.addAttribute("hasCompletedMeeting", consultationService.hasCompletedMeeting(consultation));
 		model.addAttribute("existingCase", caseService.findByConsultation(consultation));
 	}
 	
@@ -516,9 +516,9 @@ public class AssociateController {
 		model.addAttribute("user", associate);
 		
 		model.addAttribute("winRate", analyticsService.winRateForAssociate(associate.getUserId()));
-		model.addAttribute("avgCaseDurationDays", analyticsService.averageCaseDurationDaysForAssociate(associate.getUserId()));
-		model.addAttribute("billableThisMonth", analyticsService.billableAmountThisMonthForAssociate(associate.getUserId()));
-		model.addAttribute("billableLastMonth", analyticsService.billableAmountLastMonthForAssociate(associate.getUserId()));
+		model.addAttribute("averageCaseDurationDays", analyticsService.averageCaseDurationDaysForAssociate(associate.getUserId()));
+		model.addAttribute("billableAmountThisMonth", analyticsService.billableAmountThisMonthForAssociate(associate.getUserId()));
+		model.addAttribute("billableAmountLastMonth", analyticsService.billableAmountLastMonthForAssociate(associate.getUserId()));
 		
 		return "associate/analytics";
 	}

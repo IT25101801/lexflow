@@ -324,9 +324,9 @@ public class ParalegalController {
 		model.addAttribute("user", paralegal);
 		
 		model.addAttribute("winRate", analyticsService.winRateForParalegal(paralegal.getUserId()));
-		model.addAttribute("avgCaseDurationDays", analyticsService.averageCaseDurationDaysForParalegal(paralegal.getUserId()));
-		model.addAttribute("billableThisMonth", analyticsService.billableAmountThisMonthForParalegal(paralegal.getUserId()));
-		model.addAttribute("billableLastMonth", analyticsService.billableAmountLastMonthForParalegal(paralegal.getUserId()));
+		model.addAttribute("averageCaseDurationDays", analyticsService.averageCaseDurationDaysForParalegal(paralegal.getUserId()));
+		model.addAttribute("billableAmountThisMonth", analyticsService.billableAmountThisMonthForParalegal(paralegal.getUserId()));
+		model.addAttribute("billableAmountLastMonth", analyticsService.billableAmountLastMonthForParalegal(paralegal.getUserId()));
 		
 		return "paralegal/analytics";
 	}

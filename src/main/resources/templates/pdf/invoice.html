@@ -204,9 +204,9 @@
 	</tr>
 	</thead>
 	<tbody>
-	<tr th:each="t : ${tasks}">
-		<td th:text="${t.title}"></td>
-		<td class="amount-col" th:text="${#numbers.formatDecimal(t.billableAmount, 1, 'COMMA', 2, 'POINT')}"></td>
+	<tr th:each="task : ${tasks}">
+		<td th:text="${task.title}"></td>
+		<td class="amount-col" th:text="${#numbers.formatDecimal(task.billableAmount, 1, 'COMMA', 2, 'POINT')}"></td>
 	</tr>
 	</tbody>
 </table>

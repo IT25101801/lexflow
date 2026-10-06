@@ -16,7 +16,7 @@
 			<div class="stat-card">
 				<div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
 				<div>
-					<div class="stat-value" th:text="${avgCaseDurationDays != null ? #numbers.formatDecimal(avgCaseDurationDays, 1, 1) + ' days' : '–'}"></div>
+					<div class="stat-value" th:text="${averageCaseDurationDays != null ? #numbers.formatDecimal(averageCaseDurationDays, 1, 1) + ' days' : '–'}"></div>
 					<div class="stat-label">Avg. Case Duration</div>
 				</div>
 			</div>
@@ -59,16 +59,16 @@
 
 <script th:inline="javascript">
 	/*<![CDATA[*/
-	const caseResolutionLabels = /*[[${caseResolutionLabels}]]*/ [];
-	const caseResolutionValues = /*[[${caseResolutionValues}]]*/ [];
+	const caseResolutionBreakdownLabels = /*[[${caseResolutionBreakdownLabels}]]*/ [];
+	const caseResolutionBreakdownValues = /*[[${caseResolutionBreakdownValues}]]*/ [];
 	const revenueByMonthLabels = /*[[${revenueByMonthLabels}]]*/ [];
 	const revenueByMonthValues = /*[[${revenueByMonthValues}]]*/ [];
 	const revenueByCaseTypeLabels = /*[[${revenueByCaseTypeLabels}]]*/ [];
 	const revenueByCaseTypeValues = /*[[${revenueByCaseTypeValues}]]*/ [];
-	const associateClosedLabels = /*[[${associateClosedLabels}]]*/ [];
-	const associateClosedValues = /*[[${associateClosedValues}]]*/ [];
-	const paralegalClosedLabels = /*[[${paralegalClosedLabels}]]*/ [];
-	const paralegalClosedValues = /*[[${paralegalClosedValues}]]*/ [];
+	const closedCaseCountByAssociateLabels = /*[[${closedCaseCountByAssociateLabels}]]*/ [];
+	const closedCaseCountByAssociateValues = /*[[${closedCaseCountByAssociateValues}]]*/ [];
+	const closedCaseCountByParalegalLabels = /*[[${closedCaseCountByParalegalLabels}]]*/ [];
+	const closedCaseCountByParalegalValues = /*[[${closedCaseCountByParalegalValues}]]*/ [];
 	/*]]>*/
 	
 	const chartTextColor = getComputedStyle(document.body).getPropertyValue("--text").trim();
@@ -78,8 +78,8 @@
 	new Chart(document.getElementById("caseResolutionChart"), {
 		type: "doughnut",
 		data: {
-			labels: caseResolutionLabels,
-			datasets: [{data: caseResolutionValues, backgroundColor: ["#2f9e5c", "#d64545", "#3b82c4", "#a0a0a0"]}]
+			labels: caseResolutionBreakdownLabels,
+			datasets: [{data: caseResolutionBreakdownValues, backgroundColor: ["#2f9e5c", "#d64545", "#3b82c4", "#a0a0a0"]}]
 		},
 		options: {responsive: true, maintainAspectRatio: false}
 	});
@@ -98,13 +98,13 @@
 	
 	new Chart(document.getElementById("associateClosedChart"), {
 		type: "bar",
-		data: {labels: associateClosedLabels, datasets: [{label: "Closed Cases", data: associateClosedValues, backgroundColor: "#2f9e5c"}]},
+		data: {labels: closedCaseCountByAssociateLabels, datasets: [{label: "Closed Cases", data: closedCaseCountByAssociateValues, backgroundColor: "#2f9e5c"}]},
 		options: {responsive: true, maintainAspectRatio: false, plugins: {legend: {display: false}}}
 	});
 	
 	new Chart(document.getElementById("paralegalClosedChart"), {
 		type: "bar",
-		data: {labels: paralegalClosedLabels, datasets: [{label: "Closed Cases", data: paralegalClosedValues, backgroundColor: "#d69e2e"}]},
+		data: {labels: closedCaseCountByParalegalLabels, datasets: [{label: "Closed Cases", data: closedCaseCountByParalegalValues, backgroundColor: "#d69e2e"}]},
 		options: {responsive: true, maintainAspectRatio: false, plugins: {legend: {display: false}}}
 	});
 </script>

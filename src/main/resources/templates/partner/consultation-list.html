@@ -29,28 +29,28 @@
 					<tr th:if="${#lists.isEmpty(consultations)}">
 						<td class="table-empty" colspan="9">No consultation requests yet.</td>
 					</tr>
-					<tr th:each="r : ${consultations}">
-						<td class="cell-id" th:text="${r.consultationCode}"></td>
+					<tr th:each="consultation : ${consultations}">
+						<td class="cell-id" th:text="${consultation.consultationCode}"></td>
 						<td>
-							<div th:text="${r.client.name}"></div>
-							<div class="cell-sub" th:text="${r.client.userCode}"></div>
+							<div th:text="${consultation.client.name}"></div>
+							<div class="cell-sub" th:text="${consultation.client.userCode}"></div>
 						</td>
-						<td th:text="${#strings.replace(r.caseType, '_', ' ')}"></td>
-						<td th:text="${#lists.size(r.opposingParties) > 1 ? r.opposingParties[0] + ' et al.' : r.opposingParties[0]}"></td>
-						<td><span class="badge" th:classappend="'badge-' + ${r.consultationStatus}" th:text="${#strings.replace(r.consultationStatus, '_', ' ')}"></span></td>
-						<td th:text="${#temporals.format(r.submittedAt, 'dd/MM/yyyy HH:mm')}"></td>
+						<td th:text="${#strings.replace(consultation.caseType, '_', ' ')}"></td>
+						<td th:text="${#lists.size(consultation.opposingParties) > 1 ? consultation.opposingParties[0] + ' et al.' : consultation.opposingParties[0]}"></td>
+						<td><span class="badge" th:classappend="'badge-' + ${consultation.consultationStatus}" th:text="${#strings.replace(consultation.consultationStatus, '_', ' ')}"></span></td>
+						<td th:text="${#temporals.format(consultation.submittedAt, 'dd/MM/yyyy HH:mm')}"></td>
 						<td>
-							<span th:if="${r.associate == null}">–</span>
-							<div th:if="${r.associate != null}" th:text="${r.associate.name}"></div>
-							<div class="cell-sub" th:if="${r.associate != null}" th:text="${r.associate.userCode}"></div>
-						</td>
-						<td>
-							<span th:if="${r.paralegal == null}">–</span>
-							<div th:if="${r.paralegal != null}" th:text="${r.paralegal.name}"></div>
-							<div class="cell-sub" th:if="${r.paralegal != null}" th:text="${r.paralegal.userCode}"></div>
+							<span th:if="${consultation.associate == null}">–</span>
+							<div th:if="${consultation.associate != null}" th:text="${consultation.associate.name}"></div>
+							<div class="cell-sub" th:if="${consultation.associate != null}" th:text="${consultation.associate.userCode}"></div>
 						</td>
 						<td>
-							<a class="action-btn action-btn-view" th:href="@{/partner/consultations/{id}(id=${r.consultationId})}">View</a>
+							<span th:if="${consultation.paralegal == null}">–</span>
+							<div th:if="${consultation.paralegal != null}" th:text="${consultation.paralegal.name}"></div>
+							<div class="cell-sub" th:if="${consultation.paralegal != null}" th:text="${consultation.paralegal.userCode}"></div>
+						</td>
+						<td>
+							<a class="action-btn action-btn-view" th:href="@{/partner/consultations/{id}(id=${consultation.consultationId})}">View</a>
 						</td>
 					</tr>
 					</tbody>

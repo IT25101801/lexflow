@@ -68,22 +68,22 @@
 					<div class="section-title">Tasks</div>
 					<p class="empty-state" th:if="${#lists.isEmpty(tasks)}">No tasks logged for this case yet.</p>
 					<div class="contact-card-grid" th:unless="${#lists.isEmpty(tasks)}">
-						<div class="contact-card" th:each="t : ${tasks}">
+						<div class="contact-card" th:each="task : ${tasks}">
 							<div class="detail-row">
 								<span class="detail-label">Title</span>
-								<span class="detail-value" th:text="${t.title}"></span>
+								<span class="detail-value" th:text="${task.title}"></span>
 							</div>
 							<div class="detail-row">
 								<span class="detail-label">Task Type</span>
 								<span class="detail-value">
-							<span th:if="${t.documentingTask}">Documenting</span><span th:if="${t.documentingTask and (t.schedulingTask or t.billingTask)}">, </span><span
-										th:if="${t.schedulingTask}">Scheduling</span><span th:if="${t.schedulingTask and t.billingTask}">, </span><span
-										th:if="${t.billingTask}">Billing</span>
+							<span th:if="${task.documentingTask}">Documenting</span><span th:if="${task.documentingTask and (task.schedulingTask or task.billingTask)}">, </span><span
+										th:if="${task.schedulingTask}">Scheduling</span><span th:if="${task.schedulingTask and task.billingTask}">, </span><span
+										th:if="${task.billingTask}">Billing</span>
 						</span>
 							</div>
-							<div class="detail-row" th:if="${t.billingTask}">
+							<div class="detail-row" th:if="${task.billingTask}">
 								<span class="detail-label">Billable Amount</span>
-								<span class="detail-value" th:text="${#numbers.formatDecimal(t.billableAmount, 1, 'COMMA', 2, 'POINT')}"></span>
+								<span class="detail-value" th:text="${#numbers.formatDecimal(task.billableAmount, 1, 'COMMA', 2, 'POINT')}"></span>
 							</div>
 						</div>
 					</div>
@@ -104,9 +104,9 @@
 						<p class="empty-state" th:if="${#lists.isEmpty(caseDocuments) and (documentKeyword == null or #strings.isEmpty(documentKeyword))}">No documents added to the case yet.</p>
 						<p class="empty-state" th:if="${#lists.isEmpty(caseDocuments) and documentKeyword != null and !#strings.isEmpty(documentKeyword)}">No documents match
 							"<span th:text="${documentKeyword}"></span>".</p>
-						<div class="item-row" th:each="d : ${caseDocuments}">
+						<div class="item-row" th:each="caseDocument : ${caseDocuments}">
 							<div class="item-main">
-								<a class="item-title" th:href="@{/client/documents/case/{id}(id=${d.documentId})}" th:text="${d.originalFilename}" target="_blank"></a>
+								<a class="item-title" th:href="@{/client/documents/case/{id}(id=${caseDocument.documentId})}" th:text="${caseDocument.originalFilename}" target="_blank"></a>
 							</div>
 						</div>
 					</div>
@@ -114,9 +114,9 @@
 						<div class="section-title">Documents Pending Review</div>
 						<p class="empty-state" th:if="${#lists.isEmpty(stagedDocuments)}">No documents awaiting review.</p>
 						<div class="item-list" th:unless="${#lists.isEmpty(stagedDocuments)}">
-							<div class="item-row" th:each="d : ${stagedDocuments}">
+							<div class="item-row" th:each="stagedDocument : ${stagedDocuments}">
 								<div class="item-main">
-									<a class="item-title" th:href="@{/client/documents/case/{id}(id=${d.documentId})}" th:text="${d.originalFilename}" target="_blank"></a>
+									<a class="item-title" th:href="@{/client/documents/case/{id}(id=${stagedDocument.documentId})}" th:text="${stagedDocument.originalFilename}" target="_blank"></a>
 								</div>
 							</div>
 						</div>

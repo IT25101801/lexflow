@@ -31,21 +31,21 @@
 					<tr th:if="${#lists.isEmpty(events)}">
 						<td class="table-empty" colspan="11">No consultation events scheduled.</td>
 					</tr>
-					<tr th:each="e : ${events}">
-						<td th:text="${e.subject}"></td>
+					<tr th:each="event : ${events}">
+						<td th:text="${event.subject}"></td>
 						<td>
-							<a class="action-btn action-btn-view" th:href="@{/client-relations-officer/consultations/{id}(id=${e.consultation.consultationId})}">View Consultation</a>
+							<a class="action-btn action-btn-view" th:href="@{/client-relations-officer/consultations/{id}(id=${event.consultation.consultationId})}">View Consultation</a>
 						</td>
-						<td th:text="${#temporals.format(e.date, 'dd/MM/yyyy')}"></td>
-						<td th:text="${e.startTime}"></td>
-						<td th:text="${e.endTime}"></td>
-						<td th:text="${e.location}"></td>
-						<td><span class="badge" th:classappend="'badge-' + ${e.eventStatus}" th:text="${e.eventStatus}"></span></td>
-						<td th:text="${#temporals.format(e.scheduledAt, 'dd/MM/yyyy HH:mm')}"></td>
-						<td th:text="${e.completedAt != null ? #temporals.format(e.completedAt, 'dd/MM/yyyy HH:mm') : '–'}"></td>
-						<td th:text="${e.canceledAt != null ? #temporals.format(e.canceledAt, 'dd/MM/yyyy HH:mm') : '–'}"></td>
+						<td th:text="${#temporals.format(event.date, 'dd/MM/yyyy')}"></td>
+						<td th:text="${event.startTime}"></td>
+						<td th:text="${event.endTime}"></td>
+						<td th:text="${event.location}"></td>
+						<td><span class="badge" th:classappend="'badge-' + ${event.eventStatus}" th:text="${event.eventStatus}"></span></td>
+						<td th:text="${#temporals.format(event.scheduledAt, 'dd/MM/yyyy HH:mm')}"></td>
+						<td th:text="${event.completedAt != null ? #temporals.format(event.completedAt, 'dd/MM/yyyy HH:mm') : '–'}"></td>
+						<td th:text="${event.canceledAt != null ? #temporals.format(event.canceledAt, 'dd/MM/yyyy HH:mm') : '–'}"></td>
 						<td>
-							<a class="action-btn action-btn-view" th:href="@{/client-relations-officer/events/{id}(id=${e.eventId})}">View</a>
+							<a class="action-btn action-btn-view" th:href="@{/client-relations-officer/events/{id}(id=${event.eventId})}">View</a>
 						</td>
 					</tr>
 					</tbody>

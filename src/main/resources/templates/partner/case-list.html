@@ -29,30 +29,30 @@
 					<tr th:if="${#lists.isEmpty(cases)}">
 						<td class="table-empty" th:colspan="${active == 'cases-closed' ? 9 : 7}">No <span th:text="${#strings.toLowerCase(title)}"></span> yet.</td>
 					</tr>
-					<tr th:each="c : ${cases}">
-						<td class="cell-id" th:text="${c.caseCode}"></td>
+					<tr th:each="case : ${cases}">
+						<td class="cell-id" th:text="${case.caseCode}"></td>
 						<td>
-							<a class="action-btn action-btn-view" th:href="@{/partner/consultations/{id}(id=${c.consultation.consultationId})}">View</a>
+							<a class="action-btn action-btn-view" th:href="@{/partner/consultations/{id}(id=${case.consultation.consultationId})}">View</a>
 						</td>
 						<td>
-							<div th:text="${c.client.name}"></div>
-							<div class="cell-sub" th:text="${c.client.userCode}"></div>
+							<div th:text="${case.client.name}"></div>
+							<div class="cell-sub" th:text="${case.client.userCode}"></div>
 						</td>
 						<td>
-							<span th:if="${c.associate == null}">–</span>
-							<div th:if="${c.associate != null}" th:text="${c.associate.name}"></div>
-							<div class="cell-sub" th:if="${c.associate != null}" th:text="${c.associate.userCode}"></div>
+							<span th:if="${case.associate == null}">–</span>
+							<div th:if="${case.associate != null}" th:text="${case.associate.name}"></div>
+							<div class="cell-sub" th:if="${case.associate != null}" th:text="${case.associate.userCode}"></div>
 						</td>
 						<td>
-							<span th:if="${c.paralegal == null}">–</span>
-							<div th:if="${c.paralegal != null}" th:text="${c.paralegal.name}"></div>
-							<div class="cell-sub" th:if="${c.paralegal != null}" th:text="${c.paralegal.userCode}"></div>
+							<span th:if="${case.paralegal == null}">–</span>
+							<div th:if="${case.paralegal != null}" th:text="${case.paralegal.name}"></div>
+							<div class="cell-sub" th:if="${case.paralegal != null}" th:text="${case.paralegal.userCode}"></div>
 						</td>
-						<td th:text="${#temporals.format(c.openedAt, 'dd/MM/yyyy HH:mm')}"></td>
-						<td th:if="${active == 'cases-closed'}"><span class="badge" th:classappend="'badge-' + ${c.caseResolutionStatus}" th:text="${c.caseResolutionStatus}"></span></td>
-						<td th:if="${active == 'cases-closed'}" th:text="${c.closedAt != null ? #temporals.format(c.closedAt, 'dd/MM/yyyy HH:mm') : '–'}"></td>
+						<td th:text="${#temporals.format(case.openedAt, 'dd/MM/yyyy HH:mm')}"></td>
+						<td th:if="${active == 'cases-closed'}"><span class="badge" th:classappend="'badge-' + ${case.caseResolutionStatus}" th:text="${case.caseResolutionStatus}"></span></td>
+						<td th:if="${active == 'cases-closed'}" th:text="${case.closedAt != null ? #temporals.format(case.closedAt, 'dd/MM/yyyy HH:mm') : '–'}"></td>
 						<td>
-							<a class="action-btn action-btn-view" th:href="@{/partner/cases/{id}(id=${c.caseId})}">View</a>
+							<a class="action-btn action-btn-view" th:href="@{/partner/cases/{id}(id=${case.caseId})}">View</a>
 						</td>
 					</tr>
 					</tbody>

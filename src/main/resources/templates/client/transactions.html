@@ -57,12 +57,12 @@
 					<tr th:if="${#lists.isEmpty(transactions)}">
 						<td class="table-empty" colspan="5">No transactions yet.</td>
 					</tr>
-					<tr th:each="t : ${transactions}">
-						<td class="cell-id" th:text="${t.transactionCode}"></td>
-						<td th:text="${#numbers.formatDecimal(t.amount, 1, 'COMMA', 2, 'POINT')}"></td>
-						<td><span th:classappend="'tx-' + ${t.transactionType.name()}" th:text="${#strings.replace(t.transactionType, '_', ' ')}"></span></td>
-						<td class="cell-id" th:text="${t.invoiceId ?: '–'}"></td>
-						<td th:text="${#temporals.format(t.occurredAt, 'dd/MM/yyyy HH:mm')}"></td>
+					<tr th:each="transaction : ${transactions}">
+						<td class="cell-id" th:text="${transaction.transactionCode}"></td>
+						<td th:text="${#numbers.formatDecimal(transaction.amount, 1, 'COMMA', 2, 'POINT')}"></td>
+						<td><span th:classappend="'tx-' + ${transaction.transactionType.name()}" th:text="${#strings.replace(transaction.transactionType, '_', ' ')}"></span></td>
+						<td class="cell-id" th:text="${transaction.invoiceId ?: '–'}"></td>
+						<td th:text="${#temporals.format(transaction.occurredAt, 'dd/MM/yyyy HH:mm')}"></td>
 					</tr>
 					</tbody>
 				</table>

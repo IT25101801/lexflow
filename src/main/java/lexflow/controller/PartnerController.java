@@ -276,7 +276,7 @@ public class PartnerController {
 	public String conflictCheck(@RequestParam(required = false) String keyword, Model model) {
 		
 		if (keyword != null && !keyword.isBlank()) {
-			model.addAttribute("results", conflictCheckService.check(keyword));
+			model.addAttribute("conflictCheckResults", conflictCheckService.check(keyword));
 			model.addAttribute("keyword", keyword);
 		}
 		
@@ -494,7 +494,7 @@ public class PartnerController {
 		List<Task> tasks = taskService.findByCase(case_);
 		model.addAttribute("tasks", tasks);
 		model.addAttribute("taskDocuments", documentService.findByTasks(tasks));
-		model.addAttribute("unbilledCharges", taskService.findUnbilledByCase(case_));
+		model.addAttribute("unbilledTasks", taskService.findUnbilledByCase(case_));
 		model.addAttribute("unpaidInvoices", invoiceService.findByCaseAndStatus(case_, InvoiceStatus.UNPAID));
 		model.addAttribute("paidInvoices", invoiceService.findByCaseAndStatus(case_, InvoiceStatus.PAID));
 		model.addAttribute("voidedInvoices", invoiceService.findByCaseAndStatus(case_, InvoiceStatus.VOIDED));
@@ -1033,10 +1033,10 @@ public class PartnerController {
 		model.addAttribute("user", currentPartner(authentication));
 		
 		Map<CaseResolutionStatus, Integer> caseResolutionBreakdown = analyticsService.caseResolutionBreakdown();
-		model.addAttribute("caseResolutionLabels", buildLabels(caseResolutionBreakdown));
-		model.addAttribute("caseResolutionValues", buildIntValues(caseResolutionBreakdown));
+		model.addAttribute("caseResolutionBreakdownLabels", buildLabels(caseResolutionBreakdown));
+		model.addAttribute("caseResolutionBreakdownValues", buildIntValues(caseResolutionBreakdown));
 		
-		model.addAttribute("avgCaseDurationDays", analyticsService.averageCaseDurationDays());
+		model.addAttribute("averageCaseDurationDays", analyticsService.averageCaseDurationDays());
 		
 		Map<Integer, BigDecimal> revenueByMonth = analyticsService.revenueByMonth(LocalDate.now().getYear());
 		model.addAttribute("revenueByMonthLabels", monthLabels());
@@ -1047,12 +1047,12 @@ public class PartnerController {
 		model.addAttribute("revenueByCaseTypeValues", buildDecimalValues(revenueByCaseType));
 		
 		Map<User, Integer> associateClosedCounts = analyticsService.closedCaseCountByAssociate();
-		model.addAttribute("associateClosedLabels", buildStaffLabels(associateClosedCounts));
-		model.addAttribute("associateClosedValues", buildIntValues(associateClosedCounts));
+		model.addAttribute("closedCaseCountByAssociateLabels", buildStaffLabels(associateClosedCounts));
+		model.addAttribute("closedCaseCountByAssociateValues", buildIntValues(associateClosedCounts));
 		
 		Map<User, Integer> paralegalClosedCounts = analyticsService.closedCaseCountByParalegal();
-		model.addAttribute("paralegalClosedLabels", buildStaffLabels(paralegalClosedCounts));
-		model.addAttribute("paralegalClosedValues", buildIntValues(paralegalClosedCounts));
+		model.addAttribute("closedCaseCountByParalegalLabels", buildStaffLabels(paralegalClosedCounts));
+		model.addAttribute("closedCaseCountByParalegalValues", buildIntValues(paralegalClosedCounts));
 		
 		return "partner/analytics";
 	}

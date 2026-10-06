@@ -55,13 +55,13 @@
 					<div class="detail-row">
 						<span class="detail-label">Addresses</span>
 						<div class="detail-value">
-							<div th:each="a : ${user.addresses}" th:text="${a}"></div>
+							<div th:each="address : ${user.addresses}" th:text="${address}"></div>
 						</div>
 					</div>
 					<div class="detail-row">
 						<span class="detail-label">Phone Numbers</span>
 						<div class="detail-value">
-							<div th:each="p : ${user.phoneNumbers}" th:text="${p}"></div>
+							<div th:each="phoneNumber : ${user.phoneNumbers}" th:text="${phoneNumber}"></div>
 						</div>
 					</div>
 					<div class="detail-row">

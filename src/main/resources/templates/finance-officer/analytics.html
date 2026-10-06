@@ -23,7 +23,7 @@
 			<div class="stat-card">
 				<div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
 				<div>
-					<div class="stat-value" th:text="${avgDaysToPayment != null ? #numbers.formatDecimal(avgDaysToPayment, 1, 1) + ' days' : '–'}"></div>
+					<div class="stat-value" th:text="${averageDaysToPayment != null ? #numbers.formatDecimal(averageDaysToPayment, 1, 1) + ' days' : '–'}"></div>
 					<div class="stat-label">Avg. Days to Payment</div>
 				</div>
 			</div>

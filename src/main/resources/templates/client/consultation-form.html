@@ -18,7 +18,7 @@
 				<label for="caseType">Case Type</label>
 				<select id="caseType" name="caseType" required>
 					<option value="" hidden>Select…</option>
-					<option th:each="type : ${caseTypes}" th:value="${type.name()}" th:text="${#strings.replace(type.name(), '_', ' ')}"></option>
+					<option th:each="caseType : ${caseTypes}" th:value="${caseType.name()}" th:text="${#strings.replace(caseType.name(), '_', ' ')}"></option>
 				</select>
 			</div>
 			

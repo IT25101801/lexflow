@@ -31,29 +31,29 @@
 					<tr th:if="${#lists.isEmpty(events)}">
 						<td class="table-empty" colspan="11">No events scheduled.</td>
 					</tr>
-					<tr th:each="e : ${events}">
-						<td th:text="${e.subject}"></td>
-						<td th:if="${e instanceof T(lexflow.entity.scheduling.ConsultationEvent)}">
-							<a class="action-btn action-btn-view" th:href="@{/associate/consultations/{id}(id=${e.consultation.consultationId})}">View Consultation</a>
+					<tr th:each="event : ${events}">
+						<td th:text="${event.subject}"></td>
+						<td th:if="${event instanceof T(lexflow.entity.scheduling.ConsultationEvent)}">
+							<a class="action-btn action-btn-view" th:href="@{/associate/consultations/{id}(id=${event.consultation.consultationId})}">View Consultation</a>
 						</td>
-						<td th:if="${e instanceof T(lexflow.entity.scheduling.CaseEvent)}">
-							<a class="action-btn action-btn-view" th:href="@{/associate/cases/{id}(id=${e.case_.caseId})}">View Case</a>
+						<td th:if="${event instanceof T(lexflow.entity.scheduling.CaseEvent)}">
+							<a class="action-btn action-btn-view" th:href="@{/associate/cases/{id}(id=${event.case_.caseId})}">View Case</a>
 						</td>
-						<td th:text="${#temporals.format(e.date, 'dd/MM/yyyy')}"></td>
-						<td th:text="${e.startTime}"></td>
-						<td th:text="${e.endTime}"></td>
-						<td th:text="${e.location}"></td>
-						<td><span class="badge" th:classappend="'badge-' + ${e.eventStatus}" th:text="${e.eventStatus}"></span></td>
-						<td th:text="${#temporals.format(e.scheduledAt, 'dd/MM/yyyy HH:mm')}"></td>
-						<td th:text="${e.completedAt != null ? #temporals.format(e.completedAt, 'dd/MM/yyyy HH:mm') : '–'}"></td>
-						<td th:text="${e.canceledAt != null ? #temporals.format(e.canceledAt, 'dd/MM/yyyy HH:mm') : '–'}"></td>
+						<td th:text="${#temporals.format(event.date, 'dd/MM/yyyy')}"></td>
+						<td th:text="${event.startTime}"></td>
+						<td th:text="${event.endTime}"></td>
+						<td th:text="${event.location}"></td>
+						<td><span class="badge" th:classappend="'badge-' + ${event.eventStatus}" th:text="${event.eventStatus}"></span></td>
+						<td th:text="${#temporals.format(event.scheduledAt, 'dd/MM/yyyy HH:mm')}"></td>
+						<td th:text="${event.completedAt != null ? #temporals.format(event.completedAt, 'dd/MM/yyyy HH:mm') : '–'}"></td>
+						<td th:text="${event.canceledAt != null ? #temporals.format(event.canceledAt, 'dd/MM/yyyy HH:mm') : '–'}"></td>
 						<td>
 							<div style="display:flex;gap:0.4rem;">
-								<a class="action-btn action-btn-view" th:href="@{/associate/events/{id}(id=${e.eventId})}">View</a>
-								<form method="post" th:action="@{/associate/events/{id}/complete(id=${e.eventId})}" th:if="${e.eventStatus.name() == 'SCHEDULED'}">
+								<a class="action-btn action-btn-view" th:href="@{/associate/events/{id}(id=${event.eventId})}">View</a>
+								<form method="post" th:action="@{/associate/events/{id}/complete(id=${event.eventId})}" th:if="${event.eventStatus.name() == 'SCHEDULED'}">
 									<button class="action-btn action-btn-create" type="submit">Complete</button>
 								</form>
-								<form method="post" th:action="@{/associate/events/{id}/cancel(id=${e.eventId})}" th:if="${e.eventStatus.name() == 'SCHEDULED'}">
+								<form method="post" th:action="@{/associate/events/{id}/cancel(id=${event.eventId})}" th:if="${event.eventStatus.name() == 'SCHEDULED'}">
 									<button class="action-btn action-btn-delete" type="submit">Cancel</button>
 								</form>
 							</div>

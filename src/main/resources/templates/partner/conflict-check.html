@@ -36,13 +36,13 @@
 						</tr>
 						</thead>
 						<tbody>
-						<tr th:if="${#lists.isEmpty(results)}">
+						<tr th:if="${#lists.isEmpty(conflictCheckResults)}">
 							<td class="table-empty" colspan="3">No matches found – no conflict of interest on record for "<span th:text="${keyword}"></span>".</td>
 						</tr>
-						<tr th:each="r : ${results}">
-							<td th:text="${r.matchedName}"></td>
-							<td><span class="chip" th:text="${r.sourceType}"></span></td>
-							<td class="cell-sub" th:text="${r.detail}"></td>
+						<tr th:each="conflictCheckResult : ${conflictCheckResults}">
+							<td th:text="${conflictCheckResult.matchedName}"></td>
+							<td><span class="chip" th:text="${conflictCheckResult.sourceType}"></span></td>
+							<td class="cell-sub" th:text="${conflictCheckResult.detail}"></td>
 						</tr>
 						</tbody>
 					</table>

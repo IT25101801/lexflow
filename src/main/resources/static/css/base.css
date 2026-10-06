@@ -45,6 +45,10 @@
 	--info-bg: rgba(56, 189, 248, 0.10);
 	--info-border: rgba(56, 189, 248, 0.25);
 	
+	--neutral: var(--text-muted);
+	--neutral-bg: rgba(146, 161, 186, 0.10);
+	--neutral-border: rgba(146, 161, 186, 0.25);
+	
 	--edit: var(--accent);
 	--edit-bg: var(--accent-dim);
 	--edit-border: var(--accent-dim);

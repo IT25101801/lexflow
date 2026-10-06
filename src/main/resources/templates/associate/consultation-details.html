@@ -3,7 +3,7 @@
 <head th:replace="~{fragments/head :: head('Consultation Request Details – LexFlow')}"></head>
 <body>
 
-<aside th:replace="~{fragments/sidebar-associate :: sidebar('consultations')}"></aside>
+<aside th:replace="~{fragments/sidebar-associate :: sidebar(${consultation.consultationStatus.name() == 'ACCEPTED_BY_PARTNER' ? 'consultation-pending' : 'consultations'})}"></aside>
 
 <div class="main">
 	<div th:replace="~{fragments/common :: topbar('Consultation Request Details', null)}"></div>
@@ -27,7 +27,7 @@
 								<form method="post" th:action="@{/associate/consultations/{id}/events/{eventId}/complete(id=${consultation.consultationId},eventId=${consultationEvent.eventId})}">
 									<button class="action-btn action-btn-create" type="submit">Complete Meeting</button>
 								</form>
-								<form method="post" th:action="@{/associate/consultations/{id}/events/{eventId}/cancel(id=${consultation.consultationId},eventId=${consultationEvent.eventId})}">
+								<form method="post" th:action="@{/associate/consultations/{id}/events/{eventId}/cancel(id=${consultation.consultationId},eventId=${consultationEvent.eventId})}" onsubmit="return confirm('Cancel this meeting? This action cannot be undone.');">
 									<button class="action-btn action-btn-delete" type="submit">Cancel Meeting</button>
 								</form>
 							</th:block>
@@ -116,15 +116,17 @@
 								</div>
 								<div class="field">
 									<label for="date">Date</label>
-									<input id="date" type="date" name="date" required/>
+									<input id="date" type="date" name="date" required data-not-past/>
 								</div>
-								<div class="field">
-									<label for="startTime">Start Time</label>
-									<input id="startTime" type="time" name="startTime" required/>
-								</div>
-								<div class="field">
-									<label for="endTime">End Time</label>
-									<input id="endTime" type="time" name="endTime" required/>
+								<div class="field-row">
+									<div class="field">
+										<label for="startTime">Start Time</label>
+										<input id="startTime" type="time" name="startTime" required/>
+									</div>
+									<div class="field">
+										<label for="endTime">End Time</label>
+										<input id="endTime" type="time" name="endTime" required/>
+									</div>
 								</div>
 								<div class="field">
 									<label for="location">Location</label>
@@ -147,15 +149,17 @@
 								</div>
 								<div class="field">
 									<label for="date">Date</label>
-									<input id="date" type="date" name="date" th:value="${consultationEvent.date}" required/>
+									<input id="date" type="date" name="date" th:value="${consultationEvent.date}" required data-not-past/>
 								</div>
-								<div class="field">
-									<label for="startTime">Start Time</label>
-									<input id="startTime" type="time" name="startTime" th:value="${consultationEvent.startTime}" required/>
-								</div>
-								<div class="field">
-									<label for="endTime">End Time</label>
-									<input id="endTime" type="time" name="endTime" th:value="${consultationEvent.endTime}" required/>
+								<div class="field-row">
+									<div class="field">
+										<label for="startTime">Start Time</label>
+										<input id="startTime" type="time" name="startTime" th:value="${consultationEvent.startTime}" required/>
+									</div>
+									<div class="field">
+										<label for="endTime">End Time</label>
+										<input id="endTime" type="time" name="endTime" th:value="${consultationEvent.endTime}" required/>
+									</div>
 								</div>
 								<div class="field">
 									<label for="location">Location</label>
@@ -200,5 +204,16 @@
 	</div>
 </div>
 
+<div class="demo-btn-row" th:if="${consultation.consultationStatus.name() == 'ACCEPTED_BY_PARTNER'}">
+	<span class="demo-btn-label">Demo</span>
+	<button class="demo-btn" type="button" title="Fill Meeting With the End Before the Start" onclick="fillScheduleMeetingFormS1()">S1</button>
+	<button class="demo-btn" type="button" title="Fill Meeting" onclick="fillScheduleMeetingFormS2()">S2</button>
+</div>
+<div class="demo-btn-row" th:if="${consultation.consultationStatus.name() == 'SCHEDULED'}">
+	<span class="demo-btn-label">Demo</span>
+	<button class="demo-btn" type="button" title="Fill New Meeting Time" onclick="fillRescheduleMeetingFormS3()">S3</button>
+	<button class="demo-btn" type="button" title="Fill Rejection Reason" onclick="fillAssociateRejectionFormR()">R</button>
+</div>
+<script th:src="@{/js/demo.js}"></script>
 </body>
 </html>

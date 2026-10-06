@@ -3,7 +3,7 @@
 <head th:replace="~{fragments/head :: head('Consultation Request Details – LexFlow')}"></head>
 <body>
 
-<aside th:replace="~{fragments/sidebar-paralegal :: sidebar('consultations')}"></aside>
+<aside th:replace="~{fragments/sidebar-paralegal :: sidebar(${consultation.consultationStatus.name() == 'ACCEPTED_BY_PARTNER' ? 'consultation-pending' : 'consultations'})}"></aside>
 
 <div class="main">
 	<div th:replace="~{fragments/common :: topbar('Consultation Request Details', null)}"></div>

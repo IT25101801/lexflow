@@ -9,7 +9,7 @@ public class MeetingNotCompletedException extends BusinessRuleViolationException
 	private final Long consultationId;
 	
 	public MeetingNotCompletedException(Long consultationId) {
-		super(String.format("Consultation %d cannot be accepted or rejected before its meeting is marked complete", consultationId));
+		super("This consultation cannot be accepted or rejected before its meeting is marked complete");
 		this.consultationId = consultationId;
 	}
 	

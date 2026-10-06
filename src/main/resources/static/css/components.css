@@ -135,7 +135,12 @@
 	border-color: var(--info-border);
 }
 
-.badge-CLOSED,
+.badge-CLOSED {
+	background: var(--neutral-bg);
+	color: var(--neutral);
+	border-color: var(--neutral-border);
+}
+
 .badge-PAID,
 .badge-COMPLETED {
 	background: var(--success-bg);
@@ -247,6 +252,7 @@
 }
 
 .modal-dialog {
+	position: relative;
 	background: var(--surface);
 	border: 1px solid var(--border);
 	border-radius: var(--radius-xl);

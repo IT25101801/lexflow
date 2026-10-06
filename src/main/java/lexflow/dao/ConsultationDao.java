@@ -175,16 +175,16 @@ public class ConsultationDao {
 		return consultations;
 	}
 	
-	public List<Consultation> findByClientId(Long clientId) {
-		return findByForeignKey("client_id", clientId);
-	}
-	
 	public List<Consultation> findByAssociateId(Long associateId) {
 		return findByForeignKey("associate_id", associateId);
 	}
 	
 	public List<Consultation> findByParalegalId(Long paralegalId) {
 		return findByForeignKey("paralegal_id", paralegalId);
+	}
+	
+	public List<Consultation> findByClientId(Long clientId) {
+		return findByForeignKey("client_id", clientId);
 	}
 	
 	public List<Consultation> findByStatus(ConsultationStatus consultationStatus) {

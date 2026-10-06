@@ -18,11 +18,6 @@ public class PendingConsultationState implements ConsultationState {
 	}
 	
 	@Override
-	public Consultation reassignStaff(Consultation consultation, ConsultationService consultationService, Associate associate, Paralegal paralegal) {
-		return consultationService.applyReassignment(consultation, associate, paralegal, false);
-	}
-	
-	@Override
 	public Consultation partnerAccept(Consultation consultation, ConsultationService consultationService, Associate associate, Paralegal paralegal) {
 		consultation.setAssociate(associate);
 		consultation.setParalegal(paralegal);

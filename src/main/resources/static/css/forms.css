@@ -253,6 +253,15 @@ button[onclick^="addMultiInputRow"]:hover {
 	letter-spacing: 0.1em;
 }
 
+.demo-btn-corner {
+	position: absolute;
+	top: 1.4rem;
+	right: 1.5rem;
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+}
+
 .demo-btn {
 	display: flex;
 	align-items: center;

@@ -360,7 +360,7 @@ public class ClientRelationsOfficerController {
 	
 	@GetMapping("/client-relations-officer/events")
 	public String events(Model model) {
-		model.addAttribute("events", eventService.findAllConsultationEvents());
+		model.addAttribute("events", eventService.findAllForConsultations());
 		return "client-relations-officer/event-list";
 	}
 	

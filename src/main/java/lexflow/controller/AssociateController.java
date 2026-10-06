@@ -199,10 +199,10 @@ public class AssociateController {
 			return "associate/consultation-details";
 		}
 		
-		ConsultationEvent event = eventService.findOwnedConsultationEvent(eventId, consultation);
+		ConsultationEvent event = eventService.findOwnedByConsultation(eventId, consultation);
 		
 		try {
-			eventService.rescheduleConsultationEvent(event, form.getSubject(), form.getDate(), form.getStartTime(), form.getEndTime(), form.getLocation(), form.getNotes());
+			eventService.reschedule(event, form.getSubject(), form.getDate(), form.getStartTime(), form.getEndTime(), form.getLocation(), form.getNotes());
 			populateConsultationDetailModel(consultation, model);
 			model.addAttribute("success", "Meeting rescheduled successfully.");
 		} catch (InvalidStateException | BusinessRuleViolationException e) {
@@ -218,7 +218,7 @@ public class AssociateController {
 		Consultation consultation = consultationService.findOwnedByAssociate(consultationId, currentAssociate(authentication));
 		
 		try {
-			eventService.completeEvent(eventService.findOwnedConsultationEvent(eventId, consultation));
+			eventService.complete(eventService.findOwnedByConsultation(eventId, consultation));
 			populateConsultationDetailModel(consultation, model);
 			model.addAttribute("success", "Meeting marked as completed.");
 		} catch (InvalidStateException | BusinessRuleViolationException e) {
@@ -234,7 +234,7 @@ public class AssociateController {
 		Consultation consultation = consultationService.findOwnedByAssociate(consultationId, currentAssociate(authentication));
 		
 		try {
-			eventService.cancelEvent(eventService.findOwnedConsultationEvent(eventId, consultation));
+			eventService.cancel(eventService.findOwnedByConsultation(eventId, consultation));
 			populateConsultationDetailModel(consultation, model);
 			model.addAttribute("success", "Meeting canceled.");
 		} catch (InvalidStateException e) {
@@ -467,7 +467,7 @@ public class AssociateController {
 		Event event = eventService.findOwnedByAssociate(eventId, currentAssociate(authentication));
 		
 		try {
-			eventService.completeEvent(event);
+			eventService.complete(event);
 			redirectAttributes.addFlashAttribute("success", "Event marked as completed.");
 		} catch (InvalidStateException | BusinessRuleViolationException e) {
 			redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -481,7 +481,7 @@ public class AssociateController {
 		Event event = eventService.findOwnedByAssociate(eventId, currentAssociate(authentication));
 		
 		try {
-			eventService.cancelEvent(event);
+			eventService.cancel(event);
 			redirectAttributes.addFlashAttribute("success", "Event canceled.");
 		} catch (InvalidStateException e) {
 			redirectAttributes.addFlashAttribute("error", e.getMessage());

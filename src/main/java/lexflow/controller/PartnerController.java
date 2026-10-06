@@ -396,10 +396,10 @@ public class PartnerController {
 			return "partner/consultation-details";
 		}
 		
-		ConsultationEvent event = eventService.findOwnedConsultationEvent(eventId, consultation);
+		ConsultationEvent event = eventService.findOwnedByConsultation(eventId, consultation);
 		
 		try {
-			eventService.rescheduleConsultationEvent(event, form.getSubject(), form.getDate(), form.getStartTime(), form.getEndTime(), form.getLocation(), form.getNotes());
+			eventService.reschedule(event, form.getSubject(), form.getDate(), form.getStartTime(), form.getEndTime(), form.getLocation(), form.getNotes());
 			populateConsultationDetailModel(consultation, model);
 			model.addAttribute("success", "Meeting rescheduled successfully.");
 		} catch (InvalidStateException | BusinessRuleViolationException e) {
@@ -415,7 +415,7 @@ public class PartnerController {
 		Consultation consultation = consultationService.findById(consultationId);
 		
 		try {
-			eventService.completeEvent(eventService.findOwnedConsultationEvent(eventId, consultation));
+			eventService.complete(eventService.findOwnedByConsultation(eventId, consultation));
 			populateConsultationDetailModel(consultation, model);
 			model.addAttribute("success", "Meeting marked as completed.");
 		} catch (InvalidStateException | BusinessRuleViolationException e) {
@@ -431,7 +431,7 @@ public class PartnerController {
 		Consultation consultation = consultationService.findById(consultationId);
 		
 		try {
-			eventService.cancelEvent(eventService.findOwnedConsultationEvent(eventId, consultation));
+			eventService.cancel(eventService.findOwnedByConsultation(eventId, consultation));
 			populateConsultationDetailModel(consultation, model);
 			model.addAttribute("success", "Meeting canceled.");
 		} catch (InvalidStateException e) {
@@ -1002,7 +1002,7 @@ public class PartnerController {
 	public String completeEvent(@PathVariable("id") Long eventId, RedirectAttributes redirectAttributes) {
 		
 		try {
-			eventService.completeEvent(eventService.findById(eventId));
+			eventService.complete(eventService.findById(eventId));
 			redirectAttributes.addFlashAttribute("success", "Event marked as completed.");
 		} catch (InvalidStateException | BusinessRuleViolationException e) {
 			redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -1015,7 +1015,7 @@ public class PartnerController {
 	public String cancelEvent(@PathVariable("id") Long eventId, RedirectAttributes redirectAttributes) {
 		
 		try {
-			eventService.cancelEvent(eventService.findById(eventId));
+			eventService.cancel(eventService.findById(eventId));
 			redirectAttributes.addFlashAttribute("success", "Event canceled.");
 		} catch (InvalidStateException e) {
 			redirectAttributes.addFlashAttribute("error", e.getMessage());

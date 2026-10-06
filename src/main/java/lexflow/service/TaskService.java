@@ -125,7 +125,7 @@ public class TaskService {
 			throw new AccessDeniedException("Task has no scheduled event.");
 		}
 		
-		return eventService.rescheduleCaseEvent(task.getScheduledEvent(), subject, date, startTime, endTime, location, notes);
+		return eventService.reschedule(task.getScheduledEvent(), subject, date, startTime, endTime, location, notes);
 	}
 	
 	@Transactional

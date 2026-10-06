@@ -70,7 +70,7 @@ public class EventService {
 		return eventDao.findById(eventId);
 	}
 	
-	public ConsultationEvent findOwnedConsultationEvent(Long eventId, Consultation consultation) {
+	public ConsultationEvent findOwnedByConsultation(Long eventId, Consultation consultation) {
 		Event event = findById(eventId);
 		
 		if (!(event instanceof ConsultationEvent consultationEvent) || !consultationEvent.getConsultation().getConsultationId().equals(consultation.getConsultationId())) {
@@ -176,7 +176,7 @@ public class EventService {
 		return events;
 	}
 	
-	public List<ConsultationEvent> findAllConsultationEvents() {
+	public List<ConsultationEvent> findAllForConsultations() {
 		List<ConsultationEvent> events = new ArrayList<>();
 		
 		for (Event event : eventDao.findAll()) {
@@ -192,7 +192,7 @@ public class EventService {
 	
 	// ---- Update ----
 	
-	public ConsultationEvent rescheduleConsultationEvent(ConsultationEvent event, String subject, LocalDate date, LocalTime startTime, LocalTime endTime, String location, String notes) {
+	public ConsultationEvent reschedule(ConsultationEvent event, String subject, LocalDate date, LocalTime startTime, LocalTime endTime, String location, String notes) {
 		stateFor(event.getEventStatus()).guardReschedule(event);
 		
 		Consultation consultation = event.getConsultation();
@@ -210,7 +210,7 @@ public class EventService {
 		return (ConsultationEvent) eventDao.update(event);
 	}
 	
-	public CaseEvent rescheduleCaseEvent(CaseEvent event, String subject, LocalDate date, LocalTime startTime, LocalTime endTime, String location, String notes) {
+	public CaseEvent reschedule(CaseEvent event, String subject, LocalDate date, LocalTime startTime, LocalTime endTime, String location, String notes) {
 		stateFor(event.getEventStatus()).guardReschedule(event);
 		
 		Case case_ = event.getCase_();
@@ -228,7 +228,7 @@ public class EventService {
 		return (CaseEvent) eventDao.update(event);
 	}
 	
-	public Event completeEvent(Event event) {
+	public Event complete(Event event) {
 		stateFor(event.getEventStatus()).guardComplete(event);
 		
 		LocalDateTime startsAt = LocalDateTime.of(event.getDate(), event.getStartTime());
@@ -244,7 +244,7 @@ public class EventService {
 	}
 	
 	@Transactional
-	public Event cancelEvent(Event event) {
+	public Event cancel(Event event) {
 		stateFor(event.getEventStatus()).guardCancel(event);
 		
 		event.setEventStatus(EventStatus.CANCELED);

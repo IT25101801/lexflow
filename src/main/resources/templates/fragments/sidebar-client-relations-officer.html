@@ -37,8 +37,11 @@
 		</a>
 		
 		<span class="nav-section-label">Schedule</span>
-		<a class="nav-item" th:classappend="${active == 'events'} ? ' active'" th:href="@{/client-relations-officer/events}">
-			<i class="bi bi-calendar3"></i> Consultation Events
+		<a class="nav-item" th:classappend="${active == 'events-upcoming'} ? ' active'" th:href="@{/client-relations-officer/events/upcoming}">
+			<i class="bi bi-calendar3"></i> Upcoming Events
+		</a>
+		<a class="nav-item" th:classappend="${active == 'events-past'} ? ' active'" th:href="@{/client-relations-officer/events/past}">
+			<i class="bi bi-calendar-check"></i> Past Events
 		</a>
 	</nav>
 	<script>

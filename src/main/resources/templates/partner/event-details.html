@@ -3,7 +3,7 @@
 <head th:replace="~{fragments/head :: head('Event Details – LexFlow')}"></head>
 <body>
 
-<aside th:replace="~{fragments/sidebar-partner :: sidebar('events')}"></aside>
+<aside th:replace="~{fragments/sidebar-partner :: sidebar(${event.eventStatus.name() == 'SCHEDULED' ? 'events-upcoming' : 'events-past'})}"></aside>
 
 <div class="main">
 	<div th:replace="~{fragments/common :: topbar('Event Details', null)}"></div>
@@ -23,10 +23,11 @@
 							<div class="avatar-name">Event Details</div>
 						</div>
 						<div th:if="${event.eventStatus.name() == 'SCHEDULED'}" style="margin-left:auto;display:flex;gap:0.5rem;">
+							<button class="action-btn action-btn-edit" type="button" onclick="document.getElementById('eventRescheduleModal').style.display='flex';">Reschedule</button>
 							<form method="post" th:action="@{/partner/events/{id}/complete(id=${event.eventId})}">
 								<button class="action-btn action-btn-create" type="submit">Complete</button>
 							</form>
-							<form method="post" th:action="@{/partner/events/{id}/cancel(id=${event.eventId})}">
+							<form method="post" th:action="@{/partner/events/{id}/cancel(id=${event.eventId})}" onsubmit="return confirm('Cancel this event? This action cannot be undone.');">
 								<button class="action-btn action-btn-delete" type="submit">Cancel</button>
 							</form>
 						</div>
@@ -87,6 +88,51 @@
 	
 	</div>
 </div>
+
+<!-- Reschedule Event Modal -->
+<div id="eventRescheduleModal" class="modal-overlay" th:if="${event.eventStatus.name() == 'SCHEDULED'}" onclick="if(event.target===this)this.style.display='none';">
+	<div class="modal-dialog" style="max-width:480px;width:92%;max-height:90vh;overflow-y:auto;">
+		<div class="section-title">Reschedule Event</div>
+		<form method="post" th:action="@{/partner/events/{id}/reschedule(id=${event.eventId})}" style="display:flex;flex-direction:column;gap:0.85rem;">
+			<div class="field">
+				<label for="subject">Subject</label>
+				<input id="subject" type="text" name="subject" th:value="${event.subject}" required/>
+			</div>
+			<div class="field">
+				<label for="date">Date</label>
+				<input id="date" type="date" name="date" th:value="${event.date}" required data-not-past/>
+			</div>
+			<div class="field-row">
+				<div class="field">
+					<label for="startTime">Start Time</label>
+					<input id="startTime" type="time" name="startTime" th:value="${event.startTime}" required/>
+				</div>
+				<div class="field">
+					<label for="endTime">End Time</label>
+					<input id="endTime" type="time" name="endTime" th:value="${event.endTime}" required/>
+				</div>
+			</div>
+			<div class="field">
+				<label for="location">Location</label>
+				<input id="location" type="text" name="location" th:value="${event.location}" required/>
+			</div>
+			<div class="field">
+				<label for="notes">Notes</label>
+				<textarea id="notes" name="notes" rows="4" th:text="${event.notes}"></textarea>
+			</div>
+			<div class="modal-actions">
+				<button class="modal-btn-cancel" type="button" onclick="document.getElementById('eventRescheduleModal').style.display='none';">Cancel</button>
+				<button class="btn btn-primary" type="submit">Reschedule</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<div class="demo-btn-row" th:if="${event.eventStatus.name() == 'SCHEDULED'}">
+	<span class="demo-btn-label">Demo</span>
+	<button class="demo-btn" type="button" title="Fill New Meeting Time" onclick="fillRescheduleMeetingFormS3()">S3</button>
+</div>
+<script th:src="@{/js/demo.js}"></script>
 
 </body>
 </html>

@@ -267,6 +267,11 @@ public class ClientRelationsOfficerController {
 		
 		try {
 			consultationService.submit(client, form.getCaseType(), form.getOpposingParties(), form.getDescription(), consultationFiles);
+		} catch (BusinessRuleViolationException e) {
+			model.addAttribute("caseTypes", CaseType.values());
+			model.addAttribute("error", e.getMessage());
+			
+			return "client-relations-officer/consultation-form";
 		} catch (PersistenceException e) {
 			model.addAttribute("caseTypes", CaseType.values());
 			model.addAttribute("error", "Could not submit the consultation request. Please try again.");
@@ -327,7 +332,7 @@ public class ClientRelationsOfficerController {
 			consultation = consultationService.updateDetails(consultation, form.getCaseType(), form.getOpposingParties(), form.getDescription(), consultationFiles, form.getDeleteDocumentIds(), form.getDocumentIds(), form.getOriginalFilenames());
 			populateConsultationDetailModel(consultation, model);
 			model.addAttribute("success", "Consultation request updated successfully.");
-		} catch (InvalidConsultationStateException e) {
+		} catch (InvalidConsultationStateException | BusinessRuleViolationException e) {
 			populateConsultationDetailModel(consultation, model);
 			model.addAttribute("error", e.getMessage());
 		}
@@ -337,10 +342,21 @@ public class ClientRelationsOfficerController {
 	
 	// Schedule
 	
-	@GetMapping("/client-relations-officer/events")
-	public String events(Model model) {
-		model.addAttribute("events", eventService.findAllForConsultations());
-		
+	@GetMapping("/client-relations-officer/events/upcoming")
+	public String upcomingEvents(Model model) {
+		model.addAttribute("events", eventService.upcoming(eventService.findAllForConsultations()));
+		model.addAttribute("title", "Upcoming Events");
+		model.addAttribute("active", "events-upcoming");
+
+		return "client-relations-officer/event-list";
+	}
+
+	@GetMapping("/client-relations-officer/events/past")
+	public String pastEvents(Model model) {
+		model.addAttribute("events", eventService.past(eventService.findAllForConsultations()));
+		model.addAttribute("title", "Past Events");
+		model.addAttribute("active", "events-past");
+
 		return "client-relations-officer/event-list";
 	}
 	

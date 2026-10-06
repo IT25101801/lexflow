@@ -44,8 +44,11 @@
 		</a>
 		
 		<span class="nav-section-label">Schedule</span>
-		<a class="nav-item" th:classappend="${active == 'events'} ? ' active'" th:href="@{/partner/events}">
-			<i class="bi bi-calendar3"></i> Firm Events
+		<a class="nav-item" th:classappend="${active == 'events-upcoming'} ? ' active'" th:href="@{/partner/events/upcoming}">
+			<i class="bi bi-calendar3"></i> Upcoming Events
+		</a>
+		<a class="nav-item" th:classappend="${active == 'events-past'} ? ' active'" th:href="@{/partner/events/past}">
+			<i class="bi bi-calendar-check"></i> Past Events
 		</a>
 		
 		<span class="nav-section-label">Finance</span>

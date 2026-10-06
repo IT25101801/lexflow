@@ -2,14 +2,12 @@ package lexflow.service;
 
 import lexflow.dao.TaskDao;
 import lexflow.entity.case_.Case;
-import lexflow.entity.case_.CaseStatus;
 import lexflow.entity.case_.Task;
 import lexflow.entity.finance.Invoice;
 import lexflow.entity.scheduling.CaseEvent;
 import lexflow.exception.case_.IncompleteBillingTaskException;
 import lexflow.exception.case_.IncompleteDocumentingTaskException;
 import lexflow.exception.case_.IncompleteSchedulingTaskException;
-import lexflow.exception.case_.InvalidCaseStateException;
 import lexflow.exception.finance.BillableAmountNotEditableException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
@@ -28,6 +26,7 @@ import java.util.List;
 public class TaskService {
 	
 	private final TaskDao taskDao;
+	private final CaseService caseService;
 	private final DocumentService documentService;
 	private final EventService eventService;
 	
@@ -35,10 +34,7 @@ public class TaskService {
 	
 	@Transactional
 	public Task add(Case case_, String title, Boolean documentingTask, Boolean schedulingTask, Boolean billingTask, List<MultipartFile> caseFiles, LocalDate date, LocalTime startTime, LocalTime endTime, String location, String notes, BigDecimal billableAmount) {
-		
-		if (case_.getCaseStatus() != CaseStatus.OPEN) {
-			throw new InvalidCaseStateException(case_.getCaseId(), case_.getCaseStatus(), CaseStatus.OPEN);
-		}
+		caseService.requireOpen(case_);
 		
 		boolean isDocumentingTask = Boolean.TRUE.equals(documentingTask);
 		
@@ -120,15 +116,6 @@ public class TaskService {
 		task.setBillableAmount(billableAmount);
 		
 		return taskDao.update(task);
-	}
-	
-	public CaseEvent rescheduleEvent(Task task, String subject, LocalDate date, LocalTime startTime, LocalTime endTime, String location, String notes) {
-		
-		if (!task.isSchedulingTask() || task.getScheduledEvent() == null) {
-			throw new AccessDeniedException("Task has no scheduled event.");
-		}
-		
-		return eventService.reschedule(task.getScheduledEvent(), subject, date, startTime, endTime, location, notes);
 	}
 	
 	@Transactional

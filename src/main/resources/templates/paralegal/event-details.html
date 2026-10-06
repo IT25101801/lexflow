@@ -3,7 +3,7 @@
 <head th:replace="~{fragments/head :: head('Event Details – LexFlow')}"></head>
 <body>
 
-<aside th:replace="~{fragments/sidebar-paralegal :: sidebar('events')}"></aside>
+<aside th:replace="~{fragments/sidebar-paralegal :: sidebar(${event.eventStatus.name() == 'SCHEDULED' ? 'events-upcoming' : 'events-past'})}"></aside>
 
 <div class="main">
 	<div th:replace="~{fragments/common :: topbar('Event Details', null)}"></div>

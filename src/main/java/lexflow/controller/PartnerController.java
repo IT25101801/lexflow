@@ -47,6 +47,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import lexflow.entity.scheduling.Event;
 import java.util.List;
 import java.util.Map;
 
@@ -399,29 +400,6 @@ public class PartnerController {
 		return "partner/case-details";
 	}
 	
-	@PostMapping("/partner/cases/{id}/tasks/{taskId}/reschedule")
-	public String rescheduleTaskEvent(@PathVariable("id") Long caseId, @PathVariable Long taskId, @Valid @ModelAttribute ScheduleMeetingRequest form, BindingResult bindingResult, Model model) {
-		Case case_ = caseService.findById(caseId);
-		
-		if (bindingResult.hasErrors()) {
-			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
-			populateCaseDetailModel(case_, model);
-			
-			return "partner/case-details";
-		}
-		
-		try {
-			taskService.rescheduleEvent(taskService.findById(taskId), form.getSubject(), form.getDate(), form.getStartTime(), form.getEndTime(), form.getLocation(), form.getNotes());
-			populateCaseDetailModel(case_, model);
-			model.addAttribute("success", "Event rescheduled successfully.");
-		} catch (InvalidStateException | BusinessRuleViolationException e) {
-			populateCaseDetailModel(case_, model);
-			model.addAttribute("error", e.getMessage());
-		}
-		
-		return "partner/case-details";
-	}
-	
 	@PostMapping("/partner/cases/{id}/tasks/{taskId}/edit-billable-amount")
 	public String editBillableAmount(@PathVariable("id") Long caseId, @PathVariable Long taskId, @Valid @ModelAttribute EditBillableAmountRequest form, BindingResult bindingResult, Model model) {
 		Case case_ = caseService.findById(caseId);
@@ -595,7 +573,7 @@ public class PartnerController {
 			return "partner/case-details";
 		}
 		
-		Contact contact = contactService.findById(contactId);
+		Contact contact = contactService.findOwnedByCase(contactId, case_);
 		
 		try {
 			contactService.update(case_, contact, form.getName(), form.getPhoneNumbers(), form.getEmails(), form.getAddresses(), form.getNotes());
@@ -606,6 +584,22 @@ public class PartnerController {
 			model.addAttribute("error", e.getMessage());
 		}
 		
+		return "partner/case-details";
+	}
+
+	@PostMapping("/partner/cases/{id}/contacts/{contactId}/delete")
+	public String deleteContact(@PathVariable("id") Long caseId, @PathVariable Long contactId, Model model) {
+		Case case_ = caseService.findById(caseId);
+
+		try {
+			contactService.delete(case_, contactService.findOwnedByCase(contactId, case_));
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("success", "Contact deleted.");
+		} catch (InvalidStateException e) {
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("error", e.getMessage());
+		}
+
 		return "partner/case-details";
 	}
 	
@@ -660,10 +654,21 @@ public class PartnerController {
 	
 	// Schedule
 	
-	@GetMapping("/partner/events")
-	public String events(Model model) {
-		model.addAttribute("events", eventService.findAll());
-		
+	@GetMapping("/partner/events/upcoming")
+	public String upcomingEvents(Model model) {
+		model.addAttribute("events", eventService.upcoming(eventService.findAll()));
+		model.addAttribute("title", "Upcoming Events");
+		model.addAttribute("active", "events-upcoming");
+
+		return "partner/event-list";
+	}
+
+	@GetMapping("/partner/events/past")
+	public String pastEvents(Model model) {
+		model.addAttribute("events", eventService.past(eventService.findAll()));
+		model.addAttribute("title", "Past Events");
+		model.addAttribute("active", "events-past");
+
 		return "partner/event-list";
 	}
 	
@@ -697,6 +702,26 @@ public class PartnerController {
 			redirectAttributes.addFlashAttribute("error", e.getMessage());
 		}
 		
+		return "redirect:/partner/events/{id}";
+	}
+
+	@PostMapping("/partner/events/{id}/reschedule")
+	public String rescheduleEvent(@PathVariable("id") Long eventId, @Valid @ModelAttribute ScheduleMeetingRequest form, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
+		Event event = eventService.findById(eventId);
+
+		if (bindingResult.hasErrors()) {
+			redirectAttributes.addFlashAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+
+			return "redirect:/partner/events/{id}";
+		}
+
+		try {
+			eventService.reschedule(event, form.getSubject(), form.getDate(), form.getStartTime(), form.getEndTime(), form.getLocation(), form.getNotes());
+			redirectAttributes.addFlashAttribute("success", "Event rescheduled successfully.");
+		} catch (InvalidStateException | BusinessRuleViolationException e) {
+			redirectAttributes.addFlashAttribute("error", e.getMessage());
+		}
+
 		return "redirect:/partner/events/{id}";
 	}
 	

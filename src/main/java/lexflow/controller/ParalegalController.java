@@ -5,7 +5,6 @@ import lexflow.dto.case_.AddTaskRequest;
 import lexflow.dto.case_.RenameTaskRequest;
 import lexflow.dto.case_.SaveContactRequest;
 import lexflow.dto.document.RenameDocumentRequest;
-import lexflow.dto.scheduling.ScheduleMeetingRequest;
 import lexflow.dto.user.ChangePasswordRequest;
 import lexflow.entity.case_.Case;
 import lexflow.entity.case_.Task;
@@ -194,29 +193,6 @@ public class ParalegalController {
 		return "paralegal/case-details";
 	}
 	
-	@PostMapping("/paralegal/cases/{id}/tasks/{taskId}/reschedule")
-	public String rescheduleTaskEvent(@PathVariable("id") Long caseId, @PathVariable Long taskId, @Valid @ModelAttribute ScheduleMeetingRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
-		Case case_ = caseService.findOwnedByParalegal(caseId, currentParalegal(authentication));
-		
-		if (bindingResult.hasErrors()) {
-			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
-			populateCaseDetailModel(case_, model);
-			
-			return "paralegal/case-details";
-		}
-		
-		try {
-			taskService.rescheduleEvent(taskService.findOwnedByCase(taskId, case_), form.getSubject(), form.getDate(), form.getStartTime(), form.getEndTime(), form.getLocation(), form.getNotes());
-			populateCaseDetailModel(case_, model);
-			model.addAttribute("success", "Event rescheduled successfully.");
-		} catch (InvalidStateException | BusinessRuleViolationException e) {
-			populateCaseDetailModel(case_, model);
-			model.addAttribute("error", e.getMessage());
-		}
-		
-		return "paralegal/case-details";
-	}
-	
 	@PostMapping("/paralegal/cases/{id}/documents/{documentId}/accept")
 	public String acceptStagedDocument(@PathVariable("id") Long caseId, @PathVariable Long documentId, Authentication authentication, Model model) {
 		Case case_ = caseService.findOwnedByParalegal(caseId, currentParalegal(authentication));
@@ -278,13 +254,63 @@ public class ParalegalController {
 		
 		return "paralegal/case-details";
 	}
+
+	@PostMapping("/paralegal/cases/{id}/contacts/{contactId}/edit")
+	public String editContact(@PathVariable("id") Long caseId, @PathVariable Long contactId, @Valid @ModelAttribute SaveContactRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
+		Case case_ = caseService.findOwnedByParalegal(caseId, currentParalegal(authentication));
+
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			populateCaseDetailModel(case_, model);
+
+			return "paralegal/case-details";
+		}
+
+		try {
+			contactService.update(case_, contactService.findOwnedByCase(contactId, case_), form.getName(), form.getPhoneNumbers(), form.getEmails(), form.getAddresses(), form.getNotes());
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("success", "Contact updated.");
+		} catch (InvalidStateException e) {
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("error", e.getMessage());
+		}
+
+		return "paralegal/case-details";
+	}
+
+	@PostMapping("/paralegal/cases/{id}/contacts/{contactId}/delete")
+	public String deleteContact(@PathVariable("id") Long caseId, @PathVariable Long contactId, Authentication authentication, Model model) {
+		Case case_ = caseService.findOwnedByParalegal(caseId, currentParalegal(authentication));
+
+		try {
+			contactService.delete(case_, contactService.findOwnedByCase(contactId, case_));
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("success", "Contact deleted.");
+		} catch (InvalidStateException e) {
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("error", e.getMessage());
+		}
+
+		return "paralegal/case-details";
+	}
 	
 	// Schedule
 	
-	@GetMapping("/paralegal/events")
-	public String events(Authentication authentication, Model model) {
-		model.addAttribute("events", eventService.findAllForParalegal(currentParalegal(authentication)));
-		
+	@GetMapping("/paralegal/events/upcoming")
+	public String upcomingEvents(Authentication authentication, Model model) {
+		model.addAttribute("events", eventService.upcoming(eventService.findAllForParalegal(currentParalegal(authentication))));
+		model.addAttribute("title", "Upcoming Events");
+		model.addAttribute("active", "events-upcoming");
+
+		return "paralegal/event-list";
+	}
+
+	@GetMapping("/paralegal/events/past")
+	public String pastEvents(Authentication authentication, Model model) {
+		model.addAttribute("events", eventService.past(eventService.findAllForParalegal(currentParalegal(authentication))));
+		model.addAttribute("title", "Past Events");
+		model.addAttribute("active", "events-past");
+
 		return "paralegal/event-list";
 	}
 	

@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/head :: head('My Events – LexFlow')}"></head>
+<head th:replace="~{fragments/head :: head(${title} + ' – LexFlow')}"></head>
 <body>
 
-<aside th:replace="~{fragments/sidebar-client :: sidebar('events')}"></aside>
+<aside th:replace="~{fragments/sidebar-client :: sidebar(${active})}"></aside>
 
 <div class="main">
-	<div th:replace="~{fragments/common :: topbar('My Events', null)}"></div>
+	<div th:replace="~{fragments/common :: topbar(${title}, null)}"></div>
 	
 	<div class="content">
 		<div class="table-card">
@@ -20,16 +20,16 @@
 						<th>Start Time</th>
 						<th>End Time</th>
 						<th>Location</th>
-						<th>Event Status</th>
+						<th th:if="${active == 'events-past'}">Event Status</th>
 						<th>Scheduled At</th>
-						<th>Completed At</th>
-						<th>Canceled At</th>
+						<th th:if="${active == 'events-past'}">Completed At</th>
+						<th th:if="${active == 'events-past'}">Canceled At</th>
 						<th>Actions</th>
 					</tr>
 					</thead>
 					<tbody>
 					<tr th:if="${#lists.isEmpty(events)}">
-						<td class="table-empty" colspan="11">No events scheduled.</td>
+						<td class="table-empty" th:attr="colspan=${active == 'events-past' ? 11 : 8}" th:text="${active == 'events-past' ? 'No past events.' : 'No upcoming events.'}"></td>
 					</tr>
 					<tr th:each="event : ${events}">
 						<td th:text="${event.subject}"></td>
@@ -43,10 +43,10 @@
 						<td th:text="${event.startTime}"></td>
 						<td th:text="${event.endTime}"></td>
 						<td th:text="${event.location}"></td>
-						<td><span class="badge" th:classappend="'badge-' + ${event.eventStatus}" th:text="${event.eventStatus}"></span></td>
+						<td th:if="${active == 'events-past'}"><span class="badge" th:classappend="'badge-' + ${event.eventStatus}" th:text="${event.eventStatus}"></span></td>
 						<td th:text="${#temporals.format(event.scheduledAt, 'dd/MM/yyyy HH:mm')}"></td>
-						<td th:text="${event.completedAt != null ? #temporals.format(event.completedAt, 'dd/MM/yyyy HH:mm') : '–'}"></td>
-						<td th:text="${event.canceledAt != null ? #temporals.format(event.canceledAt, 'dd/MM/yyyy HH:mm') : '–'}"></td>
+						<td th:if="${active == 'events-past'}" th:text="${event.completedAt != null ? #temporals.format(event.completedAt, 'dd/MM/yyyy HH:mm') : '–'}"></td>
+						<td th:if="${active == 'events-past'}" th:text="${event.canceledAt != null ? #temporals.format(event.canceledAt, 'dd/MM/yyyy HH:mm') : '–'}"></td>
 						<td>
 							<a class="action-btn action-btn-view" th:href="@{/client/events/{id}(id=${event.eventId})}">View</a>
 						</td>

@@ -1,11 +1,9 @@
 package lexflow.service;
 
-import lexflow.dao.ConsultationDao;
 import lexflow.dao.EventDao;
 import lexflow.entity.case_.Case;
 import lexflow.entity.case_.Task;
 import lexflow.entity.consultation.Consultation;
-import lexflow.entity.consultation.ConsultationStatus;
 import lexflow.entity.scheduling.CaseEvent;
 import lexflow.entity.scheduling.ConsultationEvent;
 import lexflow.entity.scheduling.Event;
@@ -31,6 +29,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -38,7 +37,6 @@ import java.util.List;
 public class EventService {
 	
 	private final EventDao eventDao;
-	private final ConsultationDao consultationDao;
 	private final ConsultationService consultationService;
 	
 	// Create
@@ -196,78 +194,100 @@ public class EventService {
 		return consultationEvents;
 	}
 	
+	public List<Event> upcoming(List<? extends Event> events) {
+		List<Event> upcomingEvents = new ArrayList<>();
+		
+		for (Event event : events) {
+			
+			if (event.getEventStatus() == EventStatus.SCHEDULED) {
+				upcomingEvents.add(event);
+			}
+			
+		}
+		
+		Collections.reverse(upcomingEvents);
+		
+		return upcomingEvents;
+	}
+	
+	public List<Event> past(List<? extends Event> events) {
+		List<Event> pastEvents = new ArrayList<>();
+		
+		for (Event event : events) {
+			
+			if (event.getEventStatus() != EventStatus.SCHEDULED) {
+				pastEvents.add(event);
+			}
+			
+		}
+		
+		return pastEvents;
+	}
+	
 	// Update
 	
-	public ConsultationEvent reschedule(ConsultationEvent consultationEvent, String subject, LocalDate date, LocalTime startTime, LocalTime endTime, String location, String notes) {
-		stateFor(consultationEvent.getEventStatus()).guardReschedule(consultationEvent);
-		Consultation consultation = consultationEvent.getConsultation();
-		
-		validateSchedule(date, startTime, endTime);
-		checkAllAvailability(consultation.getAssociate(), consultation.getParalegal(), consultation.getClient(), date, startTime, endTime, consultationEvent.getEventId());
-		
-		consultationEvent.setSubject(subject);
-		consultationEvent.setDate(date);
-		consultationEvent.setStartTime(startTime);
-		consultationEvent.setEndTime(endTime);
-		consultationEvent.setLocation(location);
-		consultationEvent.setNotes(notes);
-		
-		return (ConsultationEvent) eventDao.update(consultationEvent);
+	public Event reschedule(Event event, String subject, LocalDate date, LocalTime startTime, LocalTime endTime, String location, String notes) {
+		return stateFor(event.getEventStatus()).reschedule(event, this, subject, date, startTime, endTime, location, notes);
 	}
-	
-	public CaseEvent reschedule(CaseEvent caseEvent, String subject, LocalDate date, LocalTime startTime, LocalTime endTime, String location, String notes) {
-		stateFor(caseEvent.getEventStatus()).guardReschedule(caseEvent);
-		Case case_ = caseEvent.getCase_();
-		
-		validateSchedule(date, startTime, endTime);
-		checkAllAvailability(case_.getAssociate(), case_.getParalegal(), case_.getClient(), date, startTime, endTime, caseEvent.getEventId());
-		
-		caseEvent.setSubject(subject);
-		caseEvent.setDate(date);
-		caseEvent.setStartTime(startTime);
-		caseEvent.setEndTime(endTime);
-		caseEvent.setLocation(location);
-		caseEvent.setNotes(notes);
-		
-		return (CaseEvent) eventDao.update(caseEvent);
-	}
-	
+
 	public Event complete(Event event) {
-		stateFor(event.getEventStatus()).guardComplete(event);
-		
+		return stateFor(event.getEventStatus()).complete(event, this);
+	}
+
+	@Transactional
+	public Event cancel(Event event) {
+		return stateFor(event.getEventStatus()).cancel(event, this);
+	}
+
+	// State Pattern
+
+	public Event applyReschedule(Event event, String subject, LocalDate date, LocalTime startTime, LocalTime endTime, String location, String notes) {
+		validateSchedule(date, startTime, endTime);
+
+		if (event instanceof ConsultationEvent consultationEvent) {
+			Consultation consultation = consultationEvent.getConsultation();
+			checkAllAvailability(consultation.getAssociate(), consultation.getParalegal(), consultation.getClient(), date, startTime, endTime, event.getEventId());
+		} else {
+			Case case_ = ((CaseEvent) event).getCase_();
+			checkAllAvailability(case_.getAssociate(), case_.getParalegal(), case_.getClient(), date, startTime, endTime, event.getEventId());
+		}
+
+		event.setSubject(subject);
+		event.setDate(date);
+		event.setStartTime(startTime);
+		event.setEndTime(endTime);
+		event.setLocation(location);
+		event.setNotes(notes);
+
+		return eventDao.update(event);
+	}
+
+	public Event applyCompletion(Event event) {
 		LocalDateTime startsAt = LocalDateTime.of(event.getDate(), event.getStartTime());
 		LocalDateTime completedAt = LocalDateTime.now();
-		
+
 		if (startsAt.isAfter(completedAt)) {
 			throw new EventNotYetStartedException(event.getEventId(), startsAt);
 		}
-		
+
 		event.setEventStatus(EventStatus.COMPLETED);
 		event.setCompletedAt(completedAt);
-		
+
 		return eventDao.update(event);
 	}
-	
-	@Transactional
-	public Event cancel(Event event) {
-		stateFor(event.getEventStatus()).guardCancel(event);
-		
+
+	public Event applyCancellation(Event event) {
 		event.setEventStatus(EventStatus.CANCELED);
 		event.setCanceledAt(LocalDateTime.now());
-		
 		Event canceledEvent = eventDao.update(event);
-		
+
 		if (event instanceof ConsultationEvent consultationEvent) {
-			Consultation consultation = consultationEvent.getConsultation();
-			consultation.setConsultationStatus(ConsultationStatus.ACCEPTED_BY_PARTNER);
-			consultationDao.update(consultation);
+			consultationService.markUnscheduled(consultationEvent.getConsultation());
 		}
-		
+
 		return canceledEvent;
 	}
-	
-	// State Pattern
-	
+
 	private EventState stateFor(EventStatus eventStatus) {
 		
 		if (eventStatus == EventStatus.SCHEDULED) {

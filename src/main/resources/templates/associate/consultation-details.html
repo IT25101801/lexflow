@@ -130,30 +130,30 @@
 							</form>
 						</div>
 						<div class="tabpanel" th:if="${consultation.consultationStatus.name() == 'SCHEDULED'}" data-tab="reschedule">
-							<form method="post" th:action="@{/associate/consultations/{id}/events/{eventId}/reschedule(id=${consultation.consultationId},eventId=${meeting.eventId})}" th:each="meeting : ${meetings}" th:if="${meeting.eventStatus.name() == 'SCHEDULED'}" style="display:flex;flex-direction:column;gap:0.85rem;">
+							<form method="post" th:action="@{/associate/consultations/{id}/events/{eventId}/reschedule(id=${consultation.consultationId},eventId=${consultationEvent.eventId})}" th:each="consultationEvent : ${consultationEvents}" th:if="${consultationEvent.eventStatus.name() == 'SCHEDULED'}" style="display:flex;flex-direction:column;gap:0.85rem;">
 								<div class="field">
 									<label for="subject">Subject</label>
-									<input id="subject" type="text" name="subject" th:value="${meeting.subject}" required/>
+									<input id="subject" type="text" name="subject" th:value="${consultationEvent.subject}" required/>
 								</div>
 								<div class="field">
 									<label for="date">Date</label>
-									<input id="date" type="date" name="date" th:value="${meeting.date}" required/>
+									<input id="date" type="date" name="date" th:value="${consultationEvent.date}" required/>
 								</div>
 								<div class="field">
 									<label for="startTime">Start Time</label>
-									<input id="startTime" type="time" name="startTime" th:value="${meeting.startTime}" required/>
+									<input id="startTime" type="time" name="startTime" th:value="${consultationEvent.startTime}" required/>
 								</div>
 								<div class="field">
 									<label for="endTime">End Time</label>
-									<input id="endTime" type="time" name="endTime" th:value="${meeting.endTime}" required/>
+									<input id="endTime" type="time" name="endTime" th:value="${consultationEvent.endTime}" required/>
 								</div>
 								<div class="field">
 									<label for="location">Location</label>
-									<input id="location" type="text" name="location" th:value="${meeting.location}" required/>
+									<input id="location" type="text" name="location" th:value="${consultationEvent.location}" required/>
 								</div>
 								<div class="field">
 									<label for="notes">Notes</label>
-									<textarea id="notes" name="notes" th:text="${meeting.notes}" rows="4"></textarea>
+									<textarea id="notes" name="notes" th:text="${consultationEvent.notes}" rows="4"></textarea>
 								</div>
 								<div>
 									<button class="btn btn-primary btn-block" type="submit">Reschedule</button>

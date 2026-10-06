@@ -355,9 +355,9 @@ public class FinanceOfficerController {
 		model.addAttribute("outstandingInvoiceTotal", analyticsService.outstandingInvoiceTotal());
 		model.addAttribute("averageDaysToPayment", analyticsService.averageDaysToPayment());
 		
-		Map<TransactionType, Integer> topUps = analyticsService.topUpCountComparison();
-		model.addAttribute("cardTopUpCount", topUps.getOrDefault(TransactionType.CARD_TOP_UP, 0));
-		model.addAttribute("cashTopUpCount", topUps.getOrDefault(TransactionType.CASH_TOP_UP, 0));
+		Map<TransactionType, Integer> topUpCountComparison = analyticsService.topUpCountComparison();
+		model.addAttribute("cardTopUpCount", topUpCountComparison.getOrDefault(TransactionType.CARD_TOP_UP, 0));
+		model.addAttribute("cashTopUpCount", topUpCountComparison.getOrDefault(TransactionType.CASH_TOP_UP, 0));
 		
 		model.addAttribute("totalClientWalletFloat", analyticsService.totalClientWalletFloat());
 		

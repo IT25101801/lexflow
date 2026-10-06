@@ -126,7 +126,7 @@ public class AssociateController {
 	private void populateConsultationDetailModel(Consultation consultation, Model model) {
 		model.addAttribute("consultation", consultation);
 		model.addAttribute("consultationDocuments", documentService.findByConsultation(consultation));
-		model.addAttribute("meetings", eventService.findByConsultation(consultation));
+		model.addAttribute("consultationEvents", eventService.findByConsultation(consultation));
 		model.addAttribute("hasCompletedMeeting", consultationService.hasCompletedMeeting(consultation));
 		model.addAttribute("existingCase", caseService.findByConsultation(consultation));
 	}
@@ -204,10 +204,10 @@ public class AssociateController {
 			return "associate/consultation-details";
 		}
 		
-		ConsultationEvent event = eventService.findOwnedByConsultation(eventId, consultation);
+		ConsultationEvent consultationEvent = eventService.findOwnedByConsultation(eventId, consultation);
 		
 		try {
-			eventService.reschedule(event, form.getSubject(), form.getDate(), form.getStartTime(), form.getEndTime(), form.getLocation(), form.getNotes());
+			eventService.reschedule(consultationEvent, form.getSubject(), form.getDate(), form.getStartTime(), form.getEndTime(), form.getLocation(), form.getNotes());
 			populateConsultationDetailModel(consultation, model);
 			model.addAttribute("success", "Meeting rescheduled successfully.");
 		} catch (InvalidStateException | BusinessRuleViolationException e) {

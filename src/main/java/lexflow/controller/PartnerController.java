@@ -311,7 +311,7 @@ public class PartnerController {
 		model.addAttribute("consultationDocuments", documentService.findByConsultation(consultation));
 		model.addAttribute("associates", userService.findActiveAssociates());
 		model.addAttribute("paralegals", userService.findActiveParalegals());
-		model.addAttribute("meetings", eventService.findByConsultation(consultation));
+		model.addAttribute("consultationEvents", eventService.findByConsultation(consultation));
 		
 		Case existingCase = caseService.findByConsultation(consultation);
 		model.addAttribute("existingCase", existingCase);
@@ -399,10 +399,10 @@ public class PartnerController {
 			return "partner/consultation-details";
 		}
 		
-		ConsultationEvent event = eventService.findOwnedByConsultation(eventId, consultation);
+		ConsultationEvent consultationEvent = eventService.findOwnedByConsultation(eventId, consultation);
 		
 		try {
-			eventService.reschedule(event, form.getSubject(), form.getDate(), form.getStartTime(), form.getEndTime(), form.getLocation(), form.getNotes());
+			eventService.reschedule(consultationEvent, form.getSubject(), form.getDate(), form.getStartTime(), form.getEndTime(), form.getLocation(), form.getNotes());
 			populateConsultationDetailModel(consultation, model);
 			model.addAttribute("success", "Meeting rescheduled successfully.");
 		} catch (InvalidStateException | BusinessRuleViolationException e) {
@@ -825,20 +825,20 @@ public class PartnerController {
 	
 	@GetMapping("/partner/users/{id}")
 	public String userDetails(@PathVariable("id") Long userId, Authentication authentication, Model model) {
-		User target = userService.findById(userId);
-		populateUserDetailModel(target, authentication, model);
+		User user = userService.findById(userId);
+		populateUserDetailModel(user, authentication, model);
 		
-		return userDetailsView(target);
+		return userDetailsView(user);
 	}
 	
-	private void populateUserDetailModel(User target, Authentication authentication, Model model) {
-		model.addAttribute("user", target);
-		model.addAttribute("isSelf", target.getEmail().equals(authentication.getName()));
-		model.addAttribute("isAssociate", target instanceof Associate);
-		model.addAttribute("isClient", target instanceof Client);
+	private void populateUserDetailModel(User user, Authentication authentication, Model model) {
+		model.addAttribute("user", user);
+		model.addAttribute("isSelf", user.getEmail().equals(authentication.getName()));
+		model.addAttribute("isAssociate", user instanceof Associate);
+		model.addAttribute("isClient", user instanceof Client);
 		model.addAttribute("genders", Gender.values());
 		
-		switch (target) {
+		switch (user) {
 			
 			case Client client -> {
 				model.addAttribute("relatedConsultations", consultationService.findAllForClient(client));
@@ -864,7 +864,7 @@ public class PartnerController {
 			
 		}
 		
-		model.addAttribute("active", switch (target) {
+		model.addAttribute("active", switch (user) {
 			case Partner ignored -> "users-partners";
 			case Associate ignored -> "users-associates";
 			case Paralegal ignored -> "users-paralegals";
@@ -875,80 +875,80 @@ public class PartnerController {
 		});
 	}
 	
-	private String userDetailsView(User target) {
-		return target instanceof Partner ? "partner/partner-details" : "partner/user-details";
+	private String userDetailsView(User user) {
+		return user instanceof Partner ? "partner/partner-details" : "partner/user-details";
 	}
 	
 	@PostMapping("/partner/users/{id}/edit")
 	public String editUser(@PathVariable("id") Long userId, @Valid @ModelAttribute EditProfileRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
-		User target = userService.findById(userId);
+		User user = userService.findById(userId);
 		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
-			populateUserDetailModel(target, authentication, model);
+			populateUserDetailModel(user, authentication, model);
 			
-			return userDetailsView(target);
+			return userDetailsView(user);
 		}
 		
 		try {
-			target = userService.updateDetails(target, form.getName(), form.getDateOfBirth(), form.getGender(), form.getAddresses(), form.getPhoneNumbers(), form.getNicFile(), form.getBarFile());
+			user = userService.updateDetails(user, form.getName(), form.getDateOfBirth(), form.getGender(), form.getAddresses(), form.getPhoneNumbers(), form.getNicFile(), form.getBarFile());
 			model.addAttribute("success", "User updated successfully.");
 		} catch (NonPdfDocumentException e) {
 			model.addAttribute("error", e.getMessage());
 		}
 		
-		populateUserDetailModel(target, authentication, model);
+		populateUserDetailModel(user, authentication, model);
 		
-		return userDetailsView(target);
+		return userDetailsView(user);
 	}
 	
 	@PostMapping("/partner/users/{id}/reset-password")
 	public String resetUserPassword(@PathVariable("id") Long userId, @Valid @ModelAttribute ResetPasswordRequest form, BindingResult bindingResult, Authentication authentication, HttpServletRequest request, HttpServletResponse response, Model model, RedirectAttributes redirectAttributes) {
-		User target = userService.findById(userId);
+		User user = userService.findById(userId);
 		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
-			populateUserDetailModel(target, authentication, model);
+			populateUserDetailModel(user, authentication, model);
 			
-			return userDetailsView(target);
+			return userDetailsView(user);
 		}
 		
-		target = userService.changePassword(target, form.getTemporaryPassword());
+		user = userService.changePassword(user, form.getTemporaryPassword());
 		
-		if (target.getEmail().equals(authentication.getName())) {
+		if (user.getEmail().equals(authentication.getName())) {
 			new SecurityContextLogoutHandler().logout(request, response, authentication);
 			redirectAttributes.addFlashAttribute("success", "Password reset successfully. Please log in again.");
 			
 			return "redirect:/auth/login";
 		}
 		
-		populateUserDetailModel(target, authentication, model);
+		populateUserDetailModel(user, authentication, model);
 		model.addAttribute("success", "Password reset successfully.");
 		
-		return userDetailsView(target);
+		return userDetailsView(user);
 	}
 	
 	@PostMapping("/partner/users/{id}/delete")
 	public String deleteUser(@PathVariable("id") Long userId, Authentication authentication, HttpServletRequest request, HttpServletResponse response, Model model, RedirectAttributes redirectAttributes) {
-		User target = userService.findById(userId);
+		User user = userService.findById(userId);
 		
 		try {
-			userService.delete(target);
+			userService.delete(user);
 		} catch (BusinessRuleViolationException e) {
-			populateUserDetailModel(target, authentication, model);
+			populateUserDetailModel(user, authentication, model);
 			model.addAttribute("error", e.getMessage());
 			
-			return userDetailsView(target);
+			return userDetailsView(user);
 		}
 		
-		if (target.getEmail().equals(authentication.getName())) {
+		if (user.getEmail().equals(authentication.getName())) {
 			new SecurityContextLogoutHandler().logout(request, response, authentication);
 			redirectAttributes.addFlashAttribute("success", "Account deleted.");
 			
 			return "redirect:/auth/login";
 		}
 		
-		String listUrl = switch (target) {
+		String listUrl = switch (user) {
 			case Partner ignored -> "/partner/users/partners";
 			case Associate ignored -> "/partner/users/associates";
 			case Paralegal ignored -> "/partner/users/paralegals";
@@ -965,25 +965,25 @@ public class PartnerController {
 	
 	@PostMapping("/partner/users/{id}/reactivate")
 	public String reactivateUser(@PathVariable("id") Long userId, @Valid @ModelAttribute ReactivateAccountRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
-		User target = userService.findById(userId);
+		User user = userService.findById(userId);
 		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
-			populateUserDetailModel(target, authentication, model);
+			populateUserDetailModel(user, authentication, model);
 			
-			return userDetailsView(target);
+			return userDetailsView(user);
 		}
 		
 		try {
-			target = userService.reactivate(target, form.getTemporaryPassword());
-			populateUserDetailModel(target, authentication, model);
+			user = userService.reactivate(user, form.getTemporaryPassword());
+			populateUserDetailModel(user, authentication, model);
 			model.addAttribute("success", "Account reactivated. Give the user the temporary password so they can log in and change it.");
 		} catch (InvalidStateException | BusinessRuleViolationException e) {
-			populateUserDetailModel(target, authentication, model);
+			populateUserDetailModel(user, authentication, model);
 			model.addAttribute("error", e.getMessage());
 		}
 		
-		return userDetailsView(target);
+		return userDetailsView(user);
 	}
 	
 	// Schedule (Firm Events)
@@ -1046,13 +1046,13 @@ public class PartnerController {
 		model.addAttribute("revenueByCaseTypeLabels", buildLabels(revenueByCaseType));
 		model.addAttribute("revenueByCaseTypeValues", buildDecimalValues(revenueByCaseType));
 		
-		Map<User, Integer> associateClosedCounts = analyticsService.closedCaseCountByAssociate();
-		model.addAttribute("closedCaseCountByAssociateLabels", buildStaffLabels(associateClosedCounts));
-		model.addAttribute("closedCaseCountByAssociateValues", buildIntValues(associateClosedCounts));
+		Map<User, Integer> closedCaseCountByAssociate = analyticsService.closedCaseCountByAssociate();
+		model.addAttribute("closedCaseCountByAssociateLabels", buildStaffLabels(closedCaseCountByAssociate));
+		model.addAttribute("closedCaseCountByAssociateValues", buildIntValues(closedCaseCountByAssociate));
 		
-		Map<User, Integer> paralegalClosedCounts = analyticsService.closedCaseCountByParalegal();
-		model.addAttribute("closedCaseCountByParalegalLabels", buildStaffLabels(paralegalClosedCounts));
-		model.addAttribute("closedCaseCountByParalegalValues", buildIntValues(paralegalClosedCounts));
+		Map<User, Integer> closedCaseCountByParalegal = analyticsService.closedCaseCountByParalegal();
+		model.addAttribute("closedCaseCountByParalegalLabels", buildStaffLabels(closedCaseCountByParalegal));
+		model.addAttribute("closedCaseCountByParalegalValues", buildIntValues(closedCaseCountByParalegal));
 		
 		return "partner/analytics";
 	}
@@ -1070,8 +1070,8 @@ public class PartnerController {
 	private List<String> buildStaffLabels(Map<User, Integer> workload) {
 		List<String> labels = new ArrayList<>();
 		
-		for (User staff : workload.keySet()) {
-			labels.add(staff.getName());
+		for (User user : workload.keySet()) {
+			labels.add(user.getName());
 		}
 		
 		return labels;

@@ -39,17 +39,11 @@ import java.util.Map;
 public class FinanceOfficerController {
 	
 	private final UserService userService;
-	
 	private final CaseService caseService;
-	
 	private final InvoiceService invoiceService;
-	
 	private final TransactionService transactionService;
-	
 	private final DocumentService documentService;
-	
 	private final TaskService taskService;
-	
 	private final AnalyticsService analyticsService;
 	
 	// Overview (Dashboard, Profile)
@@ -57,35 +51,38 @@ public class FinanceOfficerController {
 	@GetMapping("/finance-officer/dashboard")
 	public String dashboard(Authentication authentication, Model model) {
 		model.addAttribute("user", currentFinanceOfficer(authentication));
+		
 		return "finance-officer/dashboard";
 	}
 	
 	private FinanceOfficer currentFinanceOfficer(Authentication authentication) {
 		CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
+		
 		return (FinanceOfficer) principal.user();
 	}
 	
 	@GetMapping("/finance-officer/profile")
 	public String profile(Authentication authentication, Model model) {
 		model.addAttribute("user", currentFinanceOfficer(authentication));
+		
 		return "finance-officer/profile";
 	}
 	
 	@PostMapping("/finance-officer/profile/change-password")
-	public String changePassword(Authentication authentication,
-								 @Valid @ModelAttribute ChangePasswordRequest form, BindingResult bindingResult,
-								 Model model) {
+	public String changePassword(Authentication authentication, @Valid @ModelAttribute ChangePasswordRequest form, BindingResult bindingResult, Model model) {
 		User user = currentFinanceOfficer(authentication);
 		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			model.addAttribute("user", user);
+			
 			return "finance-officer/profile";
 		}
 		
 		if (!userService.verifyPassword(user, form.getCurrentPassword())) {
 			model.addAttribute("user", user);
 			model.addAttribute("error", "Current password is incorrect.");
+			
 			return "finance-officer/profile";
 		}
 		
@@ -93,6 +90,7 @@ public class FinanceOfficerController {
 		
 		model.addAttribute("user", user);
 		model.addAttribute("success", "Password changed successfully.");
+		
 		return "finance-officer/profile";
 	}
 	
@@ -108,6 +106,7 @@ public class FinanceOfficerController {
 		model.addAttribute("cases", caseService.findAllOpen());
 		model.addAttribute("title", "Open Cases");
 		model.addAttribute("active", "cases-open");
+		
 		return "finance-officer/case-list";
 	}
 	
@@ -116,12 +115,14 @@ public class FinanceOfficerController {
 		model.addAttribute("cases", caseService.findAllClosed());
 		model.addAttribute("title", "Closed Cases");
 		model.addAttribute("active", "cases-closed");
+		
 		return "finance-officer/case-list";
 	}
 	
 	@GetMapping("/finance-officer/cases/{id}")
 	public String caseDetails(@PathVariable("id") Long caseId, Model model) {
 		populateCaseDetailModel(caseService.findById(caseId), model);
+		
 		return "finance-officer/case-details";
 	}
 	
@@ -177,6 +178,7 @@ public class FinanceOfficerController {
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			populateCaseDetailModel(case_, model);
+			
 			return "finance-officer/case-details";
 		}
 		
@@ -235,6 +237,7 @@ public class FinanceOfficerController {
 		model.addAttribute("totalCharges", transactionService.totalCharges());
 		model.addAttribute("totalRefunds", transactionService.totalRefunds());
 		model.addAttribute("netRevenue", transactionService.netRevenue());
+		
 		return "finance-officer/transactions";
 	}
 	
@@ -246,6 +249,7 @@ public class FinanceOfficerController {
 		model.addAttribute("keyword", keyword);
 		model.addAttribute("title", "Clients");
 		model.addAttribute("active", "clients");
+		
 		return "finance-officer/client-list";
 	}
 	
@@ -256,6 +260,7 @@ public class FinanceOfficerController {
 		model.addAttribute("user", client);
 		model.addAttribute("relatedCases", caseService.findAllForClient(client));
 		model.addAttribute("relatedTransactions", transactionService.findAllForClient(client));
+		
 		return "finance-officer/client-details";
 	}
 	
@@ -266,16 +271,20 @@ public class FinanceOfficerController {
 	
 	@PostMapping("/finance-officer/withdrawal")
 	public String withdraw(@Valid @ModelAttribute WithdrawRequest form, BindingResult bindingResult, Model model) {
+		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			
 			return "finance-officer/withdrawal";
 		}
 		
 		Client client;
+		
 		try {
 			client = userService.findClientByUserCode(form.getClientCode());
 		} catch (EntityNotFoundException e) {
 			model.addAttribute("error", "No client found with code " + form.getClientCode() + ".");
+			
 			return "finance-officer/withdrawal";
 		}
 		
@@ -283,14 +292,16 @@ public class FinanceOfficerController {
 			transactionService.withdraw(client, form.getAmount());
 		} catch (InsufficientFundsException e) {
 			model.addAttribute("error", e.getMessage());
+			
 			return "finance-officer/withdrawal";
 		} catch (PersistenceException e) {
 			model.addAttribute("error", "The withdrawal could not be processed. Please try again.");
+			
 			return "finance-officer/withdrawal";
 		}
 		
-		model.addAttribute("success", String.format("Withdrawal of %,.2f recorded for %s. Remaining balance: %,.2f.",
-													form.getAmount(), client.getName(), client.getWalletBalance()));
+		model.addAttribute("success", String.format("Withdrawal of %,.2f recorded for %s. Remaining balance: %,.2f.", form.getAmount(), client.getName(), client.getWalletBalance()));
+		
 		return "finance-officer/withdrawal";
 	}
 	
@@ -303,16 +314,20 @@ public class FinanceOfficerController {
 	
 	@PostMapping("/finance-officer/cash-top-up")
 	public String topUpByCash(@Valid @ModelAttribute TopUpByCashRequest form, BindingResult bindingResult, Model model) {
+		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			
 			return "finance-officer/cash-top-up";
 		}
 		
 		Client client;
+		
 		try {
 			client = userService.findClientByUserCode(form.getClientCode());
 		} catch (EntityNotFoundException e) {
 			model.addAttribute("error", "No client found with code " + form.getClientCode() + ".");
+			
 			return "finance-officer/cash-top-up";
 		}
 		
@@ -320,10 +335,12 @@ public class FinanceOfficerController {
 			transactionService.topUpByCash(client, form.getAmount());
 		} catch (PersistenceException e) {
 			model.addAttribute("error", "The cash top-up could not be processed. Please try again.");
+			
 			return "finance-officer/cash-top-up";
 		}
 		
 		model.addAttribute("success", "Trust account topped up successfully for " + client.getName() + ".");
+		
 		return "finance-officer/cash-top-up";
 	}
 	

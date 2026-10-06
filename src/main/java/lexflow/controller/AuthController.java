@@ -32,32 +32,36 @@ public class AuthController {
 	@GetMapping("/register-client")
 	public String showRegisterClientForm(Model model) {
 		model.addAttribute("genders", Gender.values());
+		
 		return "auth/register-client";
 	}
 	
 	@PostMapping("/register-client")
 	public String registerClient(@Valid @ModelAttribute RegisterClientRequest form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
+		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			model.addAttribute("genders", Gender.values());
+			
 			return "auth/register-client";
 		}
 		
 		try {
-			userService.register(form.getEmail(), form.getPassword(), form.getName(), form.getDateOfBirth(),
-								 form.getGender(), form.getAddresses(), form.getPhoneNumbers(),
-								 form.getNicNumber(), form.getNicFile());
+			userService.register(form.getEmail(), form.getPassword(), form.getName(), form.getDateOfBirth(), form.getGender(), form.getAddresses(), form.getPhoneNumbers(), form.getNicNumber(), form.getNicFile());
 		} catch (EntityAlreadyExistsException | BusinessRuleViolationException e) {
 			model.addAttribute("genders", Gender.values());
 			model.addAttribute("error", e.getMessage());
+			
 			return "auth/register-client";
 		} catch (PersistenceException e) {
 			model.addAttribute("genders", Gender.values());
 			model.addAttribute("error", "Could not create your account. Please try again.");
+			
 			return "auth/register-client";
 		}
 		
 		redirectAttributes.addFlashAttribute("success", "Registration successful. Please log in.");
+		
 		return "redirect:/auth/login";
 	}
 	

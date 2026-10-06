@@ -32,19 +32,12 @@ import java.util.List;
 public class ParalegalController {
 	
 	private final ConsultationService consultationService;
-	
 	private final UserService userService;
-	
 	private final DocumentService documentService;
-	
 	private final EventService eventService;
-	
 	private final CaseService caseService;
-	
 	private final TaskService taskService;
-	
 	private final ContactService contactService;
-	
 	private final AnalyticsService analyticsService;
 	
 	// Overview (Dashboard, Profile)
@@ -52,35 +45,38 @@ public class ParalegalController {
 	@GetMapping("/paralegal/dashboard")
 	public String dashboard(Authentication authentication, Model model) {
 		model.addAttribute("user", currentParalegal(authentication));
+		
 		return "paralegal/dashboard";
 	}
 	
 	private Paralegal currentParalegal(Authentication authentication) {
 		CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
+		
 		return (Paralegal) principal.user();
 	}
 	
 	@GetMapping("/paralegal/profile")
 	public String profile(Authentication authentication, Model model) {
 		model.addAttribute("user", currentParalegal(authentication));
+		
 		return "paralegal/profile";
 	}
 	
 	@PostMapping("/paralegal/profile/change-password")
-	public String changePassword(Authentication authentication,
-								 @Valid @ModelAttribute ChangePasswordRequest form, BindingResult bindingResult,
-								 Model model) {
+	public String changePassword(Authentication authentication, @Valid @ModelAttribute ChangePasswordRequest form, BindingResult bindingResult, Model model) {
 		User user = currentParalegal(authentication);
 		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			model.addAttribute("user", user);
+			
 			return "paralegal/profile";
 		}
 		
 		if (!userService.verifyPassword(user, form.getCurrentPassword())) {
 			model.addAttribute("user", user);
 			model.addAttribute("error", "Current password is incorrect.");
+			
 			return "paralegal/profile";
 		}
 		
@@ -88,6 +84,7 @@ public class ParalegalController {
 		
 		model.addAttribute("user", user);
 		model.addAttribute("success", "Password changed successfully.");
+		
 		return "paralegal/profile";
 	}
 	
@@ -101,12 +98,14 @@ public class ParalegalController {
 	@GetMapping("/paralegal/consultations/pending")
 	public String pendingConsultations(Authentication authentication, Model model) {
 		model.addAttribute("consultations", consultationService.findAwaitingReviewForParalegal(currentParalegal(authentication)));
+		
 		return "paralegal/consultation-pending-list";
 	}
 	
 	@GetMapping("/paralegal/consultations")
 	public String consultations(Authentication authentication, Model model) {
 		model.addAttribute("consultations", consultationService.findAllForParalegal(currentParalegal(authentication)));
+		
 		return "paralegal/consultation-list";
 	}
 	
@@ -116,6 +115,7 @@ public class ParalegalController {
 		model.addAttribute("consultation", consultation);
 		model.addAttribute("consultationDocuments", documentService.findByConsultation(consultation));
 		model.addAttribute("existingCase", caseService.findByConsultation(consultation));
+		
 		return "paralegal/consultation-details";
 	}
 	
@@ -133,6 +133,7 @@ public class ParalegalController {
 		model.addAttribute("cases", caseService.findOpenForParalegal(currentParalegal(authentication)));
 		model.addAttribute("title", "Open Cases");
 		model.addAttribute("active", "cases-open");
+		
 		return "paralegal/case-list";
 	}
 	
@@ -141,12 +142,12 @@ public class ParalegalController {
 		model.addAttribute("cases", caseService.findClosedForParalegal(currentParalegal(authentication)));
 		model.addAttribute("title", "Closed Cases");
 		model.addAttribute("active", "cases-closed");
+		
 		return "paralegal/case-list";
 	}
 	
 	@GetMapping("/paralegal/cases/{id}")
-	public String caseDetails(@PathVariable("id") Long caseId, @RequestParam(required = false) String documentKeyword,
-							  Authentication authentication, Model model) {
+	public String caseDetails(@PathVariable("id") Long caseId, @RequestParam(required = false) String documentKeyword, Authentication authentication, Model model) {
 		Case case_ = caseService.findOwnedByParalegal(caseId, currentParalegal(authentication));
 		populateCaseDetailModel(case_, model);
 		
@@ -170,13 +171,13 @@ public class ParalegalController {
 	}
 	
 	@PostMapping("/paralegal/cases/{id}/contacts")
-	public String addContact(@PathVariable("id") Long caseId, @Valid @ModelAttribute SaveContactRequest form, BindingResult bindingResult,
-							 Authentication authentication, Model model) {
+	public String addContact(@PathVariable("id") Long caseId, @Valid @ModelAttribute SaveContactRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
 		Case case_ = caseService.findOwnedByParalegal(caseId, currentParalegal(authentication));
 		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			populateCaseDetailModel(case_, model);
+			
 			return "paralegal/case-details";
 		}
 		
@@ -193,21 +194,18 @@ public class ParalegalController {
 	}
 	
 	@PostMapping("/paralegal/cases/{id}/tasks")
-	public String addTask(@PathVariable("id") Long caseId, @Valid @ModelAttribute AddTaskRequest form, BindingResult bindingResult,
-						  Authentication authentication, Model model) {
+	public String addTask(@PathVariable("id") Long caseId, @Valid @ModelAttribute AddTaskRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
 		Case case_ = caseService.findOwnedByParalegal(caseId, currentParalegal(authentication));
 		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			populateCaseDetailModel(case_, model);
+			
 			return "paralegal/case-details";
 		}
 		
 		try {
-			taskService.add(case_, form.getTitle(), form.getDocumentingTask(), form.getSchedulingTask(), form.getBillingTask(),
-							form.getCaseFiles(),
-							form.getDate(), form.getStartTime(), form.getEndTime(), form.getLocation(), form.getNotes(),
-							form.getBillableAmount());
+			taskService.add(case_, form.getTitle(), form.getDocumentingTask(), form.getSchedulingTask(), form.getBillingTask(), form.getCaseFiles(), form.getDate(), form.getStartTime(), form.getEndTime(), form.getLocation(), form.getNotes(), form.getBillableAmount());
 			populateCaseDetailModel(case_, model);
 			model.addAttribute("success", "Task added.");
 		} catch (InvalidStateException | BusinessRuleViolationException e) {
@@ -219,13 +217,13 @@ public class ParalegalController {
 	}
 	
 	@PostMapping("/paralegal/cases/{id}/tasks/{taskId}/edit-title")
-	public String editTaskTitle(@PathVariable("id") Long caseId, @PathVariable Long taskId, @Valid @ModelAttribute RenameTaskRequest form,
-								BindingResult bindingResult, Authentication authentication, Model model) {
+	public String editTaskTitle(@PathVariable("id") Long caseId, @PathVariable Long taskId, @Valid @ModelAttribute RenameTaskRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
 		Case case_ = caseService.findOwnedByParalegal(caseId, currentParalegal(authentication));
 		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			populateCaseDetailModel(case_, model);
+			
 			return "paralegal/case-details";
 		}
 		
@@ -233,17 +231,18 @@ public class ParalegalController {
 		
 		populateCaseDetailModel(case_, model);
 		model.addAttribute("success", "Task renamed.");
+		
 		return "paralegal/case-details";
 	}
 	
 	@PostMapping("/paralegal/cases/{id}/tasks/{taskId}/reschedule")
-	public String rescheduleTaskEvent(@PathVariable("id") Long caseId, @PathVariable Long taskId, @Valid @ModelAttribute ScheduleMeetingRequest form,
-									  BindingResult bindingResult, Authentication authentication, Model model) {
+	public String rescheduleTaskEvent(@PathVariable("id") Long caseId, @PathVariable Long taskId, @Valid @ModelAttribute ScheduleMeetingRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
 		Case case_ = caseService.findOwnedByParalegal(caseId, currentParalegal(authentication));
 		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			populateCaseDetailModel(case_, model);
+			
 			return "paralegal/case-details";
 		}
 		
@@ -265,6 +264,7 @@ public class ParalegalController {
 		documentService.addStagedToCase(case_, List.of(documentId));
 		populateCaseDetailModel(case_, model);
 		model.addAttribute("success", "Document added to case.");
+		
 		return "paralegal/case-details";
 	}
 	
@@ -274,17 +274,18 @@ public class ParalegalController {
 		documentService.deleteStaged(case_, List.of(documentId));
 		populateCaseDetailModel(case_, model);
 		model.addAttribute("success", "Document deleted.");
+		
 		return "paralegal/case-details";
 	}
 	
 	@PostMapping("/paralegal/cases/{id}/documents/{documentId}/rename")
-	public String renameCaseDocument(@PathVariable("id") Long caseId, @PathVariable Long documentId, @Valid @ModelAttribute RenameDocumentRequest form,
-									 BindingResult bindingResult, Authentication authentication, Model model) {
+	public String renameCaseDocument(@PathVariable("id") Long caseId, @PathVariable Long documentId, @Valid @ModelAttribute RenameDocumentRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
 		Case case_ = caseService.findOwnedByParalegal(caseId, currentParalegal(authentication));
 		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			populateCaseDetailModel(case_, model);
+			
 			return "paralegal/case-details";
 		}
 		
@@ -292,6 +293,7 @@ public class ParalegalController {
 		
 		populateCaseDetailModel(case_, model);
 		model.addAttribute("success", "Document renamed.");
+		
 		return "paralegal/case-details";
 	}
 	
@@ -305,12 +307,14 @@ public class ParalegalController {
 	@GetMapping("/paralegal/events")
 	public String events(Authentication authentication, Model model) {
 		model.addAttribute("events", eventService.findAllForParalegal(currentParalegal(authentication)));
+		
 		return "paralegal/event-list";
 	}
 	
 	@GetMapping("/paralegal/events/{id}")
 	public String eventDetails(@PathVariable("id") Long eventId, Authentication authentication, Model model) {
 		model.addAttribute("event", eventService.findOwnedByParalegal(eventId, currentParalegal(authentication)));
+		
 		return "paralegal/event-details";
 	}
 	

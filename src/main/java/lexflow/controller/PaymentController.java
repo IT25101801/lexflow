@@ -27,6 +27,7 @@ public class PaymentController {
 	@GetMapping("/payment/portal")
 	public String showPaymentPortal(@RequestParam BigDecimal amount, Model model) {
 		model.addAttribute("amount", amount);
+		
 		return "payment/portal";
 	}
 	
@@ -36,6 +37,7 @@ public class PaymentController {
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("amount", form.getAmount());
 			model.addAttribute("error", "Invalid card details. Please check and try again.");
+			
 			return "payment/portal";
 		}
 		
@@ -46,17 +48,20 @@ public class PaymentController {
 		} catch (PersistenceException e) {
 			model.addAttribute("amount", form.getAmount());
 			model.addAttribute("error", "The payment could not be processed. Please try again.");
+			
 			return "payment/portal";
 		}
 		
 		model.addAttribute("client", client);
 		model.addAttribute("transactions", transactionService.findAllForClient(client));
 		model.addAttribute("success", "Trust account topped up successfully.");
+		
 		return "client/transactions";
 	}
 	
 	private Client currentClient(Authentication authentication) {
 		CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
+		
 		return (Client) principal.user();
 	}
 	

@@ -56,25 +56,15 @@ import java.util.Map;
 public class PartnerController {
 	
 	private final AnalyticsService analyticsService;
-	
 	private final CaseService caseService;
-	
 	private final ConsultationService consultationService;
-	
 	private final ConflictCheckService conflictCheckService;
-	
 	private final ContactService contactService;
-	
 	private final DocumentService documentService;
-	
 	private final EventService eventService;
-	
 	private final InvoiceService invoiceService;
-	
 	private final TaskService taskService;
-	
 	private final TransactionService transactionService;
-	
 	private final UserService userService;
 	
 	// Overview (Dashboard, Profile)
@@ -82,6 +72,7 @@ public class PartnerController {
 	@GetMapping("/partner/dashboard")
 	public String dashboard(Authentication authentication, Model model) {
 		model.addAttribute("user", currentPartner(authentication));
+		
 		return "partner/dashboard";
 	}
 	
@@ -89,6 +80,7 @@ public class PartnerController {
 	
 	private Partner currentPartner(Authentication authentication) {
 		CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
+		
 		return (Partner) principal.user();
 	}
 	
@@ -96,24 +88,24 @@ public class PartnerController {
 	public String profile(Authentication authentication, Model model) {
 		model.addAttribute("user", currentPartner(authentication));
 		model.addAttribute("genders", Gender.values());
+		
 		return "partner/profile";
 	}
 	
 	@PostMapping("/partner/profile/edit")
-	public String editProfile(@Valid @ModelAttribute EditProfileRequest form, BindingResult bindingResult,
-							  Authentication authentication, Model model) {
+	public String editProfile(@Valid @ModelAttribute EditProfileRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
 		Partner partner = currentPartner(authentication);
 		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			model.addAttribute("user", partner);
 			model.addAttribute("genders", Gender.values());
+			
 			return "partner/profile";
 		}
 		
 		try {
-			User user = userService.updateDetails(partner, form.getName(), form.getDateOfBirth(), form.getGender(),
-												  form.getAddresses(), form.getPhoneNumbers(), form.getNicFile(), form.getBarFile());
+			User user = userService.updateDetails(partner, form.getName(), form.getDateOfBirth(), form.getGender(), form.getAddresses(), form.getPhoneNumbers(), form.getNicFile(), form.getBarFile());
 			model.addAttribute("user", user);
 			model.addAttribute("success", "Profile updated successfully.");
 		} catch (NonPdfDocumentException e) {
@@ -122,24 +114,26 @@ public class PartnerController {
 		}
 		
 		model.addAttribute("genders", Gender.values());
+		
 		return "partner/profile";
 	}
 	
 	@PostMapping("/partner/profile/change-password")
-	public String changePassword(@Valid @ModelAttribute ChangePasswordRequest form, BindingResult bindingResult,
-								 Authentication authentication, Model model) {
+	public String changePassword(@Valid @ModelAttribute ChangePasswordRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
 		Partner partner = currentPartner(authentication);
 		model.addAttribute("genders", Gender.values());
 		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			model.addAttribute("user", partner);
+			
 			return "partner/profile";
 		}
 		
 		if (!userService.verifyPassword(partner, form.getCurrentPassword())) {
 			model.addAttribute("user", partner);
 			model.addAttribute("error", "Current password is incorrect.");
+			
 			return "partner/profile";
 		}
 		
@@ -147,6 +141,7 @@ public class PartnerController {
 		
 		model.addAttribute("user", partner);
 		model.addAttribute("success", "Password changed successfully.");
+		
 		return "partner/profile";
 	}
 	
@@ -161,12 +156,12 @@ public class PartnerController {
 	public String showRegisterStaffForm(Model model) {
 		model.addAttribute("genders", Gender.values());
 		model.addAttribute("roles", List.of(Role.PARTNER, Role.ASSOCIATE, Role.PARALEGAL, Role.CLIENT_RELATIONS_OFFICER, Role.FINANCE_OFFICER));
+		
 		return "partner/register-staff";
 	}
 	
 	@PostMapping("/partner/register-staff")
-	public String registerStaff(@Valid @ModelAttribute RegisterStaffRequest form, BindingResult bindingResult,
-								Model model, RedirectAttributes redirectAttributes) {
+	public String registerStaff(@Valid @ModelAttribute RegisterStaffRequest form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
 		
 		if (bindingResult.hasErrors()) {
 			List<String> validationErrors = new ArrayList<>();
@@ -178,22 +173,23 @@ public class PartnerController {
 			model.addAttribute("validationErrors", validationErrors);
 			model.addAttribute("genders", Gender.values());
 			model.addAttribute("roles", List.of(Role.PARTNER, Role.ASSOCIATE, Role.PARALEGAL, Role.CLIENT_RELATIONS_OFFICER, Role.FINANCE_OFFICER));
+			
 			return "partner/register-staff";
 		}
 		
 		try {
-			userService.register(form.getRole(), form.getEmail(), form.getPassword(), form.getName(), form.getDateOfBirth(),
-								 form.getGender(), form.getAddresses(), form.getPhoneNumbers(), form.getNicNumber(),
-								 form.getBarNumber(), form.getNicFile(), form.getBarFile());
+			userService.register(form.getRole(), form.getEmail(), form.getPassword(), form.getName(), form.getDateOfBirth(), form.getGender(), form.getAddresses(), form.getPhoneNumbers(), form.getNicNumber(), form.getBarNumber(), form.getNicFile(), form.getBarFile());
 		} catch (EntityAlreadyExistsException | BusinessRuleViolationException e) {
 			model.addAttribute("genders", Gender.values());
 			model.addAttribute("roles", List.of(Role.PARTNER, Role.ASSOCIATE, Role.PARALEGAL, Role.CLIENT_RELATIONS_OFFICER, Role.FINANCE_OFFICER));
 			model.addAttribute("error", e.getMessage());
+			
 			return "partner/register-staff";
 		} catch (PersistenceException e) {
 			model.addAttribute("genders", Gender.values());
 			model.addAttribute("roles", List.of(Role.PARTNER, Role.ASSOCIATE, Role.PARALEGAL, Role.CLIENT_RELATIONS_OFFICER, Role.FINANCE_OFFICER));
 			model.addAttribute("error", "Could not register the staff member. Please try again.");
+			
 			return "partner/register-staff";
 		}
 		
@@ -207,6 +203,7 @@ public class PartnerController {
 		};
 		
 		redirectAttributes.addFlashAttribute("success", "Staff member registered successfully.");
+		
 		return "redirect:" + listUrl;
 	}
 	
@@ -217,6 +214,7 @@ public class PartnerController {
 		model.addAttribute("title", "Associates");
 		model.addAttribute("active", "users-associates");
 		model.addAttribute("listUrl", "/partner/users/associates");
+		
 		return "partner/user-list";
 	}
 	
@@ -227,6 +225,7 @@ public class PartnerController {
 		model.addAttribute("title", "Paralegals");
 		model.addAttribute("active", "users-paralegals");
 		model.addAttribute("listUrl", "/partner/users/paralegals");
+		
 		return "partner/user-list";
 	}
 	
@@ -237,6 +236,7 @@ public class PartnerController {
 		model.addAttribute("title", "Client Relations Officers");
 		model.addAttribute("active", "users-client-relations-officers");
 		model.addAttribute("listUrl", "/partner/users/client-relations-officers");
+		
 		return "partner/user-list";
 	}
 	
@@ -247,6 +247,7 @@ public class PartnerController {
 		model.addAttribute("title", "Finance Officers");
 		model.addAttribute("active", "users-finance-officers");
 		model.addAttribute("listUrl", "/partner/users/finance-officers");
+		
 		return "partner/user-list";
 	}
 	
@@ -257,6 +258,7 @@ public class PartnerController {
 		model.addAttribute("title", "Clients");
 		model.addAttribute("active", "users-clients");
 		model.addAttribute("listUrl", "/partner/users/clients");
+		
 		return "partner/user-list";
 	}
 	
@@ -266,6 +268,7 @@ public class PartnerController {
 		model.addAttribute("keyword", keyword);
 		model.addAttribute("title", "Partners");
 		model.addAttribute("currentUserEmail", authentication.getName());
+		
 		return "partner/partner-list";
 	}
 	
@@ -285,18 +288,21 @@ public class PartnerController {
 	@GetMapping("/partner/consultations/pending")
 	public String pendingConsultations(Model model) {
 		model.addAttribute("consultations", consultationService.findAwaitingReviewForPartner());
+		
 		return "partner/consultation-pending-list";
 	}
 	
 	@GetMapping("/partner/consultations")
 	public String consultations(Model model) {
 		model.addAttribute("consultations", consultationService.findAll());
+		
 		return "partner/consultation-list";
 	}
 	
 	@GetMapping("/partner/consultations/{id}")
 	public String consultationDetails(@PathVariable("id") Long consultationId, Model model) {
 		populateConsultationDetailModel(consultationService.findById(consultationId), model);
+		
 		return "partner/consultation-details";
 	}
 	
@@ -313,14 +319,13 @@ public class PartnerController {
 	}
 	
 	@PostMapping("/partner/consultations/{id}/accept")
-	public String acceptConsultation(@PathVariable("id") Long consultationId,
-									 @Valid @ModelAttribute AssignStaffRequest form, BindingResult bindingResult,
-									 Model model) {
+	public String acceptConsultation(@PathVariable("id") Long consultationId, @Valid @ModelAttribute AssignStaffRequest form, BindingResult bindingResult, Model model) {
 		Consultation consultation = consultationService.findById(consultationId);
 		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			populateConsultationDetailModel(consultation, model);
+			
 			return "partner/consultation-details";
 		}
 		
@@ -340,14 +345,13 @@ public class PartnerController {
 	}
 	
 	@PostMapping("/partner/consultations/{id}/reject")
-	public String rejectConsultation(@PathVariable("id") Long consultationId,
-									 @Valid @ModelAttribute RejectConsultationRequest form, BindingResult bindingResult,
-									 Model model) {
+	public String rejectConsultation(@PathVariable("id") Long consultationId, @Valid @ModelAttribute RejectConsultationRequest form, BindingResult bindingResult, Model model) {
 		Consultation consultation = consultationService.findById(consultationId);
 		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			populateConsultationDetailModel(consultation, model);
+			
 			return "partner/consultation-details";
 		}
 		
@@ -364,14 +368,13 @@ public class PartnerController {
 	}
 	
 	@PostMapping("/partner/consultations/{id}/reassign")
-	public String reassignConsultation(@PathVariable("id") Long consultationId,
-									   @Valid @ModelAttribute AssignStaffRequest form, BindingResult bindingResult,
-									   Model model) {
+	public String reassignConsultation(@PathVariable("id") Long consultationId, @Valid @ModelAttribute AssignStaffRequest form, BindingResult bindingResult, Model model) {
 		Consultation consultation = consultationService.findById(consultationId);
 		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			populateConsultationDetailModel(consultation, model);
+			
 			return "partner/consultation-details";
 		}
 		
@@ -381,18 +384,18 @@ public class PartnerController {
 		
 		populateConsultationDetailModel(consultation, model);
 		model.addAttribute("success", "Staff reassigned.");
+		
 		return "partner/consultation-details";
 	}
 	
 	@PostMapping("/partner/consultations/{id}/events/{eventId}/reschedule")
-	public String rescheduleMeeting(@PathVariable("id") Long consultationId, @PathVariable Long eventId,
-									@Valid @ModelAttribute ScheduleMeetingRequest form, BindingResult bindingResult,
-									Model model) {
+	public String rescheduleMeeting(@PathVariable("id") Long consultationId, @PathVariable Long eventId, @Valid @ModelAttribute ScheduleMeetingRequest form, BindingResult bindingResult, Model model) {
 		Consultation consultation = consultationService.findById(consultationId);
 		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			populateConsultationDetailModel(consultation, model);
+			
 			return "partner/consultation-details";
 		}
 		
@@ -456,6 +459,7 @@ public class PartnerController {
 		model.addAttribute("cases", caseService.findAllOpen());
 		model.addAttribute("title", "Open Cases");
 		model.addAttribute("active", "cases-open");
+		
 		return "partner/case-list";
 	}
 	
@@ -464,6 +468,7 @@ public class PartnerController {
 		model.addAttribute("cases", caseService.findAllClosed());
 		model.addAttribute("title", "Closed Cases");
 		model.addAttribute("active", "cases-closed");
+		
 		return "partner/case-list";
 	}
 	
@@ -496,14 +501,13 @@ public class PartnerController {
 	}
 	
 	@PostMapping("/partner/cases/{id}/close")
-	public String closeCase(@PathVariable("id") Long caseId,
-							@Valid @ModelAttribute CloseCaseRequest form, BindingResult bindingResult,
-							Model model) {
+	public String closeCase(@PathVariable("id") Long caseId, @Valid @ModelAttribute CloseCaseRequest form, BindingResult bindingResult, Model model) {
 		Case case_ = caseService.findById(caseId);
 		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			populateCaseDetailModel(case_, model);
+			
 			return "partner/case-details";
 		}
 		
@@ -526,6 +530,7 @@ public class PartnerController {
 		
 		populateCaseDetailModel(case_, model);
 		model.addAttribute("success", "Document added to case.");
+		
 		return "partner/case-details";
 	}
 	
@@ -536,18 +541,18 @@ public class PartnerController {
 		
 		populateCaseDetailModel(case_, model);
 		model.addAttribute("success", "Document deleted.");
+		
 		return "partner/case-details";
 	}
 	
 	@PostMapping("/partner/cases/{id}/documents/{documentId}/rename")
-	public String renameCaseDocument(@PathVariable("id") Long caseId, @PathVariable Long documentId,
-									 @Valid @ModelAttribute RenameDocumentRequest form, BindingResult bindingResult,
-									 Model model) {
+	public String renameCaseDocument(@PathVariable("id") Long caseId, @PathVariable Long documentId, @Valid @ModelAttribute RenameDocumentRequest form, BindingResult bindingResult, Model model) {
 		Case case_ = caseService.findById(caseId);
 		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			populateCaseDetailModel(case_, model);
+			
 			return "partner/case-details";
 		}
 		
@@ -555,6 +560,7 @@ public class PartnerController {
 		
 		populateCaseDetailModel(case_, model);
 		model.addAttribute("success", "Document renamed.");
+		
 		return "partner/case-details";
 	}
 	
@@ -565,18 +571,18 @@ public class PartnerController {
 		
 		populateCaseDetailModel(case_, model);
 		model.addAttribute("success", "Document deleted.");
+		
 		return "partner/case-details";
 	}
 	
 	@PostMapping("/partner/cases/{id}/contacts")
-	public String addContact(@PathVariable("id") Long caseId,
-							 @Valid @ModelAttribute SaveContactRequest form, BindingResult bindingResult,
-							 Model model) {
+	public String addContact(@PathVariable("id") Long caseId, @Valid @ModelAttribute SaveContactRequest form, BindingResult bindingResult, Model model) {
 		Case case_ = caseService.findById(caseId);
 		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			populateCaseDetailModel(case_, model);
+			
 			return "partner/case-details";
 		}
 		
@@ -593,14 +599,13 @@ public class PartnerController {
 	}
 	
 	@PostMapping("/partner/cases/{id}/contacts/{contactId}/edit")
-	public String editContact(@PathVariable("id") Long caseId, @PathVariable Long contactId,
-							  @Valid @ModelAttribute SaveContactRequest form, BindingResult bindingResult,
-							  Model model) {
+	public String editContact(@PathVariable("id") Long caseId, @PathVariable Long contactId, @Valid @ModelAttribute SaveContactRequest form, BindingResult bindingResult, Model model) {
 		Case case_ = caseService.findById(caseId);
 		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			populateCaseDetailModel(case_, model);
+			
 			return "partner/case-details";
 		}
 		
@@ -619,22 +624,18 @@ public class PartnerController {
 	}
 	
 	@PostMapping("/partner/cases/{id}/tasks")
-	public String addTask(@PathVariable("id") Long caseId,
-						  @Valid @ModelAttribute AddTaskRequest form, BindingResult bindingResult,
-						  Model model) {
+	public String addTask(@PathVariable("id") Long caseId, @Valid @ModelAttribute AddTaskRequest form, BindingResult bindingResult, Model model) {
 		Case case_ = caseService.findById(caseId);
 		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			populateCaseDetailModel(case_, model);
+			
 			return "partner/case-details";
 		}
 		
 		try {
-			taskService.add(case_, form.getTitle(), form.getDocumentingTask(), form.getSchedulingTask(), form.getBillingTask(),
-							form.getCaseFiles(),
-							form.getDate(), form.getStartTime(), form.getEndTime(), form.getLocation(), form.getNotes(),
-							form.getBillableAmount());
+			taskService.add(case_, form.getTitle(), form.getDocumentingTask(), form.getSchedulingTask(), form.getBillingTask(), form.getCaseFiles(), form.getDate(), form.getStartTime(), form.getEndTime(), form.getLocation(), form.getNotes(), form.getBillableAmount());
 			populateCaseDetailModel(case_, model);
 			model.addAttribute("success", "Task added.");
 		} catch (InvalidStateException | BusinessRuleViolationException e) {
@@ -646,14 +647,13 @@ public class PartnerController {
 	}
 	
 	@PostMapping("/partner/cases/{id}/tasks/{taskId}/edit-title")
-	public String editTaskTitle(@PathVariable("id") Long caseId, @PathVariable Long taskId,
-								@Valid @ModelAttribute RenameTaskRequest form, BindingResult bindingResult,
-								Model model) {
+	public String editTaskTitle(@PathVariable("id") Long caseId, @PathVariable Long taskId, @Valid @ModelAttribute RenameTaskRequest form, BindingResult bindingResult, Model model) {
 		Case case_ = caseService.findById(caseId);
 		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			populateCaseDetailModel(case_, model);
+			
 			return "partner/case-details";
 		}
 		
@@ -661,18 +661,18 @@ public class PartnerController {
 		
 		populateCaseDetailModel(case_, model);
 		model.addAttribute("success", "Task renamed.");
+		
 		return "partner/case-details";
 	}
 	
 	@PostMapping("/partner/cases/{id}/tasks/{taskId}/reschedule")
-	public String rescheduleTaskEvent(@PathVariable("id") Long caseId, @PathVariable Long taskId,
-									  @Valid @ModelAttribute ScheduleMeetingRequest form, BindingResult bindingResult,
-									  Model model) {
+	public String rescheduleTaskEvent(@PathVariable("id") Long caseId, @PathVariable Long taskId, @Valid @ModelAttribute ScheduleMeetingRequest form, BindingResult bindingResult, Model model) {
 		Case case_ = caseService.findById(caseId);
 		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			populateCaseDetailModel(case_, model);
+			
 			return "partner/case-details";
 		}
 		
@@ -689,14 +689,13 @@ public class PartnerController {
 	}
 	
 	@PostMapping("/partner/cases/{id}/reassign")
-	public String reassignCase(@PathVariable("id") Long caseId,
-							   @Valid @ModelAttribute AssignStaffRequest form, BindingResult bindingResult,
-							   Model model) {
+	public String reassignCase(@PathVariable("id") Long caseId, @Valid @ModelAttribute AssignStaffRequest form, BindingResult bindingResult, Model model) {
 		Case case_ = caseService.findById(caseId);
 		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			populateCaseDetailModel(case_, model);
+			
 			return "partner/case-details";
 		}
 		
@@ -716,9 +715,7 @@ public class PartnerController {
 	}
 	
 	@PostMapping("/partner/cases/{id}/invoices/compile")
-	public String compileInvoice(@PathVariable("id") Long caseId,
-								 @Valid @ModelAttribute CompileInvoiceRequest form,
-								 Model model) {
+	public String compileInvoice(@PathVariable("id") Long caseId, @Valid @ModelAttribute CompileInvoiceRequest form, Model model) {
 		Case case_ = caseService.findById(caseId);
 		
 		try {
@@ -750,14 +747,13 @@ public class PartnerController {
 	}
 	
 	@PostMapping("/partner/cases/{id}/tasks/{taskId}/edit-billable-amount")
-	public String editBillableAmount(@PathVariable("id") Long caseId, @PathVariable Long taskId,
-									 @Valid @ModelAttribute EditBillableAmountRequest form, BindingResult bindingResult,
-									 Model model) {
+	public String editBillableAmount(@PathVariable("id") Long caseId, @PathVariable Long taskId, @Valid @ModelAttribute EditBillableAmountRequest form, BindingResult bindingResult, Model model) {
 		Case case_ = caseService.findById(caseId);
 		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			populateCaseDetailModel(case_, model);
+			
 			return "partner/case-details";
 		}
 		
@@ -823,6 +819,7 @@ public class PartnerController {
 		model.addAttribute("totalCharges", transactionService.totalCharges());
 		model.addAttribute("totalRefunds", transactionService.totalRefunds());
 		model.addAttribute("netRevenue", transactionService.netRevenue());
+		
 		return "partner/transactions";
 	}
 	
@@ -830,6 +827,7 @@ public class PartnerController {
 	public String userDetails(@PathVariable("id") Long userId, Authentication authentication, Model model) {
 		User target = userService.findById(userId);
 		populateUserDetailModel(target, authentication, model);
+		
 		return userDetailsView(target);
 	}
 	
@@ -841,24 +839,29 @@ public class PartnerController {
 		model.addAttribute("genders", Gender.values());
 		
 		switch (target) {
+			
 			case Client client -> {
 				model.addAttribute("relatedConsultations", consultationService.findAllForClient(client));
 				model.addAttribute("relatedCases", caseService.findAllForClient(client));
 				model.addAttribute("relatedEvents", eventService.findAllForClient(client));
 				model.addAttribute("relatedTransactions", transactionService.findAllForClient(client));
 			}
+			
 			case Associate associate -> {
 				model.addAttribute("relatedConsultations", consultationService.findAllForAssociate(associate));
 				model.addAttribute("relatedCases", caseService.findAllForAssociate(associate));
 				model.addAttribute("relatedEvents", eventService.findAllForAssociate(associate));
 			}
+			
 			case Paralegal paralegal -> {
 				model.addAttribute("relatedConsultations", consultationService.findAllForParalegal(paralegal));
 				model.addAttribute("relatedCases", caseService.findAllForParalegal(paralegal));
 				model.addAttribute("relatedEvents", eventService.findAllForParalegal(paralegal));
 			}
+			
 			default -> {
 			}
+			
 		}
 		
 		model.addAttribute("active", switch (target) {
@@ -877,39 +880,36 @@ public class PartnerController {
 	}
 	
 	@PostMapping("/partner/users/{id}/edit")
-	public String editUser(@PathVariable("id") Long userId,
-						   @Valid @ModelAttribute EditProfileRequest form, BindingResult bindingResult,
-						   Authentication authentication, Model model) {
+	public String editUser(@PathVariable("id") Long userId, @Valid @ModelAttribute EditProfileRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
 		User target = userService.findById(userId);
 		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			populateUserDetailModel(target, authentication, model);
+			
 			return userDetailsView(target);
 		}
 		
 		try {
-			target = userService.updateDetails(target, form.getName(), form.getDateOfBirth(), form.getGender(),
-											   form.getAddresses(), form.getPhoneNumbers(), form.getNicFile(), form.getBarFile());
+			target = userService.updateDetails(target, form.getName(), form.getDateOfBirth(), form.getGender(), form.getAddresses(), form.getPhoneNumbers(), form.getNicFile(), form.getBarFile());
 			model.addAttribute("success", "User updated successfully.");
 		} catch (NonPdfDocumentException e) {
 			model.addAttribute("error", e.getMessage());
 		}
 		
 		populateUserDetailModel(target, authentication, model);
+		
 		return userDetailsView(target);
 	}
 	
 	@PostMapping("/partner/users/{id}/reset-password")
-	public String resetUserPassword(@PathVariable("id") Long userId,
-									@Valid @ModelAttribute ResetPasswordRequest form, BindingResult bindingResult,
-									Authentication authentication, HttpServletRequest request, HttpServletResponse response,
-									Model model, RedirectAttributes redirectAttributes) {
+	public String resetUserPassword(@PathVariable("id") Long userId, @Valid @ModelAttribute ResetPasswordRequest form, BindingResult bindingResult, Authentication authentication, HttpServletRequest request, HttpServletResponse response, Model model, RedirectAttributes redirectAttributes) {
 		User target = userService.findById(userId);
 		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			populateUserDetailModel(target, authentication, model);
+			
 			return userDetailsView(target);
 		}
 		
@@ -918,18 +918,18 @@ public class PartnerController {
 		if (target.getEmail().equals(authentication.getName())) {
 			new SecurityContextLogoutHandler().logout(request, response, authentication);
 			redirectAttributes.addFlashAttribute("success", "Password reset successfully. Please log in again.");
+			
 			return "redirect:/auth/login";
 		}
 		
 		populateUserDetailModel(target, authentication, model);
 		model.addAttribute("success", "Password reset successfully.");
+		
 		return userDetailsView(target);
 	}
 	
 	@PostMapping("/partner/users/{id}/delete")
-	public String deleteUser(@PathVariable("id") Long userId,
-							 Authentication authentication, HttpServletRequest request, HttpServletResponse response,
-							 Model model, RedirectAttributes redirectAttributes) {
+	public String deleteUser(@PathVariable("id") Long userId, Authentication authentication, HttpServletRequest request, HttpServletResponse response, Model model, RedirectAttributes redirectAttributes) {
 		User target = userService.findById(userId);
 		
 		try {
@@ -937,12 +937,14 @@ public class PartnerController {
 		} catch (BusinessRuleViolationException e) {
 			populateUserDetailModel(target, authentication, model);
 			model.addAttribute("error", e.getMessage());
+			
 			return userDetailsView(target);
 		}
 		
 		if (target.getEmail().equals(authentication.getName())) {
 			new SecurityContextLogoutHandler().logout(request, response, authentication);
 			redirectAttributes.addFlashAttribute("success", "Account deleted.");
+			
 			return "redirect:/auth/login";
 		}
 		
@@ -957,18 +959,18 @@ public class PartnerController {
 		};
 		
 		redirectAttributes.addFlashAttribute("success", "User deleted successfully.");
+		
 		return "redirect:" + listUrl;
 	}
 	
 	@PostMapping("/partner/users/{id}/reactivate")
-	public String reactivateUser(@PathVariable("id") Long userId,
-								 @Valid @ModelAttribute ReactivateAccountRequest form, BindingResult bindingResult,
-								 Authentication authentication, Model model) {
+	public String reactivateUser(@PathVariable("id") Long userId, @Valid @ModelAttribute ReactivateAccountRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
 		User target = userService.findById(userId);
 		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			populateUserDetailModel(target, authentication, model);
+			
 			return userDetailsView(target);
 		}
 		
@@ -989,12 +991,14 @@ public class PartnerController {
 	@GetMapping("/partner/events")
 	public String events(Model model) {
 		model.addAttribute("events", eventService.findAll());
+		
 		return "partner/event-list";
 	}
 	
 	@GetMapping("/partner/events/{id}")
 	public String eventDetails(@PathVariable("id") Long eventId, Model model) {
 		model.addAttribute("event", eventService.findById(eventId));
+		
 		return "partner/event-details";
 	}
 	

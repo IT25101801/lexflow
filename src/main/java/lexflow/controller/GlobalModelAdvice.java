@@ -18,17 +18,21 @@ public class GlobalModelAdvice {
 	
 	@ModelAttribute("currentUser")
 	public User currentUser(Authentication authentication) {
+		
 		if (authentication != null && authentication.getPrincipal() instanceof CustomUserPrincipal(User user)) {
 			return user;
 		}
+		
 		return null;
 	}
 	
 	@InitBinder
 	public void keepTextListValuesWhole(WebDataBinder binder) {
+		
 		for (String field : TEXT_LIST_FIELDS) {
 			binder.registerCustomEditor(List.class, field, new WholeValueListEditor());
 		}
+		
 	}
 	
 	private static class WholeValueListEditor extends CustomCollectionEditor {
@@ -42,6 +46,7 @@ public class GlobalModelAdvice {
 			
 			if (text == null || text.isBlank()) {
 				setValue(null);
+				
 				return;
 			}
 			

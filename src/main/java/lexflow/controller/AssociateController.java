@@ -36,19 +36,12 @@ import java.util.List;
 public class AssociateController {
 	
 	private final AnalyticsService analyticsService;
-	
 	private final CaseService caseService;
-	
 	private final ConsultationService consultationService;
-	
 	private final ContactService contactService;
-	
 	private final DocumentService documentService;
-	
 	private final EventService eventService;
-	
 	private final TaskService taskService;
-	
 	private final UserService userService;
 	
 	// Overview (Dashboard, Profile)
@@ -56,6 +49,7 @@ public class AssociateController {
 	@GetMapping("/associate/dashboard")
 	public String dashboard(Authentication authentication, Model model) {
 		model.addAttribute("user", currentAssociate(authentication));
+		
 		return "associate/dashboard";
 	}
 	
@@ -63,12 +57,14 @@ public class AssociateController {
 	
 	private Associate currentAssociate(Authentication authentication) {
 		CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
+		
 		return (Associate) principal.user();
 	}
 	
 	@GetMapping("/associate/profile")
 	public String profile(Authentication authentication, Model model) {
 		model.addAttribute("user", currentAssociate(authentication));
+		
 		return "associate/profile";
 	}
 	
@@ -79,12 +75,14 @@ public class AssociateController {
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			model.addAttribute("user", associate);
+			
 			return "associate/profile";
 		}
 		
 		if (!userService.verifyPassword(associate, form.getCurrentPassword())) {
 			model.addAttribute("user", associate);
 			model.addAttribute("error", "Current password is incorrect.");
+			
 			return "associate/profile";
 		}
 		
@@ -92,6 +90,7 @@ public class AssociateController {
 		
 		model.addAttribute("user", associate);
 		model.addAttribute("success", "Password changed successfully.");
+		
 		return "associate/profile";
 	}
 	
@@ -105,12 +104,14 @@ public class AssociateController {
 	@GetMapping("/associate/consultations/pending")
 	public String pendingConsultations(Authentication authentication, Model model) {
 		model.addAttribute("consultations", consultationService.findAwaitingReviewForAssociate(currentAssociate(authentication)));
+		
 		return "associate/consultation-pending-list";
 	}
 	
 	@GetMapping("/associate/consultations")
 	public String consultations(Authentication authentication, Model model) {
 		model.addAttribute("consultations", consultationService.findAllForAssociate(currentAssociate(authentication)));
+		
 		return "associate/consultation-list";
 	}
 	
@@ -118,6 +119,7 @@ public class AssociateController {
 	public String consultationDetails(@PathVariable("id") Long consultationId, Authentication authentication, Model model) {
 		Consultation consultation = consultationService.findOwnedByAssociate(consultationId, currentAssociate(authentication));
 		populateConsultationDetailModel(consultation, model);
+		
 		return "associate/consultation-details";
 	}
 	
@@ -152,6 +154,7 @@ public class AssociateController {
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			populateConsultationDetailModel(consultation, model);
+			
 			return "associate/consultation-details";
 		}
 		
@@ -174,6 +177,7 @@ public class AssociateController {
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			populateConsultationDetailModel(consultation, model);
+			
 			return "associate/consultation-details";
 		}
 		
@@ -196,6 +200,7 @@ public class AssociateController {
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			populateConsultationDetailModel(consultation, model);
+			
 			return "associate/consultation-details";
 		}
 		
@@ -251,6 +256,7 @@ public class AssociateController {
 		Case case_ = caseService.open(consultation);
 		
 		redirectAttributes.addFlashAttribute("success", "Case opened successfully.");
+		
 		return "redirect:/associate/cases/" + case_.getCaseId();
 	}
 	
@@ -268,6 +274,7 @@ public class AssociateController {
 		model.addAttribute("cases", caseService.findOpenForAssociate(currentAssociate(authentication)));
 		model.addAttribute("title", "Open Cases");
 		model.addAttribute("active", "cases-open");
+		
 		return "associate/case-list";
 	}
 	
@@ -276,6 +283,7 @@ public class AssociateController {
 		model.addAttribute("cases", caseService.findClosedForAssociate(currentAssociate(authentication)));
 		model.addAttribute("title", "Closed Cases");
 		model.addAttribute("active", "cases-closed");
+		
 		return "associate/case-list";
 	}
 	
@@ -308,6 +316,7 @@ public class AssociateController {
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			populateCaseDetailModel(case_, model);
+			
 			return "associate/case-details";
 		}
 		
@@ -330,6 +339,7 @@ public class AssociateController {
 		
 		populateCaseDetailModel(case_, model);
 		model.addAttribute("success", "Document added to case.");
+		
 		return "associate/case-details";
 	}
 	
@@ -340,6 +350,7 @@ public class AssociateController {
 		
 		populateCaseDetailModel(case_, model);
 		model.addAttribute("success", "Document deleted.");
+		
 		return "associate/case-details";
 	}
 	
@@ -350,6 +361,7 @@ public class AssociateController {
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			populateCaseDetailModel(case_, model);
+			
 			return "associate/case-details";
 		}
 		
@@ -357,6 +369,7 @@ public class AssociateController {
 		
 		populateCaseDetailModel(case_, model);
 		model.addAttribute("success", "Document renamed.");
+		
 		return "associate/case-details";
 	}
 	
@@ -367,6 +380,7 @@ public class AssociateController {
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			populateCaseDetailModel(case_, model);
+			
 			return "associate/case-details";
 		}
 		
@@ -389,6 +403,7 @@ public class AssociateController {
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			populateCaseDetailModel(case_, model);
+			
 			return "associate/case-details";
 		}
 		
@@ -411,6 +426,7 @@ public class AssociateController {
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			populateCaseDetailModel(case_, model);
+			
 			return "associate/case-details";
 		}
 		
@@ -418,6 +434,7 @@ public class AssociateController {
 		
 		populateCaseDetailModel(case_, model);
 		model.addAttribute("success", "Task renamed.");
+		
 		return "associate/case-details";
 	}
 	
@@ -428,6 +445,7 @@ public class AssociateController {
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			populateCaseDetailModel(case_, model);
+			
 			return "associate/case-details";
 		}
 		
@@ -453,12 +471,14 @@ public class AssociateController {
 	@GetMapping("/associate/events")
 	public String events(Authentication authentication, Model model) {
 		model.addAttribute("events", eventService.findAllForAssociate(currentAssociate(authentication)));
+		
 		return "associate/event-list";
 	}
 	
 	@GetMapping("/associate/events/{id}")
 	public String eventDetails(@PathVariable("id") Long eventId, Authentication authentication, Model model) {
 		model.addAttribute("event", eventService.findOwnedByAssociate(eventId, currentAssociate(authentication)));
+		
 		return "associate/event-details";
 	}
 	

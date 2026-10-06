@@ -20,6 +20,7 @@ public class GlobalExceptionHandler {
 		response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 		model.addAttribute("heading", "Not found");
 		model.addAttribute("message", e.getMessage());
+		
 		return "error/generic";
 	}
 	
@@ -28,6 +29,7 @@ public class GlobalExceptionHandler {
 		response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 		model.addAttribute("heading", "Access denied");
 		model.addAttribute("message", "You are not authorized to do that.");
+		
 		return "error/generic";
 	}
 	
@@ -37,6 +39,7 @@ public class GlobalExceptionHandler {
 		response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		model.addAttribute("heading", "Something went wrong");
 		model.addAttribute("message", "The system could not complete that request. Please try again.");
+		
 		return "error/generic";
 	}
 	
@@ -46,6 +49,7 @@ public class GlobalExceptionHandler {
 		response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		model.addAttribute("heading", "Something went wrong");
 		model.addAttribute("message", "The PDF could not be created. Please try again.");
+		
 		return "error/generic";
 	}
 	
@@ -54,6 +58,7 @@ public class GlobalExceptionHandler {
 		response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 		model.addAttribute("heading", "Request not allowed");
 		model.addAttribute("message", e.getMessage());
+		
 		return "error/generic";
 	}
 	
@@ -63,6 +68,7 @@ public class GlobalExceptionHandler {
 		response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		model.addAttribute("heading", "Something went wrong");
 		model.addAttribute("message", "Something went wrong. Please try again.");
+		
 		return "error/generic";
 	}
 	

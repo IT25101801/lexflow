@@ -65,12 +65,11 @@ function restoreFormValues() {
 		return;
 	}
 	
-	restorePageUrl();
-	
 	if (!document.querySelector(".flash-error")) {
 		return;
 	}
 	
+	restorePageUrl();
 	var form = findSavedForm(saved);
 	
 	if (!form) {
@@ -124,7 +123,14 @@ function restoreField(form, name, savedValues) {
 	var fields = fieldsNamed(form, name);
 	
 	if (fields.length === 0) {
-		return;
+		var emptyContainerId = multiInputContainerFor(form, name);
+		
+		if (!emptyContainerId) {
+			return;
+		}
+		
+		addMultiInputRow(emptyContainerId, name);
+		fields = fieldsNamed(form, name);
 	}
 	
 	if (fields[0].type === "checkbox" || fields[0].type === "radio") {
@@ -146,9 +152,10 @@ function restoreField(form, name, savedValues) {
 	}
 	
 	var row = fields[0].closest(".multi-input-row");
+	var containerId = row && row.parentElement.id ? row.parentElement.id : multiInputContainerFor(form, name);
 	
-	while (row && row.parentElement.id && fields.length < savedValues.length) {
-		addMultiInputRow(row.parentElement.id, name, fields[0].placeholder);
+	while (containerId && fields.length < savedValues.length) {
+		addMultiInputRow(containerId, name, fields[0].placeholder);
 		fields = fieldsNamed(form, name);
 	}
 	
@@ -158,6 +165,21 @@ function restoreField(form, name, savedValues) {
 		fields[k].dispatchEvent(new Event("change", {bubbles: true}));
 	}
 	
+}
+
+function multiInputContainerFor(form, name) {
+	var buttons = form.querySelectorAll("button[onclick*='addMultiInputRow']");
+	
+	for (var i = 0; i < buttons.length; i++) {
+		var match = buttons[i].getAttribute("onclick").match(/addMultiInputRow\('([^']+)',\s*'([^']+)'/);
+		
+		if (match && match[2] === name) {
+			return match[1];
+		}
+		
+	}
+	
+	return null;
 }
 
 function fieldsNamed(form, name) {
@@ -179,6 +201,15 @@ function reopenFormContainer(form) {
 	
 	if (overlay) {
 		overlay.style.display = "flex";
+		var error = document.querySelector(".flash-error");
+		var dialog = overlay.querySelector(".modal-dialog");
+		
+		if (error && dialog && dialog.querySelector("form")) {
+			var copy = error.cloneNode(true);
+			copy.style.marginTop = "1rem";
+			form.parentNode.insertBefore(copy, form);
+		}
+		
 	}
 	
 	var panel = form.closest(".tabpanel");
@@ -214,8 +245,8 @@ document.addEventListener("DOMContentLoaded", function () {
 	
 });
 
-// After a form is sent the server renders the page at the action's address (…/cases/1/tasks/5/edit-title);
-// put the page's own address back so a refresh reloads the page instead of sending the form again.
+// A successful form redirects back to its page, but an error renders the page at the action's address
+// (…/cases/1/tasks/5/edit-title); put the page's own address back so a refresh does not send the form again.
 function restorePageUrl() {
 	var path = window.location.pathname;
 	var match = path.match(/^(\/[^\/]+\/[^\/]+\/\d+)\/.+$/) || path.match(/^(\/[^\/]+\/profile)\/.+$/);
@@ -230,7 +261,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	var flashes = document.querySelectorAll(".flash");
 	
 	for (var i = 0; i < flashes.length; i++) {
-		hideFlashLater(flashes[i], flashes[i].classList.contains("flash-error") ? 4000 : 2000);
+		hideFlashLater(flashes[i], 4000);
 	}
 	
 });

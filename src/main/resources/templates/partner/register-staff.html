@@ -11,17 +11,7 @@
 	<div class="content">
 		
 		<!-- Flash Messages -->
-		<div class="flash flash-error" th:if="${error}">
-			<i class="bi bi-exclamation-circle"></i>
-			<span th:text="${error}"></span>
-		</div>
-		<div class="flash flash-error" th:if="${validationErrors != null and !validationErrors.isEmpty()}">
-			<i class="bi bi-exclamation-circle"></i>
-			<span>Registration failed:</span>
-			<ul style="margin:0.25rem 0 0 1.25rem;">
-				<li th:each="validationError : ${validationErrors}" th:text="${validationError}"></li>
-			</ul>
-		</div>
+		<div th:replace="~{fragments/common :: error-flash}"></div>
 		
 		<!-- Registration Form -->
 		<form class="form-card" method="post" th:action="@{/partner/register-staff}" enctype="multipart/form-data">
@@ -163,30 +153,6 @@
 	
 	roleSelect.addEventListener("change", syncProfessionalDetails);
 	syncProfessionalDetails();
-</script>
-
-<!-- Field Validation & State Restore -->
-<script>
-	// Set max date on date of birth to today so future dates cannot be selected.
-	
-	// Save fields to sessionStorage before submitting, so they can be restored if the
-	// server redirects back with an error (a redirect is a fresh page load – every
-	// field, not just the file input, would otherwise come back empty).
-	document.querySelector(".form-card").addEventListener("submit", function () {
-		["role", "email", "name", "dateOfBirth", "gender", "nicNumber", "barNumber"].forEach(function (id) {
-			sessionStorage.setItem("rs_" + id, document.getElementById(id).value);
-		});
-	});
-	
-	// Restore fields if redirected back with a duplicate email, NIC or bar number error.
-	if (["email_exists", "nic_exists", "bar_number_exists"].indexOf(new URLSearchParams(window.location.search).get("error")) !== -1) {
-		["role", "email", "name", "dateOfBirth", "gender", "nicNumber", "barNumber"].forEach(function (id) {
-			var value = sessionStorage.getItem("rs_" + id);
-			if (value) document.getElementById(id).value = value;
-			sessionStorage.removeItem("rs_" + id);
-		});
-		syncProfessionalDetails();
-	}
 </script>
 
 </body>

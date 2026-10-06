@@ -34,7 +34,7 @@
 					<tr th:each="event : ${events}">
 						<td th:text="${event.subject}"></td>
 						<td>
-							<a class="action-btn action-btn-view" th:href="@{/client-relations-officer/consultations/{id}(id=${event.consultation.consultationId})}">View Consultation</a>
+							<a class="item-title" th:href="@{/client-relations-officer/consultations/{id}(id=${event.consultation.consultationId})}" th:text="${event.consultation.consultationCode}"></a>
 						</td>
 						<td th:text="${#temporals.format(event.date, 'dd/MM/yyyy')}"></td>
 						<td th:text="${event.startTime}"></td>

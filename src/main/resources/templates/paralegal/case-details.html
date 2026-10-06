@@ -12,7 +12,7 @@
 		
 		<!-- Flash Messages -->
 		<div class="flash flash-success" th:if="${success}" th:text="${success}"></div>
-		<div class="flash flash-error" th:if="${error}" th:text="${error}"></div>
+		<div th:replace="~{fragments/common :: error-flash}"></div>
 		
 		<div class="section-card">
 			<div class="avatar-header" style="padding-bottom:1rem;margin-bottom:1rem;border-bottom:1px solid var(--border);">
@@ -71,20 +71,21 @@
 						Tasks
 						<button class="btn-round-add" type="button" onclick="document.getElementById('taskAddModal').style.display='flex';">+</button>
 					</div>
-					<div style="display:none;">
-						<form th:each="task : ${tasks}" method="post" th:id="'editTitleForm-' + ${task.taskId}"
-							  th:action="@{/paralegal/cases/{id}/tasks/{taskId}/edit-title(id=${case.caseId},taskId=${task.taskId})}"></form>
-					</div>
-					<p class="empty-state" th:if="${#lists.isEmpty(tasks)}">No tasks logged for this case yet.</p>
+<p class="empty-state" th:if="${#lists.isEmpty(tasks)}">No tasks yet.</p>
 					<div class="contact-card-grid" th:unless="${#lists.isEmpty(tasks)}">
 						<div class="contact-card" th:each="task : ${tasks}">
 							<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.5rem;">
 								<div class="item-title" th:text="${task.title}"></div>
-								<button type="button" class="action-btn action-btn-edit"
-										th:attr="data-action=@{/paralegal/cases/{id}/tasks/{taskId}/edit-title(id=${case.caseId},taskId=${task.taskId})}"
-										th:data-title="${task.title}"
-										onclick="openTaskTitleModal(this)">Edit
-								</button>
+								<div style="display:flex;gap:0.4rem;" th:if="${case.caseStatus.name() == 'OPEN'}">
+									<button type="button" class="action-btn action-btn-edit" th:data-modal="'taskEditModal-' + ${task.taskId}"
+											onclick="document.getElementById(this.getAttribute('data-modal')).style.display='flex';">Edit
+									</button>
+									<form method="post" th:if="${!task.schedulingTask and task.billedInvoiceId == null and #lists.isEmpty(taskDocuments.get(task.taskId))}"
+										  th:action="@{/paralegal/cases/{id}/tasks/{taskId}/delete(id=${case.caseId},taskId=${task.taskId})}"
+										  onsubmit="return confirm('Delete this task? This action cannot be undone.');">
+										<button class="action-btn action-btn-delete" type="submit">Delete</button>
+									</form>
+								</div>
 							</div>
 							<div class="detail-row" style="margin-top:0.5rem;">
 								<span class="detail-label">Task Type</span>
@@ -95,9 +96,9 @@
 							<div class="detail-row" th:if="${task.documentingTask}">
 								<span class="detail-label">Documents</span>
 								<div class="detail-value">
-									<div th:if="${#lists.isEmpty(taskDocuments.get(task.taskId))}">&ndash;</div>
+									<div th:if="${#lists.isEmpty(taskDocuments.get(task.taskId))}">No documents yet</div>
 									<div th:each="taskDocument : ${taskDocuments.get(task.taskId)}">
-										<a th:href="@{/paralegal/documents/case/{id}(id=${taskDocument.documentId})}" th:text="${taskDocument.originalFilename}" target="_blank"></a>
+										<a class="item-title" th:href="@{/paralegal/documents/case/{id}/{filename}(id=${taskDocument.documentId},filename=${taskDocument.originalFilename})}" th:text="${taskDocument.originalFilename}" target="_blank"></a>
 									</div>
 								</div>
 							</div>
@@ -136,22 +137,35 @@
 						</form>
 					</div>
 					<div class="item-list">
-						<p class="empty-state" th:if="${#lists.isEmpty(caseDocuments) and (documentKeyword == null or #strings.isEmpty(documentKeyword))}">No documents added to the case yet.</p>
-						<p class="empty-state" th:if="${#lists.isEmpty(caseDocuments) and documentKeyword != null and !#strings.isEmpty(documentKeyword)}">No documents match
-							"<span th:text="${documentKeyword}"></span>".</p>
+						<p class="empty-state" th:if="${#lists.isEmpty(caseDocuments) and (documentKeyword == null or #strings.isEmpty(documentKeyword))}">No documents yet.</p>
+						<p class="empty-state" th:if="${#lists.isEmpty(caseDocuments) and documentKeyword != null and !#strings.isEmpty(documentKeyword)}">No documents match your search.</p>
 						<div class="item-row" th:each="caseDocument : ${caseDocuments}">
 							<div class="item-main">
-								<a class="item-title" th:href="@{/paralegal/documents/case/{id}(id=${caseDocument.documentId})}" th:text="${caseDocument.originalFilename}" target="_blank"></a>
+								<a class="item-title" th:href="@{/paralegal/documents/case/{id}/{filename}(id=${caseDocument.documentId},filename=${caseDocument.originalFilename})}" th:text="${caseDocument.originalFilename}" target="_blank"></a>
+							</div>
+							<div class="item-actions">
+								<button type="button" class="action-btn action-btn-edit"
+										th:attr="data-action=@{/paralegal/cases/{id}/documents/{documentId}/rename(id=${case.caseId},documentId=${caseDocument.documentId})}"
+										th:data-filename="${caseDocument.originalFilename}" onclick="openRenameModal(this)">Rename
+								</button>
+								<form method="post" th:action="@{/paralegal/cases/{id}/documents/{documentId}/delete(id=${case.caseId},documentId=${caseDocument.documentId})}"
+									  onsubmit="return confirm('Delete this document? This action cannot be undone.');">
+									<button class="action-btn action-btn-delete" type="submit">Delete</button>
+								</form>
 							</div>
 						</div>
 					</div>
 					<div>
-						<div class="section-title">Documents Pending Review</div>
-						<p class="empty-state" th:if="${#lists.isEmpty(stagedDocuments)}">No documents awaiting review.</p>
+						<div class="section-title" style="display:flex;align-items:center;justify-content:space-between;">
+							Documents Pending Review
+							<label th:if="${#lists.size(stagedDocuments) >= 2}" style="display:flex;align-items:center;gap:0.4rem;font-size:0.8rem;font-weight:500;"><input id="stagedSelectAll" type="checkbox" onchange="selectAllStaged(this)"/> Select all</label>
+						</div>
+						<p class="empty-state" th:if="${#lists.isEmpty(stagedDocuments)}">No documents pending review.</p>
 						<div class="item-list" th:unless="${#lists.isEmpty(stagedDocuments)}">
 							<div class="item-row" th:each="stagedDocument : ${stagedDocuments}">
+								<input class="staged-select" type="checkbox" name="documentIds" form="stagedBatchForm" th:value="${stagedDocument.documentId}" th:if="${#lists.size(stagedDocuments) >= 2}" onchange="updateStagedBatchBar()" style="margin-right:0.6rem;"/>
 								<div class="item-main">
-									<a class="item-title" th:href="@{/paralegal/documents/case/{id}(id=${stagedDocument.documentId})}" th:text="${stagedDocument.originalFilename}" target="_blank"></a>
+									<a class="item-title" th:href="@{/paralegal/documents/case/{id}/{filename}(id=${stagedDocument.documentId},filename=${stagedDocument.originalFilename})}" th:text="${stagedDocument.originalFilename}" target="_blank"></a>
 								</div>
 								<div class="item-actions">
 									<form method="post" th:action="@{/paralegal/cases/{id}/documents/{documentId}/accept(id=${case.caseId},documentId=${stagedDocument.documentId})}">
@@ -167,6 +181,11 @@
 								</div>
 							</div>
 						</div>
+						<form id="stagedBatchForm" method="post" th:action="@{/paralegal/cases/{id}/documents/accept-selected(id=${case.caseId})}" class="staged-batch-bar" style="display:none;gap:0.5rem;justify-content:flex-end;margin-top:0.75rem;">
+							<button class="action-btn action-btn-create" type="submit" th:formaction="@{/paralegal/cases/{id}/documents/accept-selected(id=${case.caseId})}">Add Selected to Case</button>
+							<button class="action-btn action-btn-delete" type="submit" th:formaction="@{/paralegal/cases/{id}/documents/reject-selected(id=${case.caseId})}"
+									onclick="return confirm('Delete the selected documents? This action cannot be undone.');">Delete Selected</button>
+						</form>
 					</div>
 				</div>
 				
@@ -178,7 +197,7 @@
 								onclick="openContactAddModal(this)">+
 						</button>
 					</div>
-					<p class="empty-state" th:if="${#lists.isEmpty(contacts)}">No contacts logged for this case yet.</p>
+					<p class="empty-state" th:if="${#lists.isEmpty(contacts)}">No contacts yet.</p>
 					<div class="contact-card-grid" th:unless="${#lists.isEmpty(contacts)}">
 						<div class="contact-card" th:each="contact : ${contacts}">
 							<div style="display:flex;justify-content:flex-end;gap:0.4rem;margin-bottom:0.5rem;" th:if="${case.caseStatus.name() == 'OPEN'}">
@@ -239,7 +258,10 @@
 		<form id="renameForm" method="post" th:action="@{''}" style="display:flex;flex-direction:column;gap:0.85rem;margin-top:1rem;">
 			<div class="field">
 				<label for="renameFilenameInput">Filename</label>
-				<input id="renameFilenameInput" type="text" name="originalFilename" required/>
+				<div class="multi-input-row file-pick-row">
+					<input id="renameFilenameInput" type="text" name="originalFilename" required/>
+					<span id="renameExtension" class="file-pick-ext"></span>
+				</div>
 			</div>
 			<div class="modal-actions">
 				<button class="modal-btn-cancel" type="button" onclick="document.getElementById('renameModal').style.display='none';">Cancel</button>
@@ -252,35 +274,79 @@
 <script>
 	function openRenameModal(btn) {
 		document.getElementById("renameForm").action = btn.getAttribute("data-action");
-		document.getElementById("renameFilenameInput").value = btn.getAttribute("data-filename");
+		const filename = btn.getAttribute("data-filename");
+		const dot = filename.lastIndexOf(".");
+		document.getElementById("renameFilenameInput").value = dot > 0 ? filename.substring(0, dot) : filename;
+		document.getElementById("renameExtension").textContent = dot > 0 ? filename.substring(dot) : "";
 		document.getElementById("renameModal").style.display = "flex";
 	}
 </script>
 
-<!-- Edit Task Title Modal -->
-<div id="taskTitleModal" class="modal-overlay" onclick="if(event.target===this)this.style.display='none';">
-	<div class="modal-dialog" style="max-width:420px;width:92%;">
-		<div class="section-title">Edit Task Title</div>
-		<form id="taskTitleForm" method="post" th:action="@{''}" style="display:flex;flex-direction:column;gap:0.85rem;margin-top:1rem;">
+<!-- Edit Task Modals -->
+<div class="modal-overlay" th:each="task : ${tasks}" th:id="'taskEditModal-' + ${task.taskId}" onclick="if(event.target===this)this.style.display='none';">
+	<div class="modal-dialog" style="max-width:480px;width:92%;max-height:90vh;overflow-y:auto;">
+		<div class="section-title">Edit Task</div>
+		<form method="post" enctype="multipart/form-data" th:id="'taskEditForm-' + ${task.taskId}" th:action="@{/paralegal/cases/{id}/tasks/{taskId}/edit(id=${case.caseId},taskId=${task.taskId})}" style="display:flex;flex-direction:column;gap:0.85rem;margin-top:1rem;">
 			<div class="field">
-				<label for="taskTitleInput">Title</label>
-				<input id="taskTitleInput" type="text" name="title" required/>
+				<label th:for="'taskEditTitle-' + ${task.taskId}">Title</label>
+				<input th:id="'taskEditTitle-' + ${task.taskId}" type="text" name="title" th:value="${task.title}" required/>
 			</div>
+			
+			<div style="display:flex;flex-direction:column;gap:0.5rem;">
+				<label style="display:flex;align-items:center;gap:0.5rem;"><input class="task-documenting" type="checkbox" name="documentingTask" value="true" th:checked="${task.documentingTask}" onchange="this.closest('form').querySelector('.task-documenting-fields').style.display=this.checked?'flex':'none';"/>
+					Documenting Task</label>
+				<label style="display:flex;align-items:center;gap:0.5rem;"><input type="checkbox" value="true" th:name="${task.schedulingTask ? null : 'schedulingTask'}" th:checked="${task.schedulingTask}" th:disabled="${task.schedulingTask}" onchange="this.closest('form').querySelector('.task-scheduling-fields').style.display=this.checked?'flex':'none';"/>
+					Scheduling Task</label>
+				<input type="hidden" name="schedulingTask" value="true" th:if="${task.schedulingTask}"/>
+				<label style="display:flex;align-items:center;gap:0.5rem;"><input type="checkbox" value="true" th:name="${task.billedInvoiceId == null ? 'billingTask' : null}" th:checked="${task.billingTask}" th:disabled="${task.billedInvoiceId != null}" onchange="this.closest('form').querySelector('.task-billing-fields').style.display=this.checked?'flex':'none';"/>
+					Billing Task</label>
+			</div>
+			
+			<div class="field task-documenting-fields" th:style="${task.documentingTask ? 'display:flex;' : 'display:none;'}">
+				<label th:for="'taskEditDocumentFiles-' + ${task.taskId}">Add Documents</label>
+				<input th:id="'taskEditDocumentFiles-' + ${task.taskId}" type="file" name="caseFiles" multiple/>
+			</div>
+			
+			<div class="task-scheduling-fields" th:if="${!task.schedulingTask or (task.scheduledEvent != null and task.scheduledEvent.eventStatus.name() == 'SCHEDULED')}" th:style="${(task.schedulingTask ? 'display:flex;' : 'display:none;') + 'flex-direction:column;gap:0.85rem;'}">
+				<div class="field">
+					<label th:for="'taskEditDate-' + ${task.taskId}">Date</label>
+					<input th:id="'taskEditDate-' + ${task.taskId}" type="date" name="date" th:value="${task.scheduledEvent?.date}" data-not-past/>
+				</div>
+				<div class="field-row">
+					<div class="field">
+						<label th:for="'taskEditStartTime-' + ${task.taskId}">Start Time</label>
+						<input th:id="'taskEditStartTime-' + ${task.taskId}" type="time" name="startTime" th:value="${task.scheduledEvent?.startTime}"/>
+					</div>
+					<div class="field">
+						<label th:for="'taskEditEndTime-' + ${task.taskId}">End Time</label>
+						<input th:id="'taskEditEndTime-' + ${task.taskId}" type="time" name="endTime" th:value="${task.scheduledEvent?.endTime}"/>
+					</div>
+				</div>
+				<div class="field">
+					<label th:for="'taskEditLocation-' + ${task.taskId}">Location</label>
+					<input th:id="'taskEditLocation-' + ${task.taskId}" type="text" name="location" th:value="${task.scheduledEvent?.location}" placeholder="Location"/>
+				</div>
+				<div class="field">
+					<label th:for="'taskEditNotes-' + ${task.taskId}">Notes</label>
+					<textarea th:id="'taskEditNotes-' + ${task.taskId}" name="notes" rows="4" th:text="${task.scheduledEvent?.notes}" placeholder="Notes (optional)"></textarea>
+				</div>
+			</div>
+			<p class="field-hint" th:if="${task.schedulingTask and task.scheduledEvent != null and task.scheduledEvent.eventStatus.name() != 'SCHEDULED'}">
+				The event is <span th:text="${#strings.toLowerCase(task.scheduledEvent.eventStatus)}"></span>, so its date, time and location can no longer be changed.</p>
+				
+			<div class="field task-billing-fields" th:if="${task.billedInvoiceId == null}" th:style="${task.billingTask ? 'display:flex;' : 'display:none;'}">
+				<label th:for="'taskEditBillableAmount-' + ${task.taskId}">Amount</label>
+				<input th:id="'taskEditBillableAmount-' + ${task.taskId}" type="number" name="billableAmount" step="0.01" th:value="${task.billableAmount}" placeholder="Amount"/>
+			</div>
+			<p class="field-hint" th:if="${task.billedInvoiceId != null}">This charge is on an invoice. Void the invoice to change it.</p>
+			
 			<div class="modal-actions">
-				<button class="modal-btn-cancel" type="button" onclick="document.getElementById('taskTitleModal').style.display='none';">Cancel</button>
+				<button class="modal-btn-cancel" type="button" onclick="this.closest('.modal-overlay').style.display='none';">Cancel</button>
 				<button class="btn btn-primary" type="submit">Save</button>
 			</div>
 		</form>
 	</div>
 </div>
-
-<script>
-	function openTaskTitleModal(btn) {
-		document.getElementById("taskTitleForm").action = btn.getAttribute("data-action");
-		document.getElementById("taskTitleInput").value = btn.getAttribute("data-title");
-		document.getElementById("taskTitleModal").style.display = "flex";
-	}
-</script>
 
 <!-- Add Task Modal -->
 <div id="taskAddModal" class="modal-overlay" onclick="if(event.target===this)this.style.display='none';">
@@ -300,7 +366,7 @@
 			</div>
 			
 			<div style="display:flex;flex-direction:column;gap:0.5rem;">
-				<label style="display:flex;align-items:center;gap:0.5rem;"><input type="checkbox" name="documentingTask" value="true" onchange="document.getElementById('taskDocumentingFields').style.display=this.checked?'flex':'none';document.getElementById('taskAddDocumentFiles').required=this.checked;"/>
+				<label style="display:flex;align-items:center;gap:0.5rem;"><input type="checkbox" name="documentingTask" value="true" onchange="document.getElementById('taskDocumentingFields').style.display=this.checked?'flex':'none';"/>
 					Documenting Task</label>
 				<label style="display:flex;align-items:center;gap:0.5rem;"><input type="checkbox" name="schedulingTask" value="true" onchange="document.getElementById('taskSchedulingFields').style.display=this.checked?'flex':'none';"/>
 					Scheduling Task</label>
@@ -355,7 +421,7 @@
 <div id="contactModal" class="modal-overlay" onclick="if(event.target===this)this.style.display='none';">
 	<div class="modal-dialog" style="max-width:480px;width:92%;max-height:90vh;overflow-y:auto;">
 		<div id="contactModalTitle" class="section-title">Add Contact</div>
-		<div class="demo-btn-corner">
+		<div id="contactDemoButtons" class="demo-btn-corner">
 			<button class="demo-btn" type="button" title="Fill Contact With an Invalid Phone Number and Email" onclick="fillContactFormP1('contactModal')">P1</button>
 			<button class="demo-btn" type="button" title="Fill Contact" onclick="fillContactFormP2('contactModal')">P2</button>
 		</div>
@@ -410,6 +476,7 @@
 	
 	function openContactAddModal(btn) {
 		document.getElementById("contactModalTitle").textContent = "Add Contact";
+		document.getElementById("contactDemoButtons").style.display = "";
 		document.getElementById("contactModalForm").action = btn.getAttribute("data-action");
 		document.getElementById("contactModalName").value = "";
 		fillContactModalRows("contactModalPhoneRows", "phoneNumbers", "");
@@ -421,6 +488,7 @@
 	
 	function openContactEditModal(btn) {
 		document.getElementById("contactModalTitle").textContent = "Edit Contact";
+		document.getElementById("contactDemoButtons").style.display = "none";
 		document.getElementById("contactModalForm").action = btn.getAttribute("data-action");
 		document.getElementById("contactModalName").value = btn.getAttribute("data-name") || "";
 		fillContactModalRows("contactModalPhoneRows", "phoneNumbers", btn.getAttribute("data-phones"));
@@ -432,5 +500,29 @@
 </script>
 
 <script th:src="@{/js/demo.js}"></script>
+<script>
+	function updateStagedBatchBar() {
+		const boxes = document.querySelectorAll(".staged-select");
+		let checked = 0;
+
+		for (let i = 0; i < boxes.length; i++) {
+			if (boxes[i].checked) checked++;
+		}
+
+		const selectAll = document.getElementById("stagedSelectAll");
+		if (selectAll) selectAll.checked = boxes.length > 0 && checked === boxes.length;
+		document.querySelector(".staged-batch-bar").style.display = checked >= 2 ? "flex" : "none";
+	}
+
+	function selectAllStaged(selectAll) {
+		const boxes = document.querySelectorAll(".staged-select");
+
+		for (let i = 0; i < boxes.length; i++) {
+			boxes[i].checked = selectAll.checked;
+		}
+
+		updateStagedBatchBar();
+	}
+</script>
 </body>
 </html>

@@ -10,18 +10,18 @@
 	
 	<div class="content">
 		<div class="flash flash-success" th:if="${success}" th:text="${success}"></div>
-		<div class="flash flash-error" th:if="${error}" th:text="${error}"></div>
+		<div th:replace="~{fragments/common :: error-flash}"></div>
 		
 		<div class="form-card">
 			<div class="section-title">Top Up Client Wallet</div>
 			<form th:action="@{/finance-officer/cash-top-up}" method="post" style="display:flex;flex-direction:column;gap:0.85rem;">
 				<div class="field">
 					<label for="clientCode">Client Code</label>
-					<input id="clientCode" type="text" name="clientCode" placeholder="CLT-31-12345678" required/>
+					<input id="clientCode" th:value="${error != null and topUpByCashRequest != null ? topUpByCashRequest.clientCode : null}" type="text" name="clientCode" placeholder="CLT-31-12345678" required/>
 				</div>
 				<div class="field">
 					<label for="amount">Amount</label>
-					<input id="amount" type="number" step="0.01" min="100" name="amount" placeholder="e.g. 5000" required/>
+					<input id="amount" th:value="${error != null and topUpByCashRequest != null ? topUpByCashRequest.amount : null}" type="number" step="0.01" min="100" name="amount" placeholder="e.g. 5000" required/>
 				</div>
 				<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.6rem;">
 					<button class="btn btn-sm btn-outline" type="button" onclick="document.getElementById('amount').value=1000">+ 1,000</button>

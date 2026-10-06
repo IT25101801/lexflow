@@ -100,7 +100,7 @@
 						</thead>
 						<tbody>
 						<tr th:if="${#lists.isEmpty(relatedCases)}">
-							<td class="table-empty" colspan="6">No cases on record.</td>
+							<td class="table-empty" colspan="6">No cases yet.</td>
 						</tr>
 						<tr th:each="case : ${relatedCases}">
 							<td class="cell-id" th:text="${case.caseCode}"></td>
@@ -133,13 +133,13 @@
 						</thead>
 						<tbody>
 						<tr th:if="${#lists.isEmpty(relatedTransactions)}">
-							<td class="table-empty" colspan="5">No transactions on record.</td>
+							<td class="table-empty" colspan="5">No transactions yet.</td>
 						</tr>
 						<tr th:each="transaction : ${relatedTransactions}">
 							<td class="cell-id" th:text="${transaction.transactionCode}"></td>
 							<td th:text="${#numbers.formatDecimal(transaction.amount, 1, 'COMMA', 2, 'POINT')}"></td>
 							<td><span th:classappend="'tx-' + ${transaction.transactionType.name()}" th:text="${#strings.replace(transaction.transactionType, '_', ' ')}"></span></td>
-							<td class="cell-id" th:text="${transaction.invoiceId ?: '–'}"></td>
+							<td class="cell-id" th:text="${transaction.invoiceCode ?: '–'}"></td>
 							<td th:text="${#temporals.format(transaction.occurredAt, 'dd/MM/yyyy HH:mm')}" style="white-space:nowrap;"></td>
 						</tr>
 						</tbody>

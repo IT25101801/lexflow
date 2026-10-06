@@ -12,7 +12,7 @@
 		
 		<!-- Flash Messages -->
 		<div class="flash flash-success" th:if="${success}" th:text="${success}"></div>
-		<div class="flash flash-error" th:if="${error}" th:text="${error}"></div>
+		<div th:replace="~{fragments/common :: error-flash}"></div>
 		
 		<!-- Profile Layout -->
 		<div class="profile-layout">
@@ -72,7 +72,7 @@
 						<span class="detail-label">NIC Document</span>
 						<span class="detail-value">
 							<a class="action-btn action-btn-view" th:if="${user.nicDocument != null}" target="_blank"
-							   th:href="@{/associate/documents/user/{id}(id=${user.nicDocument.documentId})}">View</a>
+							   th:href="@{/associate/documents/user/{id}/{filename}(id=${user.nicDocument.documentId},filename=${user.nicDocument.originalFilename})}">View</a>
 							<span th:unless="${user.nicDocument != null}">&ndash;</span>
 						</span>
 					</div>
@@ -85,7 +85,7 @@
 						<span class="detail-label">Bar Document</span>
 						<span class="detail-value">
 							<a class="action-btn action-btn-view" th:if="${user.barDocument != null}" target="_blank"
-							   th:href="@{/associate/documents/user/{id}(id=${user.barDocument.documentId})}">View</a>
+							   th:href="@{/associate/documents/user/{id}/{filename}(id=${user.barDocument.documentId},filename=${user.barDocument.originalFilename})}">View</a>
 							<span th:unless="${user.barDocument != null}">&ndash;</span>
 						</span>
 					</div>

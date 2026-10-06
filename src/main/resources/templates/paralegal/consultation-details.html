@@ -72,10 +72,10 @@
 				<div class="section-card">
 					<div class="section-title">Documents</div>
 					<div class="item-list">
-						<p class="empty-state" th:if="${#lists.isEmpty(consultationDocuments)}">No documents attached.</p>
+						<p class="empty-state" th:if="${#lists.isEmpty(consultationDocuments)}">No documents yet.</p>
 						<div class="item-row" th:each="consultationDocument : ${consultationDocuments}">
 							<div class="item-main">
-								<a class="item-title" th:href="@{/paralegal/documents/consultation/{id}(id=${consultationDocument.documentId})}" th:text="${consultationDocument.originalFilename}" target="_blank"></a>
+								<a class="item-title" th:href="@{/paralegal/documents/consultation/{id}/{filename}(id=${consultationDocument.documentId},filename=${consultationDocument.originalFilename})}" th:text="${consultationDocument.originalFilename}" target="_blank"></a>
 							</div>
 						</div>
 					</div>

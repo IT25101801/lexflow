@@ -19,7 +19,7 @@
 	</div>
 	
 	<!-- Flash Messages -->
-	<div class="flash flash-error" th:if="${error}" th:text="${error}"></div>
+	<div th:replace="~{fragments/common :: error-flash}"></div>
 	
 	<!-- Registration Form -->
 	<form class="auth-form" th:action="@{/auth/register-client}" method="post" enctype="multipart/form-data">
@@ -116,31 +116,6 @@
 </div>
 
 <script th:src="@{/js/demo.js}"></script>
-
-<!-- Field Validation & State Restore -->
-<script>
-	// Set max date on date of birth to today so future dates cannot be selected.
-	
-	// Save fields to sessionStorage before submitting, so they can be restored if the
-	// server redirects back with an error (a redirect is a fresh page load – every
-	// field, not just the file input, would otherwise come back empty).
-	document.querySelector(".auth-form").addEventListener("submit", function () {
-		["email", "name", "dateOfBirth", "gender", "nicNumber"].forEach(function (id) {
-			sessionStorage.setItem("r_" + id, document.getElementById(id).value);
-		});
-	});
-	
-	// Restore fields if redirected back with a duplicate email or NIC number error.
-	if (["email_exists", "nic_exists"].indexOf(new URLSearchParams(window.location.search).get("error")) !== -1) {
-		["email", "name", "dateOfBirth", "gender", "nicNumber"].forEach(function (id) {
-			var value = sessionStorage.getItem("r_" + id);
-			if (value) {
-				document.getElementById(id).value = value;
-			}
-			sessionStorage.removeItem("r_" + id);
-		});
-	}
-</script>
 
 </body>
 </html>

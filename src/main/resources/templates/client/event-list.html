@@ -34,10 +34,10 @@
 					<tr th:each="event : ${events}">
 						<td th:text="${event.subject}"></td>
 						<td th:if="${event instanceof T(lexflow.entity.scheduling.ConsultationEvent)}">
-							<a class="action-btn action-btn-view" th:href="@{/client/consultations/{id}(id=${event.consultation.consultationId})}">View Consultation</a>
+							<a class="item-title" th:href="@{/client/consultations/{id}(id=${event.consultation.consultationId})}" th:text="${event.consultation.consultationCode}"></a>
 						</td>
 						<td th:if="${event instanceof T(lexflow.entity.scheduling.CaseEvent)}">
-							<a class="action-btn action-btn-view" th:href="@{/client/cases/{id}(id=${event.case_.caseId})}">View Case</a>
+							<a class="item-title" th:href="@{/client/cases/{id}(id=${event.case_.caseId})}" th:text="${event.case_.caseCode}"></a>
 						</td>
 						<td th:text="${#temporals.format(event.date, 'dd/MM/yyyy')}"></td>
 						<td th:text="${event.startTime}"></td>

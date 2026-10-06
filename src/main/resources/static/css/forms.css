@@ -315,6 +315,11 @@ button[onclick^="addMultiInputRow"]:hover {
 	border-color: var(--danger-border);
 }
 
+.flash-list {
+	margin: 0;
+	padding-left: 1.1rem;
+}
+
 /* File picker (js/file-picker.js): the chosen files listed under a multi-file input, each renamable */
 .file-pick-list {
 	margin-top: 0.5rem;

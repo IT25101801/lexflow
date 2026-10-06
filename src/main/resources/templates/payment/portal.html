@@ -17,10 +17,7 @@
 	</div>
 	
 	<!-- Flash Messages -->
-	<div class="flash flash-error" th:if="${error}">
-		<i class="bi bi-exclamation-circle"></i>
-		<span th:text="${error}"></span>
-	</div>
+	<div th:replace="~{fragments/common :: error-flash}"></div>
 	
 	<!-- Card Visual -->
 	<div class="card-visual-wrap">

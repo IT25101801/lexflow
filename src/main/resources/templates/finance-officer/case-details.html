@@ -11,7 +11,7 @@
 	<div class="content">
 		
 		<div class="flash flash-success" th:if="${success}" th:text="${success}"></div>
-		<div class="flash flash-error" th:if="${error}" th:text="${error}"></div>
+		<div th:replace="~{fragments/common :: error-flash}"></div>
 		
 		<div class="section-card">
 			<div class="avatar-header" style="padding-bottom:1rem;margin-bottom:1rem;border-bottom:1px solid var(--border);">
@@ -104,7 +104,7 @@
 					<span th:text="${invoice.invoiceCode}"></span>
 					<div style="display:flex;align-items:center;gap:0.75rem;flex-shrink:0;">
 						<span class="detail-value" th:text="${#numbers.formatDecimal(invoice.totalAmount, 1, 'COMMA', 2, 'POINT')}"></span>
-						<a class="action-btn action-btn-view" th:href="@{/finance-officer/documents/invoice/{id}(id=${invoice.invoiceDocument != null ? invoice.invoiceDocument.documentId : 0})}" target="_blank">View</a>
+						<a class="action-btn action-btn-view" th:href="@{/finance-officer/documents/invoice/{id}/{filename}(id=${invoice.invoiceDocument != null ? invoice.invoiceDocument.documentId : 0},filename=${invoice.invoiceCode + '.pdf'})}" target="_blank">View</a>
 						<form method="post" th:action="@{/finance-officer/cases/{id}/invoices/{invoiceId}/charge(id=${case.caseId},invoiceId=${invoice.invoiceId})}">
 							<button class="action-btn action-btn-create" type="submit">Charge</button>
 						</form>
@@ -127,7 +127,7 @@
 					</span>
 					<div style="display:flex;align-items:center;gap:0.75rem;flex-shrink:0;">
 						<span class="detail-value" th:text="${#numbers.formatDecimal(invoice.totalAmount, 1, 'COMMA', 2, 'POINT')}"></span>
-						<a class="action-btn action-btn-view" th:href="@{/finance-officer/documents/invoice/{id}(id=${invoice.invoiceDocument != null ? invoice.invoiceDocument.documentId : 0})}" target="_blank">View</a>
+						<a class="action-btn action-btn-view" th:href="@{/finance-officer/documents/invoice/{id}/{filename}(id=${invoice.invoiceDocument != null ? invoice.invoiceDocument.documentId : 0},filename=${invoice.invoiceCode + '.pdf'})}" target="_blank">View</a>
 						<form method="post" th:action="@{/finance-officer/cases/{id}/invoices/{invoiceId}/void-refund(id=${case.caseId},invoiceId=${invoice.invoiceId})}" onsubmit="return confirm('Void this invoice and refund the client? This action cannot be undone.');">
 							<button class="action-btn action-btn-delete" type="submit">Void &amp; Refund</button>
 						</form>
@@ -144,7 +144,7 @@
 					<span th:text="${invoice.invoiceCode}"></span>
 					<div style="display:flex;align-items:center;gap:0.75rem;flex-shrink:0;">
 						<span class="detail-value" th:text="${#numbers.formatDecimal(invoice.totalAmount, 1, 'COMMA', 2, 'POINT')}"></span>
-						<a class="action-btn action-btn-view" th:href="@{/finance-officer/documents/invoice/{id}(id=${invoice.invoiceDocument != null ? invoice.invoiceDocument.documentId : 0})}" target="_blank">View</a>
+						<a class="action-btn action-btn-view" th:href="@{/finance-officer/documents/invoice/{id}/{filename}(id=${invoice.invoiceDocument != null ? invoice.invoiceDocument.documentId : 0},filename=${invoice.invoiceCode + '.pdf'})}" target="_blank">View</a>
 					</div>
 				</div>
 			</div>

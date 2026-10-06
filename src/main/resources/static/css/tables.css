@@ -103,8 +103,13 @@
 }
 
 .item-title {
+	font-size: 0.92rem;
 	font-weight: 600;
 	color: var(--text);
+}
+
+.table-card td .item-title {
+	font-size: inherit;
 }
 
 .item-meta {

@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/head :: head('Consultation Requests – LexFlow')}"></head>
+<head th:replace="~{fragments/head :: head(${title} + ' – LexFlow')}"></head>
 <body>
 
-<aside th:replace="~{fragments/sidebar-associate :: sidebar('consultations')}"></aside>
+<aside th:replace="~{fragments/sidebar-associate :: sidebar(${active})}"></aside>
 
 <div class="main">
-	<div th:replace="~{fragments/common :: topbar('Consultation Requests', null)}"></div>
+	<div th:replace="~{fragments/common :: topbar(${title}, null)}"></div>
 	
 	<div class="content">
 		<div class="table-card">
@@ -18,7 +18,7 @@
 						<th>Client</th>
 						<th>Case Type</th>
 						<th>Opposing Parties</th>
-						<th>Consultation Status</th>
+						<th th:unless="${active == 'cases-to-open'}">Consultation Status</th>
 						<th>Submitted At</th>
 						<th>Assigned Paralegal</th>
 						<th>Actions</th>
@@ -26,7 +26,7 @@
 					</thead>
 					<tbody>
 					<tr th:if="${#lists.isEmpty(consultations)}">
-						<td class="table-empty" colspan="8">No consultation requests yet.</td>
+						<td class="table-empty" th:attr="colspan=${active == 'cases-to-open' ? 7 : 8}" th:text="${active == 'cases-to-open' ? 'No cases to open.' : 'No consultation requests yet.'}"></td>
 					</tr>
 					<tr th:each="consultation : ${consultations}">
 						<td class="cell-id" th:text="${consultation.consultationCode}"></td>
@@ -36,7 +36,7 @@
 						</td>
 						<td th:text="${#strings.replace(consultation.caseType, '_', ' ')}"></td>
 						<td th:text="${#lists.size(consultation.opposingParties) > 1 ? consultation.opposingParties[0] + ' et al.' : consultation.opposingParties[0]}"></td>
-						<td><span class="badge" th:classappend="'badge-' + ${consultation.consultationStatus}" th:text="${#strings.replace(consultation.consultationStatus, '_', ' ')}"></span>
+						<td th:unless="${active == 'cases-to-open'}"><span class="badge" th:classappend="'badge-' + ${consultation.consultationStatus}" th:text="${#strings.replace(consultation.consultationStatus, '_', ' ')}"></span>
 						</td>
 						<td th:text="${#temporals.format(consultation.submittedAt, 'dd/MM/yyyy HH:mm')}"></td>
 						<td>

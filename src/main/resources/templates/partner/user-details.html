@@ -12,7 +12,7 @@
 		
 		<!-- Flash Messages -->
 		<div class="flash flash-success" th:if="${success}" th:text="${success}"></div>
-		<div class="flash flash-error" th:if="${error}" th:text="${error}"></div>
+		<div th:replace="~{fragments/common :: error-flash}"></div>
 		
 		<!-- Profile Layout -->
 		<div class="profile-layout">
@@ -89,7 +89,7 @@
 						<span class="detail-label">NIC Document</span>
 						<span class="detail-value">
 							<a class="action-btn action-btn-view" th:if="${user.nicDocument != null}" target="_blank"
-							   th:href="@{/partner/documents/user/{id}(id=${user.nicDocument.documentId})}">View</a>
+							   th:href="@{/partner/documents/user/{id}/{filename}(id=${user.nicDocument.documentId},filename=${user.nicDocument.originalFilename})}">View</a>
 							<span th:unless="${user.nicDocument != null}">&ndash;</span>
 						</span>
 					</div>
@@ -110,7 +110,7 @@
 							<span class="detail-label">Bar Document</span>
 							<span class="detail-value">
 								<a class="action-btn action-btn-view" th:if="${user.barDocument != null}" target="_blank"
-								   th:href="@{/partner/documents/user/{id}(id=${user.barDocument.documentId})}">View</a>
+								   th:href="@{/partner/documents/user/{id}/{filename}(id=${user.barDocument.documentId},filename=${user.barDocument.originalFilename})}">View</a>
 								<span th:unless="${user.barDocument != null}">&ndash;</span>
 							</span>
 						</div>
@@ -168,7 +168,7 @@
 						</thead>
 						<tbody>
 						<tr th:if="${#lists.isEmpty(relatedConsultations)}">
-							<td class="table-empty" th:colspan="${isClient} ? 5 : 6">No consultations on record.</td>
+							<td class="table-empty" th:colspan="${isClient} ? 5 : 6">No consultation requests yet.</td>
 						</tr>
 						<tr th:each="consultation : ${relatedConsultations}">
 							<td class="cell-id" th:text="${consultation.consultationCode}"></td>
@@ -207,7 +207,7 @@
 						</thead>
 						<tbody>
 						<tr th:if="${#lists.isEmpty(relatedCases)}">
-							<td class="table-empty" th:colspan="${isClient} ? 6 : 7">No cases on record.</td>
+							<td class="table-empty" th:colspan="${isClient} ? 6 : 7">No cases yet.</td>
 						</tr>
 						<tr th:each="case : ${relatedCases}">
 							<td class="cell-id" th:text="${case.caseCode}"></td>
@@ -245,15 +245,15 @@
 						</thead>
 						<tbody>
 						<tr th:if="${#lists.isEmpty(relatedEvents)}">
-							<td class="table-empty" colspan="6">No events on record.</td>
+							<td class="table-empty" colspan="6">No events yet.</td>
 						</tr>
 						<tr th:each="event : ${relatedEvents}">
 							<td th:text="${event.subject}"></td>
 							<td th:if="${event instanceof T(lexflow.entity.scheduling.ConsultationEvent)}">
-								<a class="action-btn action-btn-view" th:href="@{/partner/consultations/{id}(id=${event.consultation.consultationId})}">View Consultation</a>
+								<a class="item-title" th:href="@{/partner/consultations/{id}(id=${event.consultation.consultationId})}" th:text="${event.consultation.consultationCode}"></a>
 							</td>
 							<td th:if="${event instanceof T(lexflow.entity.scheduling.CaseEvent)}">
-								<a class="action-btn action-btn-view" th:href="@{/partner/cases/{id}(id=${event.case_.caseId})}">View Case</a>
+								<a class="item-title" th:href="@{/partner/cases/{id}(id=${event.case_.caseId})}" th:text="${event.case_.caseCode}"></a>
 							</td>
 							<td th:text="${#temporals.format(event.date, 'dd/MM/yyyy')}" style="white-space:nowrap;"></td>
 							<td th:text="${event.startTime}" style="white-space:nowrap;"></td>
@@ -283,13 +283,13 @@
 						</thead>
 						<tbody>
 						<tr th:if="${#lists.isEmpty(relatedTransactions)}">
-							<td class="table-empty" colspan="5">No transactions on record.</td>
+							<td class="table-empty" colspan="5">No transactions yet.</td>
 						</tr>
 						<tr th:each="transaction : ${relatedTransactions}">
 							<td class="cell-id" th:text="${transaction.transactionCode}"></td>
 							<td th:text="${#numbers.formatDecimal(transaction.amount, 1, 'COMMA', 2, 'POINT')}"></td>
 							<td><span th:classappend="'tx-' + ${transaction.transactionType.name()}" th:text="${#strings.replace(transaction.transactionType, '_', ' ')}"></span></td>
-							<td class="cell-id" th:text="${transaction.invoiceId ?: '–'}"></td>
+							<td class="cell-id" th:text="${transaction.invoiceCode ?: '–'}"></td>
 							<td th:text="${#temporals.format(transaction.occurredAt, 'dd/MM/yyyy HH:mm')}" style="white-space:nowrap;"></td>
 						</tr>
 						</tbody>

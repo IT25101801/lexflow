@@ -12,7 +12,7 @@
 		
 		<!-- Flash Messages -->
 		<div class="flash flash-success" th:if="${success}" th:text="${success}"></div>
-		<div class="flash flash-error" th:if="${error}" th:text="${error}"></div>
+		<div th:replace="~{fragments/common :: error-flash}"></div>
 		
 		<div class="consult-layout">
 			<div>
@@ -24,12 +24,7 @@
 						</div>
 						<div th:if="${consultation.consultationStatus.name() == 'SCHEDULED'}" style="margin-left:auto;display:flex;gap:0.5rem;">
 							<th:block th:each="consultationEvent : ${consultationEvents}" th:if="${consultationEvent.eventStatus.name() == 'SCHEDULED'}">
-								<form method="post" th:action="@{/partner/consultations/{id}/events/{eventId}/complete(id=${consultation.consultationId},eventId=${consultationEvent.eventId})}">
-									<button class="action-btn action-btn-create" type="submit">Complete Meeting</button>
-								</form>
-								<form method="post" th:action="@{/partner/consultations/{id}/events/{eventId}/cancel(id=${consultation.consultationId},eventId=${consultationEvent.eventId})}" onsubmit="return confirm('Cancel this meeting? This action cannot be undone.');">
-									<button class="action-btn action-btn-delete" type="submit">Cancel Meeting</button>
-								</form>
+								<a class="action-btn action-btn-view" th:href="@{/partner/events/{id}(id=${consultationEvent.eventId})}">View Meeting</a>
 							</th:block>
 						</div>
 						<a class="action-btn action-btn-view" style="margin-left:auto;" th:if="${existingCase != null}"
@@ -93,10 +88,10 @@
 				<div class="section-card">
 					<div class="section-title">Documents</div>
 					<div class="item-list">
-						<p class="empty-state" th:if="${#lists.isEmpty(consultationDocuments)}">No documents attached.</p>
+						<p class="empty-state" th:if="${#lists.isEmpty(consultationDocuments)}">No documents yet.</p>
 						<div class="item-row" th:each="consultationDocument : ${consultationDocuments}">
 							<div class="item-main">
-								<a class="item-title" th:href="@{/partner/documents/consultation/{id}(id=${consultationDocument.documentId})}" th:text="${consultationDocument.originalFilename}" target="_blank"></a>
+								<a class="item-title" th:href="@{/partner/documents/consultation/{id}/{filename}(id=${consultationDocument.documentId},filename=${consultationDocument.originalFilename})}" th:text="${consultationDocument.originalFilename}" target="_blank"></a>
 							</div>
 						</div>
 					</div>
@@ -112,7 +107,6 @@
 						<button class="tab" type="button" th:if="${!hasCase and consultation.associate != null and (consultation.consultationStatus.name() == 'ACCEPTED_BY_PARTNER' or consultation.consultationStatus.name() == 'SCHEDULED' or consultation.consultationStatus.name() == 'ACCEPTED_BY_ASSOCIATE')}" data-tab="reassign">
 							Reassign Staff
 						</button>
-						<button class="tab" type="button" th:if="${consultation.consultationStatus.name() == 'SCHEDULED'}" data-tab="reschedule">Reschedule Meeting</button>
 					</div>
 					<div class="tabpanel-wrap">
 						<div class="tabpanel" th:if="${consultation.consultationStatus.name() == 'PENDING'}" data-tab="accept">
@@ -166,39 +160,6 @@
 								</div>
 							</form>
 						</div>
-						<div class="tabpanel" th:if="${consultation.consultationStatus.name() == 'SCHEDULED'}" data-tab="reschedule">
-							<form method="post" th:action="@{/partner/consultations/{id}/events/{eventId}/reschedule(id=${consultation.consultationId},eventId=${consultationEvent.eventId})}" th:each="consultationEvent : ${consultationEvents}" th:if="${consultationEvent.eventStatus.name() == 'SCHEDULED'}" style="display:flex;flex-direction:column;gap:0.85rem;">
-								<div class="field">
-									<label for="subject">Subject</label>
-									<input id="subject" type="text" name="subject" th:value="${consultationEvent.subject}" required/>
-								</div>
-								<div class="field">
-									<label for="date">Date</label>
-									<input id="date" type="date" name="date" th:value="${consultationEvent.date}" required data-not-past/>
-								</div>
-								<div class="field-row">
-									<div class="field">
-										<label for="startTime">Start Time</label>
-										<input id="startTime" type="time" name="startTime" th:value="${consultationEvent.startTime}" required/>
-									</div>
-									<div class="field">
-										<label for="endTime">End Time</label>
-										<input id="endTime" type="time" name="endTime" th:value="${consultationEvent.endTime}" required/>
-									</div>
-								</div>
-								<div class="field">
-									<label for="location">Location</label>
-									<input id="location" type="text" name="location" th:value="${consultationEvent.location}" required/>
-								</div>
-								<div class="field">
-									<label for="notes">Notes</label>
-									<textarea id="notes" name="notes" th:text="${consultationEvent.notes}" rows="4"></textarea>
-								</div>
-								<div>
-									<button class="btn btn-primary btn-block" type="submit">Reschedule</button>
-								</div>
-							</form>
-						</div>
 					</div>
 				</div>
 			</div>
@@ -211,10 +172,6 @@
 <div class="demo-btn-row" th:if="${consultation.consultationStatus.name() == 'PENDING'}">
 	<span class="demo-btn-label">Demo</span>
 	<button class="demo-btn" type="button" title="Fill Rejection Reason" onclick="fillPartnerRejectionFormR()">R</button>
-</div>
-<div class="demo-btn-row" th:if="${consultation.consultationStatus.name() == 'SCHEDULED'}">
-	<span class="demo-btn-label">Demo</span>
-	<button class="demo-btn" type="button" title="Fill New Meeting Time" onclick="fillRescheduleMeetingFormS3()">S3</button>
 </div>
 <script th:src="@{/js/demo.js}"></script>
 </body>

@@ -36,6 +36,9 @@
 		</a>
 		
 		<span class="nav-section-label">Cases</span>
+		<a class="nav-item" th:classappend="${active == 'cases-to-open'} ? ' active'" th:href="@{/partner/cases/to-open}">
+			<i class="bi bi-folder-plus"></i> Cases to Open
+		</a>
 		<a class="nav-item" th:classappend="${active == 'cases-open'} ? ' active'" th:href="@{/partner/cases/open}">
 			<i class="bi bi-briefcase"></i> Open Cases
 		</a>

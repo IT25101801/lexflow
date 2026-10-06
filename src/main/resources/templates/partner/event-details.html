@@ -12,7 +12,7 @@
 		
 		<!-- Flash Messages -->
 		<div class="flash flash-success" th:if="${success}" th:text="${success}"></div>
-		<div class="flash flash-error" th:if="${error}" th:text="${error}"></div>
+		<div th:replace="~{fragments/common :: error-flash}"></div>
 		
 		<div class="profile-layout">
 			<div>
@@ -38,11 +38,11 @@
 					</div>
 					<div class="detail-row" th:if="${event instanceof T(lexflow.entity.scheduling.ConsultationEvent)}">
 						<span class="detail-label">Owner</span>
-						<a class="action-btn action-btn-view" th:href="@{/partner/consultations/{id}(id=${event.consultation.consultationId})}">View Consultation</a>
+						<a class="item-title" th:href="@{/partner/consultations/{id}(id=${event.consultation.consultationId})}" th:text="${event.consultation.consultationCode}"></a>
 					</div>
 					<div class="detail-row" th:if="${event instanceof T(lexflow.entity.scheduling.CaseEvent)}">
 						<span class="detail-label">Owner</span>
-						<a class="action-btn action-btn-view" th:href="@{/partner/cases/{id}(id=${event.case_.caseId})}">View Case</a>
+						<a class="item-title" th:href="@{/partner/cases/{id}(id=${event.case_.caseId})}" th:text="${event.case_.caseCode}"></a>
 					</div>
 					<div class="detail-row">
 						<span class="detail-label">Date</span>

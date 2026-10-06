@@ -11,7 +11,7 @@
 	<div class="content">
 		
 		<div class="flash flash-success" th:if="${success}" th:text="${success}"></div>
-		<div class="flash flash-error" th:if="${error}" th:text="${error}"></div>
+		<div th:replace="~{fragments/common :: error-flash}"></div>
 		
 		<div class="section-card">
 			<div class="avatar-header" style="padding-bottom:1rem;margin-bottom:1rem;border-bottom:1px solid var(--border);">
@@ -66,7 +66,7 @@
 				
 				<div class="tabpanel" data-tab="tasks">
 					<div class="section-title">Tasks</div>
-					<p class="empty-state" th:if="${#lists.isEmpty(tasks)}">No tasks logged for this case yet.</p>
+					<p class="empty-state" th:if="${#lists.isEmpty(tasks)}">No tasks yet.</p>
 					<div class="contact-card-grid" th:unless="${#lists.isEmpty(tasks)}">
 						<div class="contact-card" th:each="task : ${tasks}">
 							<div class="detail-row">
@@ -101,22 +101,21 @@
 						</form>
 					</div>
 					<div class="item-list">
-						<p class="empty-state" th:if="${#lists.isEmpty(caseDocuments) and (documentKeyword == null or #strings.isEmpty(documentKeyword))}">No documents added to the case yet.</p>
-						<p class="empty-state" th:if="${#lists.isEmpty(caseDocuments) and documentKeyword != null and !#strings.isEmpty(documentKeyword)}">No documents match
-							"<span th:text="${documentKeyword}"></span>".</p>
+						<p class="empty-state" th:if="${#lists.isEmpty(caseDocuments) and (documentKeyword == null or #strings.isEmpty(documentKeyword))}">No documents yet.</p>
+						<p class="empty-state" th:if="${#lists.isEmpty(caseDocuments) and documentKeyword != null and !#strings.isEmpty(documentKeyword)}">No documents match your search.</p>
 						<div class="item-row" th:each="caseDocument : ${caseDocuments}">
 							<div class="item-main">
-								<a class="item-title" th:href="@{/client/documents/case/{id}(id=${caseDocument.documentId})}" th:text="${caseDocument.originalFilename}" target="_blank"></a>
+								<a class="item-title" th:href="@{/client/documents/case/{id}/{filename}(id=${caseDocument.documentId},filename=${caseDocument.originalFilename})}" th:text="${caseDocument.originalFilename}" target="_blank"></a>
 							</div>
 						</div>
 					</div>
 					<div>
 						<div class="section-title">Documents Pending Review</div>
-						<p class="empty-state" th:if="${#lists.isEmpty(stagedDocuments)}">No documents awaiting review.</p>
+						<p class="empty-state" th:if="${#lists.isEmpty(stagedDocuments)}">No documents pending review.</p>
 						<div class="item-list" th:unless="${#lists.isEmpty(stagedDocuments)}">
 							<div class="item-row" th:each="stagedDocument : ${stagedDocuments}">
 								<div class="item-main">
-									<a class="item-title" th:href="@{/client/documents/case/{id}(id=${stagedDocument.documentId})}" th:text="${stagedDocument.originalFilename}" target="_blank"></a>
+									<a class="item-title" th:href="@{/client/documents/case/{id}/{filename}(id=${stagedDocument.documentId},filename=${stagedDocument.originalFilename})}" th:text="${stagedDocument.originalFilename}" target="_blank"></a>
 								</div>
 							</div>
 						</div>

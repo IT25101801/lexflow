@@ -10,7 +10,7 @@
 	
 	<div class="content">
 		
-		<div class="flash flash-error" th:if="${error}" th:text="${error}"></div>
+		<div th:replace="~{fragments/common :: error-flash}"></div>
 		
 		<form class="form-card" th:action="@{/client/consultations}" method="post" enctype="multipart/form-data">
 			

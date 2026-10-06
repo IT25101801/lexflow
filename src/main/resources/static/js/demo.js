@@ -246,15 +246,15 @@ function fillMeetingForm(subject, daysAhead, startTime, endTime, location, notes
 }
 
 function fillScheduleMeetingFormS1() {
-	fillMeetingForm("Initial consultation meeting", 1, "11:00", "10:00", "LexFlow Office, Meeting Room 2", "Bring the supply agreement and the written complaints.");
+	fillMeetingForm("Initial consultation meeting", 2, "11:00", "10:00", "LexFlow Office, Meeting Room 2", "Bring the supply agreement and the written complaints.");
 }
 
 function fillScheduleMeetingFormS2() {
-	fillMeetingForm("Initial consultation meeting", 1, "10:00", "11:00", "LexFlow Office, Meeting Room 2", "Bring the supply agreement and the written complaints.");
+	fillMeetingForm("Initial consultation meeting", 2, "10:00", "11:00", "LexFlow Office, Meeting Room 2", "Bring the supply agreement and the written complaints.");
 }
 
 function fillRescheduleMeetingFormS3() {
-	fillMeetingForm("Initial consultation meeting", 2, "14:00", "15:00", "LexFlow Office, Meeting Room 1", "Moved at the client's request.");
+	fillMeetingForm("Initial consultation meeting", 3, "14:00", "15:00", "LexFlow Office, Meeting Room 1", "Moved at the client's request.");
 }
 
 function fillPartnerRejectionFormR() {
@@ -443,7 +443,7 @@ function fillCroConsultationFormD2() {
 }
 
 function fillCashTopUpFormT1() {
-	document.getElementById("clientCode").value = "CLT-00-00000000";
+	document.getElementById("clientCode").value = "CLT-123";
 	document.getElementById("amount").value = -5000;
 }
 
@@ -454,7 +454,7 @@ function fillCashTopUpFormT2() {
 }
 
 function fillWithdrawalFormT1() {
-	document.getElementById("clientCode").value = "CLT-00-00000000";
+	document.getElementById("clientCode").value = "CLT-123";
 	document.getElementById("amount").value = -1000;
 }
 

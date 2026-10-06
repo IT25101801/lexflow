@@ -59,7 +59,7 @@
 						</td>
 						<td th:text="${#numbers.formatDecimal(transaction.amount, 1, 'COMMA', 2, 'POINT')}"></td>
 						<td><span th:classappend="'tx-' + ${transaction.transactionType.name()}" th:text="${#strings.replace(transaction.transactionType, '_', ' ')}"></span></td>
-						<td class="cell-id" th:text="${transaction.invoiceId ?: '–'}"></td>
+						<td class="cell-id" th:text="${transaction.invoiceCode ?: '–'}"></td>
 						<td th:text="${#temporals.format(transaction.occurredAt, 'dd/MM/yyyy HH:mm')}"></td>
 					</tr>
 					</tbody>

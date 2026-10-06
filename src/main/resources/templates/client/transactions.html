@@ -10,7 +10,7 @@
 	
 	<div class="content">
 		<div class="flash flash-success" th:if="${success}" th:text="${success}"></div>
-		<div class="flash flash-error" th:if="${error}" th:text="${error}"></div>
+		<div th:replace="~{fragments/common :: error-flash}"></div>
 		
 		<!-- Wallet Header -->
 		<div class="wallet-top">
@@ -61,7 +61,7 @@
 						<td class="cell-id" th:text="${transaction.transactionCode}"></td>
 						<td th:text="${#numbers.formatDecimal(transaction.amount, 1, 'COMMA', 2, 'POINT')}"></td>
 						<td><span th:classappend="'tx-' + ${transaction.transactionType.name()}" th:text="${#strings.replace(transaction.transactionType, '_', ' ')}"></span></td>
-						<td class="cell-id" th:text="${transaction.invoiceId ?: '–'}"></td>
+						<td class="cell-id" th:text="${transaction.invoiceCode ?: '–'}"></td>
 						<td th:text="${#temporals.format(transaction.occurredAt, 'dd/MM/yyyy HH:mm')}"></td>
 					</tr>
 					</tbody>

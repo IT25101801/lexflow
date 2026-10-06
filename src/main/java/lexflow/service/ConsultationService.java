@@ -127,11 +127,11 @@ public class ConsultationService {
 	}
 	
 	public boolean hasCompletedMeeting(Consultation consultation) {
-		List<ConsultationEvent> meetings = eventDao.findByConsultationId(consultation.getConsultationId());
+		List<ConsultationEvent> consultationEvents = eventDao.findByConsultationId(consultation.getConsultationId());
 		
-		for (ConsultationEvent meeting : meetings) {
+		for (ConsultationEvent consultationEvent : consultationEvents) {
 			
-			if (meeting.getEventStatus() == EventStatus.COMPLETED) {
+			if (consultationEvent.getEventStatus() == EventStatus.COMPLETED) {
 				return true;
 			}
 			

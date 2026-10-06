@@ -1,5 +1,6 @@
 package lexflow.controller;
 
+import lexflow.util.ValidationUtil;
 import jakarta.validation.Valid;
 import lexflow.dto.consultation.EditConsultationRequest;
 import lexflow.dto.consultation.SubmitOnlineConsultationRequest;
@@ -60,11 +61,11 @@ public class ClientController {
 	}
 	
 	@PostMapping("/client/profile/change-password")
-	public String changePassword(Authentication authentication, @Valid @ModelAttribute ChangePasswordRequest form, BindingResult bindingResult, Model model) {
+	public String changePassword(Authentication authentication, @Valid @ModelAttribute ChangePasswordRequest form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
 		User user = currentClient(authentication);
 		
 		if (bindingResult.hasErrors()) {
-			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			model.addAttribute("error", ValidationUtil.allErrors(bindingResult));
 			model.addAttribute("user", user);
 			
 			return "client/profile";
@@ -79,10 +80,9 @@ public class ClientController {
 		
 		userService.changePassword(user, form.getNewPassword());
 		
-		model.addAttribute("user", user);
-		model.addAttribute("success", "Password changed successfully.");
+		redirectAttributes.addFlashAttribute("success", "Password changed successfully.");
 		
-		return "client/profile";
+		return "redirect:/client/profile";
 	}
 	
 	// Consultations
@@ -98,7 +98,7 @@ public class ClientController {
 	public String submitConsultation(@Valid @ModelAttribute SubmitOnlineConsultationRequest form, BindingResult bindingResult, Authentication authentication, Model model, RedirectAttributes redirectAttributes) {
 		
 		if (bindingResult.hasErrors()) {
-			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			model.addAttribute("error", ValidationUtil.allErrors(bindingResult));
 			model.addAttribute("caseTypes", CaseType.values());
 			
 			return "client/consultation-form";
@@ -106,8 +106,10 @@ public class ClientController {
 		
 		List<MultipartFile> consultationFiles = form.getConsultationFiles() != null ? form.getConsultationFiles() : List.of();
 		
+		Consultation consultation;
+		
 		try {
-			consultationService.submit(currentClient(authentication), form.getCaseType(), form.getOpposingParties(), form.getDescription(), consultationFiles);
+			consultation = consultationService.submit(currentClient(authentication), form.getCaseType(), form.getOpposingParties(), form.getDescription(), consultationFiles);
 		} catch (BusinessRuleViolationException e) {
 			model.addAttribute("caseTypes", CaseType.values());
 			model.addAttribute("error", e.getMessage());
@@ -122,7 +124,7 @@ public class ClientController {
 		
 		redirectAttributes.addFlashAttribute("success", "Consultation request submitted successfully.");
 		
-		return "redirect:/client/consultations";
+		return "redirect:/client/consultations/" + consultation.getConsultationId();
 	}
 	
 	@GetMapping("/client/consultations")
@@ -140,28 +142,29 @@ public class ClientController {
 	}
 	
 	@PostMapping("/client/consultations/{id}/delete")
-	public String deleteConsultation(@PathVariable("id") Long consultationId, Authentication authentication, RedirectAttributes redirectAttributes) {
+	public String deleteConsultation(@PathVariable("id") Long consultationId, Authentication authentication, Model model, RedirectAttributes redirectAttributes) {
 		Consultation consultation = consultationService.findOwnedByClient(consultationId, currentClient(authentication));
 		
 		try {
 			consultationService.delete(consultation);
 		} catch (InvalidConsultationStateException e) {
-			redirectAttributes.addFlashAttribute("error", e.getMessage());
+			model.addAttribute("error", e.getMessage());
+			populateConsultationDetailModel(consultation, model);
 			
-			return "redirect:/client/consultations/" + consultationId;
+			return "client/consultation-details";
 		}
 		
-		redirectAttributes.addFlashAttribute("success", "Consultation request deleted.");
+		redirectAttributes.addFlashAttribute("success", "Consultation request deleted successfully.");
 		
 		return "redirect:/client/consultations";
 	}
 	
 	@PostMapping("/client/consultations/{id}/edit")
-	public String editConsultation(@PathVariable("id") Long consultationId, @Valid @ModelAttribute EditConsultationRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
+	public String editConsultation(@PathVariable("id") Long consultationId, @Valid @ModelAttribute EditConsultationRequest form, BindingResult bindingResult, Authentication authentication, Model model, RedirectAttributes redirectAttributes) {
 		Consultation consultation = consultationService.findOwnedByClient(consultationId, currentClient(authentication));
 		
 		if (bindingResult.hasErrors()) {
-			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			model.addAttribute("error", ValidationUtil.allErrors(bindingResult));
 			populateConsultationDetailModel(consultation, model);
 			
 			return "client/consultation-details";
@@ -170,15 +173,17 @@ public class ClientController {
 		List<MultipartFile> consultationFiles = form.getConsultationFiles() != null ? form.getConsultationFiles() : List.of();
 		
 		try {
-			consultation = consultationService.updateDetails(consultation, form.getCaseType(), form.getOpposingParties(), form.getDescription(), consultationFiles, form.getDeleteDocumentIds(), form.getDocumentIds(), form.getOriginalFilenames());
-			populateConsultationDetailModel(consultation, model);
-			model.addAttribute("success", "Consultation request updated successfully.");
+			consultationService.updateDetails(consultation, form.getCaseType(), form.getOpposingParties(), form.getDescription(), consultationFiles, form.getDeleteDocumentIds(), form.getDocumentIds(), form.getOriginalFilenames());
 		} catch (InvalidConsultationStateException | BusinessRuleViolationException e) {
 			populateConsultationDetailModel(consultation, model);
 			model.addAttribute("error", e.getMessage());
+			
+			return "client/consultation-details";
 		}
 		
-		return "client/consultation-details";
+		redirectAttributes.addFlashAttribute("success", "Consultation request updated successfully.");
+		
+		return "redirect:/client/consultations/{id}";
 	}
 	
 	// Cases
@@ -213,20 +218,22 @@ public class ClientController {
 	}
 	
 	@PostMapping("/client/cases/{id}/documents/stage")
-	public String stageCaseDocument(@PathVariable("id") Long caseId, @Valid @ModelAttribute UploadCaseDocumentsRequest form, Authentication authentication, Model model) {
+	public String stageCaseDocument(@PathVariable("id") Long caseId, @Valid @ModelAttribute UploadCaseDocumentsRequest form, Authentication authentication, Model model, RedirectAttributes redirectAttributes) {
 		Case case_ = caseService.findOwnedByClient(caseId, currentClient(authentication));
 		List<MultipartFile> caseFiles = form.getCaseFiles() != null ? form.getCaseFiles() : List.of();
 		
 		try {
 			documentService.stage(case_, caseFiles, LocalDateTime.now());
-			populateCaseDetailModel(case_, model);
-			model.addAttribute("success", "Document uploaded.");
 		} catch (InvalidCaseStateException e) {
 			populateCaseDetailModel(case_, model);
 			model.addAttribute("error", e.getMessage());
+			
+			return "client/case-details";
 		}
 		
-		return "client/case-details";
+		redirectAttributes.addFlashAttribute("success", "Documents uploaded successfully.");
+		
+		return "redirect:/client/cases/{id}";
 	}
 	
 	// Schedule
@@ -271,7 +278,7 @@ public class ClientController {
 	public String topUpWalletByCard(@Valid @ModelAttribute TopUpByCardRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
 		
 		if (bindingResult.hasErrors()) {
-			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			model.addAttribute("error", ValidationUtil.allErrors(bindingResult));
 			Client client = currentClient(authentication);
 			model.addAttribute("client", client);
 			model.addAttribute("transactions", transactionService.findAllForClient(client));
@@ -284,17 +291,17 @@ public class ClientController {
 	
 	// Documents
 	
-	@GetMapping("/client/documents/user/{id}")
+	@GetMapping({"/client/documents/user/{id}", "/client/documents/user/{id}/{filename}"})
 	public ResponseEntity<Resource> viewUserDocument(@PathVariable("id") Long documentId, Authentication authentication) {
 		return documentService.streamUserDocument(documentService.findById(documentId), currentClient(authentication));
 	}
 	
-	@GetMapping("/client/documents/consultation/{id}")
+	@GetMapping({"/client/documents/consultation/{id}", "/client/documents/consultation/{id}/{filename}"})
 	public ResponseEntity<Resource> viewConsultationDocument(@PathVariable("id") Long documentId, Authentication authentication) {
 		return documentService.streamConsultationDocument(documentService.findById(documentId), currentClient(authentication));
 	}
 	
-	@GetMapping("/client/documents/case/{id}")
+	@GetMapping({"/client/documents/case/{id}", "/client/documents/case/{id}/{filename}"})
 	public ResponseEntity<Resource> viewCaseDocument(@PathVariable("id") Long documentId, Authentication authentication) {
 		return documentService.streamCaseDocument(documentService.findById(documentId), currentClient(authentication));
 	}

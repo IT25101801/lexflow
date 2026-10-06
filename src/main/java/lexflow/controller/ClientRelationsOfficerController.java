@@ -1,5 +1,6 @@
 package lexflow.controller;
 
+import lexflow.util.ValidationUtil;
 import jakarta.validation.Valid;
 import lexflow.dto.consultation.EditConsultationRequest;
 import lexflow.dto.consultation.SubmitWalkInConsultationRequest;
@@ -53,11 +54,11 @@ public class ClientRelationsOfficerController {
 	}
 	
 	@PostMapping("/client-relations-officer/profile/change-password")
-	public String changePassword(Authentication authentication, @Valid @ModelAttribute ChangePasswordRequest form, BindingResult bindingResult, Model model) {
+	public String changePassword(Authentication authentication, @Valid @ModelAttribute ChangePasswordRequest form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
 		User user = currentClientRelationsOfficer(authentication);
 		
 		if (bindingResult.hasErrors()) {
-			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			model.addAttribute("error", ValidationUtil.allErrors(bindingResult));
 			model.addAttribute("user", user);
 			
 			return "client-relations-officer/profile";
@@ -72,10 +73,9 @@ public class ClientRelationsOfficerController {
 		
 		userService.changePassword(user, form.getNewPassword());
 		
-		model.addAttribute("user", user);
-		model.addAttribute("success", "Password changed successfully.");
+		redirectAttributes.addFlashAttribute("success", "Password changed successfully.");
 		
-		return "client-relations-officer/profile";
+		return "redirect:/client-relations-officer/profile";
 	}
 	
 	// Clients
@@ -91,14 +91,16 @@ public class ClientRelationsOfficerController {
 	public String registerClient(@Valid @ModelAttribute RegisterClientRequest form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
 		
 		if (bindingResult.hasErrors()) {
-			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			model.addAttribute("error", ValidationUtil.allErrors(bindingResult));
 			model.addAttribute("genders", Gender.values());
 			
 			return "client-relations-officer/register-client";
 		}
 		
+		Client client;
+		
 		try {
-			userService.register(form.getEmail(), form.getPassword(), form.getName(), form.getDateOfBirth(), form.getGender(), form.getAddresses(), form.getPhoneNumbers(), form.getNicNumber(), form.getNicFile());
+			client = userService.register(form.getEmail(), form.getPassword(), form.getName(), form.getDateOfBirth(), form.getGender(), form.getAddresses(), form.getPhoneNumbers(), form.getNicNumber(), form.getNicFile());
 		} catch (EntityAlreadyExistsException | BusinessRuleViolationException e) {
 			model.addAttribute("genders", Gender.values());
 			model.addAttribute("error", e.getMessage());
@@ -113,7 +115,7 @@ public class ClientRelationsOfficerController {
 		
 		redirectAttributes.addFlashAttribute("success", "Client registered successfully.");
 		
-		return "redirect:/client-relations-officer/register-client";
+		return "redirect:/client-relations-officer/clients/" + client.getUserId();
 	}
 	
 	@GetMapping("/client-relations-officer/clients")
@@ -157,11 +159,11 @@ public class ClientRelationsOfficerController {
 	}
 	
 	@PostMapping("/client-relations-officer/clients/{id}/reactivate")
-	public String reactivateClient(@PathVariable("id") Long userId, @Valid @ModelAttribute ReactivateAccountRequest form, BindingResult bindingResult, Model model) {
+	public String reactivateClient(@PathVariable("id") Long userId, @Valid @ModelAttribute ReactivateAccountRequest form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
 		Client client = userService.findClientById(userId);
 		
 		if (bindingResult.hasErrors()) {
-			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			model.addAttribute("error", ValidationUtil.allErrors(bindingResult));
 			model.addAttribute("user", client);
 			model.addAttribute("genders", Gender.values());
 			populateClientDetailModel(client, model);
@@ -170,25 +172,27 @@ public class ClientRelationsOfficerController {
 		}
 		
 		try {
-			client = (Client) userService.reactivate(client, form.getTemporaryPassword());
-			model.addAttribute("success", "Client account reactivated. Give the client the temporary password so they can log in and change it.");
+			userService.reactivate(client, form.getTemporaryPassword());
 		} catch (InvalidStateException | BusinessRuleViolationException e) {
 			model.addAttribute("error", e.getMessage());
+			model.addAttribute("user", client);
+			model.addAttribute("genders", Gender.values());
+			populateClientDetailModel(client, model);
+			
+			return "client-relations-officer/client-details";
 		}
 		
-		model.addAttribute("user", client);
-		model.addAttribute("genders", Gender.values());
-		populateClientDetailModel(client, model);
+		redirectAttributes.addFlashAttribute("success", "Account reactivated successfully.");
 		
-		return "client-relations-officer/client-details";
+		return "redirect:/client-relations-officer/clients/{id}";
 	}
 	
 	@PostMapping("/client-relations-officer/clients/{id}/reset-password")
-	public String resetClientPassword(@PathVariable("id") Long userId, @Valid @ModelAttribute ResetPasswordRequest form, BindingResult bindingResult, Model model) {
+	public String resetClientPassword(@PathVariable("id") Long userId, @Valid @ModelAttribute ResetPasswordRequest form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
 		Client client = userService.findClientById(userId);
 		
 		if (bindingResult.hasErrors()) {
-			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			model.addAttribute("error", ValidationUtil.allErrors(bindingResult));
 			model.addAttribute("user", client);
 			model.addAttribute("genders", Gender.values());
 			populateClientDetailModel(client, model);
@@ -196,22 +200,19 @@ public class ClientRelationsOfficerController {
 			return "client-relations-officer/client-details";
 		}
 		
-		client = (Client) userService.changePassword(client, form.getTemporaryPassword());
+		userService.changePassword(client, form.getTemporaryPassword());
 		
-		model.addAttribute("user", client);
-		model.addAttribute("genders", Gender.values());
-		populateClientDetailModel(client, model);
-		model.addAttribute("success", "Password reset successfully.");
+		redirectAttributes.addFlashAttribute("success", "Password reset successfully.");
 		
-		return "client-relations-officer/client-details";
+		return "redirect:/client-relations-officer/clients/{id}";
 	}
 	
 	@PostMapping("/client-relations-officer/clients/{id}/edit")
-	public String editClient(@PathVariable("id") Long userId, @Valid @ModelAttribute EditProfileRequest form, BindingResult bindingResult, Model model) {
+	public String editClient(@PathVariable("id") Long userId, @Valid @ModelAttribute EditProfileRequest form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
 		Client client = userService.findClientById(userId);
 		
 		if (bindingResult.hasErrors()) {
-			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			model.addAttribute("error", ValidationUtil.allErrors(bindingResult));
 			model.addAttribute("user", client);
 			model.addAttribute("genders", Gender.values());
 			populateClientDetailModel(client, model);
@@ -220,17 +221,19 @@ public class ClientRelationsOfficerController {
 		}
 		
 		try {
-			client = (Client) userService.updateDetails(client, form.getName(), form.getDateOfBirth(), form.getGender(), form.getAddresses(), form.getPhoneNumbers(), form.getNicFile(), null);
-			model.addAttribute("success", "Client updated successfully.");
+			userService.updateDetails(client, form.getName(), form.getDateOfBirth(), form.getGender(), form.getAddresses(), form.getPhoneNumbers(), form.getNicFile(), null);
 		} catch (NonPdfDocumentException e) {
 			model.addAttribute("error", e.getMessage());
+			model.addAttribute("user", client);
+			model.addAttribute("genders", Gender.values());
+			populateClientDetailModel(client, model);
+			
+			return "client-relations-officer/client-details";
 		}
 		
-		model.addAttribute("user", client);
-		model.addAttribute("genders", Gender.values());
-		populateClientDetailModel(client, model);
+		redirectAttributes.addFlashAttribute("success", "Client updated successfully.");
 		
-		return "client-relations-officer/client-details";
+		return "redirect:/client-relations-officer/clients/{id}";
 	}
 	
 	// Consultations
@@ -246,7 +249,7 @@ public class ClientRelationsOfficerController {
 	public String submitConsultation(@Valid @ModelAttribute SubmitWalkInConsultationRequest form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
 		
 		if (bindingResult.hasErrors()) {
-			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			model.addAttribute("error", ValidationUtil.allErrors(bindingResult));
 			model.addAttribute("caseTypes", CaseType.values());
 			
 			return "client-relations-officer/consultation-form";
@@ -265,8 +268,10 @@ public class ClientRelationsOfficerController {
 		
 		List<MultipartFile> consultationFiles = form.getConsultationFiles() != null ? form.getConsultationFiles() : List.of();
 		
+		Consultation consultation;
+		
 		try {
-			consultationService.submit(client, form.getCaseType(), form.getOpposingParties(), form.getDescription(), consultationFiles);
+			consultation = consultationService.submit(client, form.getCaseType(), form.getOpposingParties(), form.getDescription(), consultationFiles);
 		} catch (BusinessRuleViolationException e) {
 			model.addAttribute("caseTypes", CaseType.values());
 			model.addAttribute("error", e.getMessage());
@@ -281,7 +286,7 @@ public class ClientRelationsOfficerController {
 		
 		redirectAttributes.addFlashAttribute("success", "Consultation request submitted successfully.");
 		
-		return "redirect:/client-relations-officer/consultations";
+		return "redirect:/client-relations-officer/consultations/" + consultation.getConsultationId();
 	}
 	
 	@GetMapping("/client-relations-officer/consultations")
@@ -300,27 +305,29 @@ public class ClientRelationsOfficerController {
 	}
 	
 	@PostMapping("/client-relations-officer/consultations/{id}/delete")
-	public String deleteConsultation(@PathVariable("id") Long consultationId, RedirectAttributes redirectAttributes) {
+	public String deleteConsultation(@PathVariable("id") Long consultationId, Model model, RedirectAttributes redirectAttributes) {
+		Consultation consultation = consultationService.findById(consultationId);
 		
 		try {
-			consultationService.delete(consultationService.findById(consultationId));
+			consultationService.delete(consultation);
 		} catch (InvalidConsultationStateException e) {
-			redirectAttributes.addFlashAttribute("error", e.getMessage());
+			model.addAttribute("error", e.getMessage());
+			populateConsultationDetailModel(consultation, model);
 			
-			return "redirect:/client-relations-officer/consultations/" + consultationId;
+			return "client-relations-officer/consultation-details";
 		}
 		
-		redirectAttributes.addFlashAttribute("success", "Consultation request deleted.");
+		redirectAttributes.addFlashAttribute("success", "Consultation request deleted successfully.");
 		
 		return "redirect:/client-relations-officer/consultations";
 	}
 	
 	@PostMapping("/client-relations-officer/consultations/{id}/edit")
-	public String editConsultation(@PathVariable("id") Long consultationId, @Valid @ModelAttribute EditConsultationRequest form, BindingResult bindingResult, Model model) {
+	public String editConsultation(@PathVariable("id") Long consultationId, @Valid @ModelAttribute EditConsultationRequest form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
 		Consultation consultation = consultationService.findById(consultationId);
 		
 		if (bindingResult.hasErrors()) {
-			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			model.addAttribute("error", ValidationUtil.allErrors(bindingResult));
 			populateConsultationDetailModel(consultation, model);
 			
 			return "client-relations-officer/consultation-details";
@@ -329,15 +336,17 @@ public class ClientRelationsOfficerController {
 		List<MultipartFile> consultationFiles = form.getConsultationFiles() != null ? form.getConsultationFiles() : List.of();
 		
 		try {
-			consultation = consultationService.updateDetails(consultation, form.getCaseType(), form.getOpposingParties(), form.getDescription(), consultationFiles, form.getDeleteDocumentIds(), form.getDocumentIds(), form.getOriginalFilenames());
-			populateConsultationDetailModel(consultation, model);
-			model.addAttribute("success", "Consultation request updated successfully.");
+			consultationService.updateDetails(consultation, form.getCaseType(), form.getOpposingParties(), form.getDescription(), consultationFiles, form.getDeleteDocumentIds(), form.getDocumentIds(), form.getOriginalFilenames());
 		} catch (InvalidConsultationStateException | BusinessRuleViolationException e) {
 			populateConsultationDetailModel(consultation, model);
 			model.addAttribute("error", e.getMessage());
+			
+			return "client-relations-officer/consultation-details";
 		}
 		
-		return "client-relations-officer/consultation-details";
+		redirectAttributes.addFlashAttribute("success", "Consultation request updated successfully.");
+		
+		return "redirect:/client-relations-officer/consultations/{id}";
 	}
 	
 	// Schedule
@@ -369,12 +378,12 @@ public class ClientRelationsOfficerController {
 	
 	// Documents
 	
-	@GetMapping("/client-relations-officer/documents/user/{id}")
+	@GetMapping({"/client-relations-officer/documents/user/{id}", "/client-relations-officer/documents/user/{id}/{filename}"})
 	public ResponseEntity<Resource> viewUserDocument(@PathVariable("id") Long documentId, Authentication authentication) {
 		return documentService.streamUserDocument(documentService.findById(documentId), currentClientRelationsOfficer(authentication));
 	}
 	
-	@GetMapping("/client-relations-officer/documents/consultation/{id}")
+	@GetMapping({"/client-relations-officer/documents/consultation/{id}", "/client-relations-officer/documents/consultation/{id}/{filename}"})
 	public ResponseEntity<Resource> viewConsultationDocument(@PathVariable("id") Long documentId, Authentication authentication) {
 		return documentService.streamConsultationDocument(documentService.findById(documentId), currentClientRelationsOfficer(authentication));
 	}

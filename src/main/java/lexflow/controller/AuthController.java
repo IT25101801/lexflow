@@ -1,5 +1,6 @@
 package lexflow.controller;
 
+import lexflow.util.ValidationUtil;
 import jakarta.validation.Valid;
 import lexflow.dto.user.RegisterClientRequest;
 import lexflow.entity.user.Gender;
@@ -40,7 +41,7 @@ public class AuthController {
 	public String registerClient(@Valid @ModelAttribute RegisterClientRequest form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
 		
 		if (bindingResult.hasErrors()) {
-			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			model.addAttribute("error", ValidationUtil.allErrors(bindingResult));
 			model.addAttribute("genders", Gender.values());
 			
 			return "auth/register-client";
@@ -60,7 +61,7 @@ public class AuthController {
 			return "auth/register-client";
 		}
 		
-		redirectAttributes.addFlashAttribute("success", "Registration successful. Please log in.");
+		redirectAttributes.addFlashAttribute("success", "Account created successfully.");
 		
 		return "redirect:/auth/login";
 	}

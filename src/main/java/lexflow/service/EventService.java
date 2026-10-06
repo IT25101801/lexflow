@@ -1,6 +1,7 @@
 package lexflow.service;
 
 import lexflow.dao.EventDao;
+import lexflow.dao.TaskDao;
 import lexflow.entity.case_.Case;
 import lexflow.entity.case_.Task;
 import lexflow.entity.consultation.Consultation;
@@ -37,7 +38,8 @@ import java.util.List;
 public class EventService {
 	
 	private final EventDao eventDao;
-	private final ConsultationService consultationService;
+	private final TaskDao taskDao;
+private final ConsultationService consultationService;
 	
 	// Create
 	
@@ -226,6 +228,7 @@ public class EventService {
 	
 	// Update
 	
+	@Transactional
 	public Event reschedule(Event event, String subject, LocalDate date, LocalTime startTime, LocalTime endTime, String location, String notes) {
 		return stateFor(event.getEventStatus()).reschedule(event, this, subject, date, startTime, endTime, location, notes);
 	}
@@ -239,6 +242,12 @@ public class EventService {
 		return stateFor(event.getEventStatus()).cancel(event, this);
 	}
 	
+	public Event updateSubject(Event event, String subject) {
+		event.setSubject(subject);
+		
+		return eventDao.update(event);
+	}
+
 	// State Pattern
 	
 	public Event applyReschedule(Event event, String subject, LocalDate date, LocalTime startTime, LocalTime endTime, String location, String notes) {
@@ -258,8 +267,13 @@ public class EventService {
 		event.setEndTime(endTime);
 		event.setLocation(location);
 		event.setNotes(notes);
+		Event rescheduledEvent = eventDao.update(event);
 		
-		return eventDao.update(event);
+		if (event instanceof CaseEvent caseEvent) {
+			taskDao.updateTitle(caseEvent.getTaskId(), subject);
+		}
+		
+		return rescheduledEvent;
 	}
 	
 	public Event applyCompletion(Event event) {

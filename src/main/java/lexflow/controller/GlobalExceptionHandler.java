@@ -38,7 +38,7 @@ public class GlobalExceptionHandler {
 		log.error("Persistence failure during {}", e.getOperation(), e);
 		response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		model.addAttribute("heading", "Something went wrong");
-		model.addAttribute("message", "The system could not complete that request. Please try again.");
+		model.addAttribute("message", "Could not complete the request. Please try again.");
 		
 		return "error/generic";
 	}
@@ -48,7 +48,7 @@ public class GlobalExceptionHandler {
 		log.error("Could not render {} as a PDF", e.getDocumentName(), e);
 		response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		model.addAttribute("heading", "Something went wrong");
-		model.addAttribute("message", "The PDF could not be created. Please try again.");
+		model.addAttribute("message", "Could not create the PDF. Please try again.");
 		
 		return "error/generic";
 	}

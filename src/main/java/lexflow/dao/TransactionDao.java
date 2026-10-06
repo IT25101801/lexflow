@@ -30,6 +30,7 @@ public class TransactionDao {
 												 amount,
 												 transaction_type,
 												 invoice_id,
+												 (SELECT i.invoice_code FROM invoices i WHERE i.invoice_id = transactions.invoice_id) AS invoice_code,
 												 occurred_at
 												 """;
 	
@@ -193,7 +194,10 @@ public class TransactionDao {
 		
 		LocalDateTime occurredAt = resultSet.getTimestamp("occurred_at").toLocalDateTime();
 		
-		return new Transaction(transactionId, transactionCode, client, amount, transactionType, invoiceId, occurredAt);
+		Transaction transaction = new Transaction(transactionId, transactionCode, client, amount, transactionType, invoiceId, occurredAt);
+		transaction.setInvoiceCode(resultSet.getString("invoice_code"));
+		
+		return transaction;
 	}
 	
 }

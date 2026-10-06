@@ -5,6 +5,7 @@ import lexflow.dto.finance.FillCardDetailsRequest;
 import lexflow.entity.user.Client;
 import lexflow.exception.PersistenceException;
 import lexflow.security.CustomUserPrincipal;
+import lexflow.util.ValidationUtil;
 import lexflow.service.TransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
 
@@ -32,31 +34,27 @@ public class PaymentController {
 	}
 	
 	@PostMapping("/payment/process")
-	public String fillCardDetails(@Valid @ModelAttribute FillCardDetailsRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
+	public String fillCardDetails(@Valid @ModelAttribute FillCardDetailsRequest form, BindingResult bindingResult, Authentication authentication, Model model, RedirectAttributes redirectAttributes) {
 		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("amount", form.getAmount());
-			model.addAttribute("error", "Invalid card details. Please check and try again.");
+			model.addAttribute("error", ValidationUtil.allErrors(bindingResult));
 			
 			return "payment/portal";
 		}
-		
-		Client client = currentClient(authentication);
 		
 		try {
-			transactionService.topUpByCard(client, form.getAmount());
+			transactionService.topUpByCard(currentClient(authentication), form.getAmount());
 		} catch (PersistenceException e) {
 			model.addAttribute("amount", form.getAmount());
-			model.addAttribute("error", "The payment could not be processed. Please try again.");
+			model.addAttribute("error", "Could not process the payment. Please try again.");
 			
 			return "payment/portal";
 		}
 		
-		model.addAttribute("client", client);
-		model.addAttribute("transactions", transactionService.findAllForClient(client));
-		model.addAttribute("success", "Trust account topped up successfully.");
+		redirectAttributes.addFlashAttribute("success", "Wallet topped up successfully.");
 		
-		return "client/transactions";
+		return "redirect:/client/transactions";
 	}
 	
 	private Client currentClient(Authentication authentication) {

@@ -1,5 +1,6 @@
 package lexflow.service;
 
+import java.util.ArrayList;
 import lexflow.dao.CaseDao;
 import lexflow.dao.ConsultationDao;
 import lexflow.dao.EventDao;
@@ -126,6 +127,18 @@ public class ConsultationService {
 		return consultationDao.findByClientKeyword(keyword);
 	}
 	
+	public List<Consultation> findAwaitingCase() {
+		return withoutCase(findAll());
+	}
+
+	public List<Consultation> findAwaitingCaseForAssociate(Associate associate) {
+		return withoutCase(findAllForAssociate(associate));
+	}
+
+	public List<Consultation> findAwaitingCaseForParalegal(Paralegal paralegal) {
+		return withoutCase(findAllForParalegal(paralegal));
+	}
+
 	public boolean hasCompletedMeeting(Consultation consultation) {
 		List<ConsultationEvent> consultationEvents = eventDao.findByConsultationId(consultation.getConsultationId());
 		
@@ -254,5 +267,19 @@ public class ConsultationService {
 		}
 		
 	}
-	
+
+	private List<Consultation> withoutCase(List<Consultation> consultations) {
+		List<Consultation> awaitingCase = new ArrayList<>();
+
+		for (Consultation consultation : consultations) {
+
+			if (consultation.getConsultationStatus() == ConsultationStatus.ACCEPTED_BY_ASSOCIATE && caseDao.findByConsultationId(consultation.getConsultationId()) == null) {
+				awaitingCase.add(consultation);
+			}
+
+		}
+
+		return awaitingCase;
+	}
+
 }

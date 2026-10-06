@@ -216,29 +216,35 @@ public class TaskDao {
 		String sql = """
 					 UPDATE tasks
 					 SET title             = ?,
+					     documenting_task  = ?,
+					     scheduling_task   = ?,
+					     billing_task      = ?,
 					     billable_amount   = ?,
 					     billed_invoice_id = ?
 					 WHERE task_id = ?
 					 """;
-		
+					
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
 			statement.setString(1, task.getTitle());
+			statement.setBoolean(2, task.isDocumentingTask());
+			statement.setBoolean(3, task.isSchedulingTask());
+			statement.setBoolean(4, task.isBillingTask());
 			
 			if (task.getBillableAmount() != null) {
-				statement.setBigDecimal(2, task.getBillableAmount());
+				statement.setBigDecimal(5, task.getBillableAmount());
 			} else {
-				statement.setNull(2, Types.DECIMAL);
+				statement.setNull(5, Types.DECIMAL);
 			}
 			
 			if (task.getBilledInvoiceId() != null) {
-				statement.setLong(3, task.getBilledInvoiceId());
+				statement.setLong(6, task.getBilledInvoiceId());
 			} else {
-				statement.setNull(3, Types.BIGINT);
+				statement.setNull(6, Types.BIGINT);
 			}
 			
-			statement.setLong(4, task.getTaskId());
+			statement.setLong(7, task.getTaskId());
 			statement.executeUpdate();
 		} catch (SQLException e) {
 			throw new PersistenceException("updating task", e);
@@ -247,6 +253,50 @@ public class TaskDao {
 		}
 		
 		return task;
+	}
+	
+	public void updateTitle(Long taskId, String title) {
+		String sql = """
+					 UPDATE tasks
+					 SET title = ?
+					 WHERE task_id = ?
+					 """;
+					
+		Connection connection = DataSourceUtils.getConnection(dataSource);
+		
+		try (PreparedStatement statement = connection.prepareStatement(sql)) {
+			statement.setString(1, title);
+			statement.setLong(2, taskId);
+			
+			statement.executeUpdate();
+		} catch (SQLException e) {
+			throw new PersistenceException("updating task title", e);
+		} finally {
+			DataSourceUtils.releaseConnection(connection, dataSource);
+		}
+		
+	}
+	
+	// Delete
+	
+	public void deleteById(Long taskId) {
+		String sql = """
+					 DELETE
+					 FROM tasks
+					 WHERE task_id = ?
+					 """;
+					
+		Connection connection = DataSourceUtils.getConnection(dataSource);
+		
+		try (PreparedStatement statement = connection.prepareStatement(sql)) {
+			statement.setLong(1, taskId);
+			statement.executeUpdate();
+		} catch (SQLException e) {
+			throw new PersistenceException("deleting task", e);
+		} finally {
+			DataSourceUtils.releaseConnection(connection, dataSource);
+		}
+		
 	}
 	
 	// Private Helpers

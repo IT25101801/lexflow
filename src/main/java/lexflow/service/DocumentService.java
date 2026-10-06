@@ -345,7 +345,16 @@ public class DocumentService {
 			throw new AccessDeniedException("Document does not belong to this case.");
 		}
 		
-		documentDao.updateOriginalFilename(documentId, newFilename);
+		String originalFilename = caseDocument.getOriginalFilename();
+		int dot = originalFilename.lastIndexOf('.');
+		String extension = dot > 0 ? originalFilename.substring(dot) : "";
+		String renamedFilename = newFilename.trim();
+		
+		if (!renamedFilename.toLowerCase().endsWith(extension.toLowerCase())) {
+			renamedFilename = renamedFilename + extension;
+		}
+		
+		documentDao.updateOriginalFilename(documentId, renamedFilename);
 	}
 	
 	@Transactional
@@ -365,6 +374,10 @@ public class DocumentService {
 			documentDao.updateInStaging(documentId, false);
 		}
 		
+	}
+	
+	public void unlinkFromTask(Task task) {
+		documentDao.unlinkFromTask(task.getTaskId());
 	}
 	
 	// Delete

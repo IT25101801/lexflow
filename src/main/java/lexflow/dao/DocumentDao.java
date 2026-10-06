@@ -506,6 +506,26 @@ public class DocumentDao {
 		
 	}
 	
+	public void unlinkFromTask(Long taskId) {
+		String sql = """
+					 UPDATE documents
+					 SET task_id = NULL
+					 WHERE task_id = ?
+					 """;
+					
+		Connection connection = DataSourceUtils.getConnection(dataSource);
+		
+		try (PreparedStatement statement = connection.prepareStatement(sql)) {
+			statement.setLong(1, taskId);
+			statement.executeUpdate();
+		} catch (SQLException e) {
+			throw new PersistenceException("unlinking documents from task", e);
+		} finally {
+			DataSourceUtils.releaseConnection(connection, dataSource);
+		}
+		
+	}
+	
 	// Delete
 	
 	public void deleteAllById(List<Long> documentIds) {

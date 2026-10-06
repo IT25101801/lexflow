@@ -1,5 +1,6 @@
 package lexflow.controller;
 
+import lexflow.util.ValidationUtil;
 import jakarta.validation.Valid;
 import lexflow.dto.finance.CompileInvoiceRequest;
 import lexflow.dto.finance.EditBillableAmountRequest;
@@ -28,6 +29,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -83,11 +85,11 @@ public class FinanceOfficerController {
 	}
 	
 	@PostMapping("/finance-officer/profile/change-password")
-	public String changePassword(Authentication authentication, @Valid @ModelAttribute ChangePasswordRequest form, BindingResult bindingResult, Model model) {
+	public String changePassword(Authentication authentication, @Valid @ModelAttribute ChangePasswordRequest form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
 		User user = currentFinanceOfficer(authentication);
 		
 		if (bindingResult.hasErrors()) {
-			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			model.addAttribute("error", ValidationUtil.allErrors(bindingResult));
 			model.addAttribute("user", user);
 			
 			return "finance-officer/profile";
@@ -102,10 +104,9 @@ public class FinanceOfficerController {
 		
 		userService.changePassword(user, form.getNewPassword());
 		
-		model.addAttribute("user", user);
-		model.addAttribute("success", "Password changed successfully.");
+		redirectAttributes.addFlashAttribute("success", "Password changed successfully.");
 		
-		return "finance-officer/profile";
+		return "redirect:/finance-officer/profile";
 	}
 	
 	// Cases
@@ -136,11 +137,11 @@ public class FinanceOfficerController {
 	}
 	
 	@PostMapping("/finance-officer/cases/{id}/tasks/{taskId}/edit-billable-amount")
-	public String editBillableAmount(@PathVariable("id") Long caseId, @PathVariable Long taskId, @Valid @ModelAttribute EditBillableAmountRequest form, BindingResult bindingResult, Model model) {
+	public String editBillableAmount(@PathVariable("id") Long caseId, @PathVariable Long taskId, @Valid @ModelAttribute EditBillableAmountRequest form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
 		Case case_ = caseService.findById(caseId);
 		
 		if (bindingResult.hasErrors()) {
-			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			model.addAttribute("error", ValidationUtil.allErrors(bindingResult));
 			populateCaseDetailModel(case_, model);
 			
 			return "finance-officer/case-details";
@@ -148,78 +149,88 @@ public class FinanceOfficerController {
 		
 		try {
 			taskService.updateBillableAmount(taskService.findById(taskId), form.getAmount());
-			populateCaseDetailModel(case_, model);
-			model.addAttribute("success", "Charge amount updated.");
 		} catch (BusinessRuleViolationException e) {
 			populateCaseDetailModel(case_, model);
 			model.addAttribute("error", e.getMessage());
+			
+			return "finance-officer/case-details";
 		}
 		
-		return "finance-officer/case-details";
+		redirectAttributes.addFlashAttribute("success", "Billable amount updated successfully.");
+		
+		return "redirect:/finance-officer/cases/{id}";
 	}
 	
 	@PostMapping("/finance-officer/cases/{id}/invoices/compile")
-	public String compileInvoice(@PathVariable("id") Long caseId, @Valid @ModelAttribute CompileInvoiceRequest form, Model model) {
+	public String compileInvoice(@PathVariable("id") Long caseId, @Valid @ModelAttribute CompileInvoiceRequest form, Model model, RedirectAttributes redirectAttributes) {
 		Case case_ = caseService.findById(caseId);
 		
 		try {
 			invoiceService.compile(case_, form.getTaskIds());
-			populateCaseDetailModel(case_, model);
-			model.addAttribute("success", "Invoice compiled successfully.");
 		} catch (BusinessRuleViolationException e) {
 			populateCaseDetailModel(case_, model);
 			model.addAttribute("error", e.getMessage());
+			
+			return "finance-officer/case-details";
 		}
 		
-		return "finance-officer/case-details";
+		redirectAttributes.addFlashAttribute("success", "Invoice compiled successfully.");
+		
+		return "redirect:/finance-officer/cases/{id}";
 	}
 	
 	@PostMapping("/finance-officer/cases/{id}/invoices/{invoiceId}/charge")
-	public String chargeInvoice(@PathVariable("id") Long caseId, @PathVariable Long invoiceId, Model model) {
+	public String chargeInvoice(@PathVariable("id") Long caseId, @PathVariable Long invoiceId, Model model, RedirectAttributes redirectAttributes) {
 		Case case_ = caseService.findById(caseId);
 		
 		try {
 			invoiceService.charge(case_, invoiceService.findById(invoiceId));
-			populateCaseDetailModel(case_, model);
-			model.addAttribute("success", "Invoice charged successfully.");
 		} catch (InvalidInvoiceStateException | InsufficientFundsException e) {
 			populateCaseDetailModel(case_, model);
 			model.addAttribute("error", e.getMessage());
+			
+			return "finance-officer/case-details";
 		}
 		
-		return "finance-officer/case-details";
+		redirectAttributes.addFlashAttribute("success", "Invoice charged successfully.");
+		
+		return "redirect:/finance-officer/cases/{id}";
 	}
 	
 	@PostMapping("/finance-officer/cases/{id}/invoices/{invoiceId}/void")
-	public String voidInvoice(@PathVariable("id") Long caseId, @PathVariable Long invoiceId, Model model) {
+	public String voidInvoice(@PathVariable("id") Long caseId, @PathVariable Long invoiceId, Model model, RedirectAttributes redirectAttributes) {
 		Case case_ = caseService.findById(caseId);
 		
 		try {
 			invoiceService.void_(invoiceService.findById(invoiceId));
-			populateCaseDetailModel(case_, model);
-			model.addAttribute("success", "Invoice voided. Its charges are unbilled again.");
 		} catch (InvalidInvoiceStateException e) {
 			populateCaseDetailModel(case_, model);
 			model.addAttribute("error", e.getMessage());
+			
+			return "finance-officer/case-details";
 		}
 		
-		return "finance-officer/case-details";
+		redirectAttributes.addFlashAttribute("success", "Invoice voided successfully.");
+		
+		return "redirect:/finance-officer/cases/{id}";
 	}
 	
 	@PostMapping("/finance-officer/cases/{id}/invoices/{invoiceId}/void-refund")
-	public String voidAndRefundInvoice(@PathVariable("id") Long caseId, @PathVariable Long invoiceId, Model model) {
+	public String voidAndRefundInvoice(@PathVariable("id") Long caseId, @PathVariable Long invoiceId, Model model, RedirectAttributes redirectAttributes) {
 		Case case_ = caseService.findById(caseId);
 		
 		try {
 			invoiceService.voidAndRefund(case_, invoiceService.findById(invoiceId));
-			populateCaseDetailModel(case_, model);
-			model.addAttribute("success", "Invoice voided and refunded. Its charges are unbilled again.");
 		} catch (InvalidInvoiceStateException e) {
 			populateCaseDetailModel(case_, model);
 			model.addAttribute("error", e.getMessage());
+			
+			return "finance-officer/case-details";
 		}
 		
-		return "finance-officer/case-details";
+		redirectAttributes.addFlashAttribute("success", "Invoice voided and refunded successfully.");
+		
+		return "redirect:/finance-officer/cases/{id}";
 	}
 	
 	// Clients
@@ -253,10 +264,10 @@ public class FinanceOfficerController {
 	}
 	
 	@PostMapping("/finance-officer/cash-top-up")
-	public String topUpWalletByCash(@Valid @ModelAttribute TopUpByCashRequest form, BindingResult bindingResult, Model model) {
+	public String topUpWalletByCash(@Valid @ModelAttribute TopUpByCashRequest form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
 		
 		if (bindingResult.hasErrors()) {
-			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			model.addAttribute("error", ValidationUtil.allErrors(bindingResult));
 			
 			return "finance-officer/cash-top-up";
 		}
@@ -274,14 +285,14 @@ public class FinanceOfficerController {
 		try {
 			transactionService.topUpByCash(client, form.getAmount());
 		} catch (PersistenceException e) {
-			model.addAttribute("error", "The cash top-up could not be processed. Please try again.");
+			model.addAttribute("error", "Could not top up the wallet. Please try again.");
 			
 			return "finance-officer/cash-top-up";
 		}
 		
-		model.addAttribute("success", "Trust account topped up successfully for " + client.getName() + ".");
+		redirectAttributes.addFlashAttribute("success", "Wallet topped up successfully.");
 		
-		return "finance-officer/cash-top-up";
+		return "redirect:/finance-officer/cash-top-up";
 	}
 	
 	@GetMapping("/finance-officer/withdrawal")
@@ -290,10 +301,10 @@ public class FinanceOfficerController {
 	}
 	
 	@PostMapping("/finance-officer/withdrawal")
-	public String withdrawFromWallet(@Valid @ModelAttribute WithdrawRequest form, BindingResult bindingResult, Model model) {
+	public String withdrawFromWallet(@Valid @ModelAttribute WithdrawRequest form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
 		
 		if (bindingResult.hasErrors()) {
-			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			model.addAttribute("error", ValidationUtil.allErrors(bindingResult));
 			
 			return "finance-officer/withdrawal";
 		}
@@ -315,14 +326,14 @@ public class FinanceOfficerController {
 			
 			return "finance-officer/withdrawal";
 		} catch (PersistenceException e) {
-			model.addAttribute("error", "The withdrawal could not be processed. Please try again.");
+			model.addAttribute("error", "Could not record the withdrawal. Please try again.");
 			
 			return "finance-officer/withdrawal";
 		}
 		
-		model.addAttribute("success", String.format("Withdrawal of %,.2f recorded for %s. Remaining balance: %,.2f.", form.getAmount(), client.getName(), client.getWalletBalance()));
+		redirectAttributes.addFlashAttribute("success", "Withdrawal recorded successfully.");
 		
-		return "finance-officer/withdrawal";
+		return "redirect:/finance-officer/withdrawal";
 	}
 	
 	@GetMapping("/finance-officer/transactions")
@@ -337,12 +348,12 @@ public class FinanceOfficerController {
 	
 	// Documents
 	
-	@GetMapping("/finance-officer/documents/user/{id}")
+	@GetMapping({"/finance-officer/documents/user/{id}", "/finance-officer/documents/user/{id}/{filename}"})
 	public ResponseEntity<Resource> viewUserDocument(@PathVariable("id") Long documentId, Authentication authentication) {
 		return documentService.streamUserDocument(documentService.findById(documentId), currentFinanceOfficer(authentication));
 	}
 	
-	@GetMapping("/finance-officer/documents/invoice/{id}")
+	@GetMapping({"/finance-officer/documents/invoice/{id}", "/finance-officer/documents/invoice/{id}/{filename}"})
 	public ResponseEntity<Resource> viewInvoiceDocument(@PathVariable("id") Long documentId, Authentication authentication) {
 		return documentService.streamInvoiceDocument(documentService.findById(documentId), currentFinanceOfficer(authentication));
 	}

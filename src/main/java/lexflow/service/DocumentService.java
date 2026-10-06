@@ -42,11 +42,14 @@ import java.util.Map;
 public class DocumentService {
 	
 	private final DocumentDao documentDao;
+	
 	private final ConsultationDao consultationDao;
+	
 	private final CaseDao caseDao;
+	
 	private final InvoiceDao invoiceDao;
 	
-	// ---- Create ----
+	// Create
 	
 	public void attachNic(User user, MultipartFile nicFile, LocalDateTime uploadedAt) {
 		
@@ -99,27 +102,6 @@ public class DocumentService {
 	}
 	
 	@Transactional
-	public List<CaseDocument> stage(Case case_, List<MultipartFile> caseFiles, LocalDateTime uploadedAt) {
-		
-		if (case_.getCaseStatus() != CaseStatus.OPEN) {
-			throw new InvalidCaseStateException(case_.getCaseId(), case_.getCaseStatus(), CaseStatus.OPEN);
-		}
-		
-		List<CaseDocument> caseDocuments = new ArrayList<>();
-		
-		for (MultipartFile caseFile : caseFiles) {
-			CaseDocument caseDocument = storeCaseDocument(case_, caseFile, true, null, uploadedAt);
-			
-			if (caseDocument != null) {
-				caseDocuments.add(caseDocument);
-			}
-			
-		}
-		
-		return caseDocuments;
-	}
-	
-	@Transactional
 	public List<CaseDocument> attach(Case case_, Long taskId, List<MultipartFile> caseFiles, LocalDateTime uploadedAt) {
 		
 		if (case_.getCaseStatus() != CaseStatus.OPEN) {
@@ -150,7 +132,28 @@ public class DocumentService {
 		return (InvoiceDocument) documentDao.insert(invoiceDocument);
 	}
 	
-	// ---- Read ----
+	@Transactional
+	public List<CaseDocument> stage(Case case_, List<MultipartFile> caseFiles, LocalDateTime uploadedAt) {
+		
+		if (case_.getCaseStatus() != CaseStatus.OPEN) {
+			throw new InvalidCaseStateException(case_.getCaseId(), case_.getCaseStatus(), CaseStatus.OPEN);
+		}
+		
+		List<CaseDocument> caseDocuments = new ArrayList<>();
+		
+		for (MultipartFile caseFile : caseFiles) {
+			CaseDocument caseDocument = storeCaseDocument(case_, caseFile, true, null, uploadedAt);
+			
+			if (caseDocument != null) {
+				caseDocuments.add(caseDocument);
+			}
+			
+		}
+		
+		return caseDocuments;
+	}
+	
+	// Read
 	
 	public Document findById(Long documentId) {
 		return documentDao.findById(documentId);
@@ -193,6 +196,20 @@ public class DocumentService {
 		}
 		
 		return documentDao.findByCaseIdAndFilenameKeyword(case_.getCaseId(), keyword);
+	}
+	
+	public void requirePdf(MultipartFile file, String documentLabel) {
+		
+		if (file == null || file.isEmpty()) {
+			return;
+		}
+		
+		String filename = file.getOriginalFilename();
+		
+		if (filename == null || !filename.toLowerCase().endsWith(".pdf")) {
+			throw new NonPdfDocumentException(documentLabel, filename);
+		}
+		
 	}
 	
 	public ResponseEntity<Resource> streamUserDocument(Document document, User requester) {
@@ -254,21 +271,7 @@ public class DocumentService {
 		return buildResponse(document);
 	}
 	
-	// ---- Update ----
-	
-	public void requirePdf(MultipartFile file, String documentLabel) {
-		
-		if (file == null || file.isEmpty()) {
-			return;
-		}
-		
-		String filename = file.getOriginalFilename();
-		
-		if (filename == null || !filename.toLowerCase().endsWith(".pdf")) {
-			throw new NonPdfDocumentException(documentLabel, filename);
-		}
-		
-	}
+	// Update
 	
 	public void replaceNic(User user, MultipartFile nicFile) {
 		
@@ -369,7 +372,7 @@ public class DocumentService {
 		
 	}
 	
-	// ---- Delete ----
+	// Delete
 	
 	public void delete(Consultation consultation, List<Long> documentIds) {
 		
@@ -434,39 +437,7 @@ public class DocumentService {
 		
 	}
 	
-	// ---- Private Helpers ----
-	
-	private String nicDocumentLabel(User user) {
-		return user.getUserId() + "-" + DocumentType.NIC_DOCUMENT.name();
-	}
-	
-	private String barDocumentLabel(User user) {
-		return user.getUserId() + "-" + DocumentType.BAR_DOCUMENT.name();
-	}
-	
-	private ConsultationDocument storeConsultationDocument(Consultation consultation, MultipartFile consultationFile, LocalDateTime uploadedAt) {
-		String filePath = FileUtil.store(consultationFile, consultation.getConsultationId(), DocumentType.CONSULTATION_DOCUMENT);
-		
-		if (filePath == null) {
-			return null;
-		}
-		
-		ConsultationDocument consultationDocument = new ConsultationDocument(filePath, consultationFile.getOriginalFilename(), uploadedAt, consultation.getConsultationId());
-		
-		return (ConsultationDocument) documentDao.insert(consultationDocument);
-	}
-	
-	private CaseDocument storeCaseDocument(Case case_, MultipartFile caseFile, boolean inStaging, Long taskId, LocalDateTime uploadedAt) {
-		String filePath = FileUtil.store(caseFile, case_.getCaseId(), DocumentType.CASE_DOCUMENT);
-		
-		if (filePath == null) {
-			return null;
-		}
-		
-		CaseDocument caseDocument = new CaseDocument(filePath, caseFile.getOriginalFilename(), uploadedAt, case_.getCaseId(), inStaging, taskId);
-		
-		return (CaseDocument) documentDao.insert(caseDocument);
-	}
+	// Strategy Pattern
 	
 	private boolean canAccessUserDocument(UserDocument userDocument, User requester) {
 		return requester instanceof Partner || requester instanceof ClientRelationsOfficer || userDocument.getUserId().equals(requester.getUserId());
@@ -519,6 +490,50 @@ public class DocumentService {
 		return new DenyAccessStrategy();
 	}
 	
+	// Private Helpers
+	
+	private String nicDocumentLabel(User user) {
+		return user.getUserId() + "-" + DocumentType.NIC_DOCUMENT.name();
+	}
+	
+	private String barDocumentLabel(User user) {
+		return user.getUserId() + "-" + DocumentType.BAR_DOCUMENT.name();
+	}
+	
+	private void setBarDocument(User user, BarDocument barDocument) {
+		
+		if (user instanceof Partner partner) {
+			partner.setBarDocument(barDocument);
+		} else if (user instanceof Associate associate) {
+			associate.setBarDocument(barDocument);
+		}
+		
+	}
+	
+	private ConsultationDocument storeConsultationDocument(Consultation consultation, MultipartFile consultationFile, LocalDateTime uploadedAt) {
+		String filePath = FileUtil.store(consultationFile, consultation.getConsultationId(), DocumentType.CONSULTATION_DOCUMENT);
+		
+		if (filePath == null) {
+			return null;
+		}
+		
+		ConsultationDocument consultationDocument = new ConsultationDocument(filePath, consultationFile.getOriginalFilename(), uploadedAt, consultation.getConsultationId());
+		
+		return (ConsultationDocument) documentDao.insert(consultationDocument);
+	}
+	
+	private CaseDocument storeCaseDocument(Case case_, MultipartFile caseFile, boolean inStaging, Long taskId, LocalDateTime uploadedAt) {
+		String filePath = FileUtil.store(caseFile, case_.getCaseId(), DocumentType.CASE_DOCUMENT);
+		
+		if (filePath == null) {
+			return null;
+		}
+		
+		CaseDocument caseDocument = new CaseDocument(filePath, caseFile.getOriginalFilename(), uploadedAt, case_.getCaseId(), inStaging, taskId);
+		
+		return (CaseDocument) documentDao.insert(caseDocument);
+	}
+	
 	private ResponseEntity<Resource> buildResponse(Document document) {
 		Resource resource;
 		
@@ -554,16 +569,6 @@ public class DocumentService {
 		}
 		
 		return null;
-	}
-	
-	private void setBarDocument(User user, BarDocument barDocument) {
-		
-		if (user instanceof Partner partner) {
-			partner.setBarDocument(barDocument);
-		} else if (user instanceof Associate associate) {
-			associate.setBarDocument(barDocument);
-		}
-		
 	}
 	
 }

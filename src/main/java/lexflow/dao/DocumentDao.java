@@ -33,7 +33,7 @@ public class DocumentDao {
 	
 	private final DataSource dataSource;
 	
-	// ---- Create ----
+	// Create
 	
 	public Document insert(Document document) {
 		String sql = """
@@ -124,7 +124,7 @@ public class DocumentDao {
 		return document;
 	}
 	
-	// ---- Read ----
+	// Read
 	
 	public Document findById(Long documentId) {
 		String sql = """
@@ -245,6 +245,66 @@ public class DocumentDao {
 		
 	}
 	
+	public CaseDocument findCaseDocumentById(Long documentId) {
+		String sql = """
+					 SELECT %s
+					 FROM documents
+					 WHERE document_id = ?
+					   AND document_type = 'CASE_DOCUMENT'
+					 """.formatted(SELECT_COLUMNS);
+		
+		Connection connection = DataSourceUtils.getConnection(dataSource);
+		
+		try (PreparedStatement statement = connection.prepareStatement(sql)) {
+			statement.setLong(1, documentId);
+			
+			try (ResultSet resultSet = statement.executeQuery()) {
+				
+				if (resultSet.next()) {
+					return (CaseDocument) mapRow(resultSet);
+				}
+				
+				throw new EntityNotFoundException("CaseDocument", documentId.toString());
+			}
+			
+		} catch (SQLException e) {
+			throw new PersistenceException("finding case document by ID", e);
+		} finally {
+			DataSourceUtils.releaseConnection(connection, dataSource);
+		}
+		
+	}
+	
+	public InvoiceDocument findByInvoiceId(Long invoiceId) {
+		String sql = """
+					 SELECT %s
+					 FROM documents
+					 WHERE invoice_id = ?
+					   AND document_type = 'INVOICE_DOCUMENT'
+					 """.formatted(SELECT_COLUMNS);
+		
+		Connection connection = DataSourceUtils.getConnection(dataSource);
+		
+		try (PreparedStatement statement = connection.prepareStatement(sql)) {
+			statement.setLong(1, invoiceId);
+			
+			try (ResultSet resultSet = statement.executeQuery()) {
+				
+				if (resultSet.next()) {
+					return (InvoiceDocument) mapRow(resultSet);
+				}
+				
+				return null;
+			}
+			
+		} catch (SQLException e) {
+			throw new PersistenceException("finding invoice document", e);
+		} finally {
+			DataSourceUtils.releaseConnection(connection, dataSource);
+		}
+		
+	}
+	
 	public List<ConsultationDocument> findByConsultationId(Long consultationId) {
 		String sql = """
 					 SELECT %s
@@ -275,36 +335,6 @@ public class DocumentDao {
 		}
 		
 		return documents;
-	}
-	
-	public CaseDocument findCaseDocumentById(Long documentId) {
-		String sql = """
-					 SELECT %s
-					 FROM documents
-					 WHERE document_id = ?
-					   AND document_type = 'CASE_DOCUMENT'
-					 """.formatted(SELECT_COLUMNS);
-		
-		Connection connection = DataSourceUtils.getConnection(dataSource);
-		
-		try (PreparedStatement statement = connection.prepareStatement(sql)) {
-			statement.setLong(1, documentId);
-			
-			try (ResultSet resultSet = statement.executeQuery()) {
-				
-				if (resultSet.next()) {
-					return (CaseDocument) mapRow(resultSet);
-				}
-				
-				throw new EntityNotFoundException("CaseDocument", documentId.toString());
-			}
-			
-		} catch (SQLException e) {
-			throw new PersistenceException("finding case document by ID", e);
-		} finally {
-			DataSourceUtils.releaseConnection(connection, dataSource);
-		}
-		
 	}
 	
 	public List<CaseDocument> findByCaseIdAndInStaging(Long caseId, boolean inStaging) {
@@ -410,63 +440,7 @@ public class DocumentDao {
 		return documents;
 	}
 	
-	public InvoiceDocument findByInvoiceId(Long invoiceId) {
-		String sql = """
-					 SELECT %s
-					 FROM documents
-					 WHERE invoice_id = ?
-					   AND document_type = 'INVOICE_DOCUMENT'
-					 """.formatted(SELECT_COLUMNS);
-		
-		Connection connection = DataSourceUtils.getConnection(dataSource);
-		
-		try (PreparedStatement statement = connection.prepareStatement(sql)) {
-			statement.setLong(1, invoiceId);
-			
-			try (ResultSet resultSet = statement.executeQuery()) {
-				
-				if (resultSet.next()) {
-					return (InvoiceDocument) mapRow(resultSet);
-				}
-				
-				return null;
-			}
-			
-		} catch (SQLException e) {
-			throw new PersistenceException("finding invoice document", e);
-		} finally {
-			DataSourceUtils.releaseConnection(connection, dataSource);
-		}
-		
-	}
-	
-	// ---- Update ----
-	
-	public void replace(Long documentId, String filePath, String originalFilename, LocalDateTime uploadedAt) {
-		String sql = """
-					 UPDATE documents
-					 SET file_path         = ?,
-					     original_filename = ?,
-					     uploaded_at       = ?
-					 WHERE document_id = ?
-					 """;
-		
-		Connection connection = DataSourceUtils.getConnection(dataSource);
-		
-		try (PreparedStatement statement = connection.prepareStatement(sql)) {
-			statement.setString(1, filePath);
-			statement.setString(2, originalFilename);
-			statement.setTimestamp(3, Timestamp.valueOf(uploadedAt));
-			statement.setLong(4, documentId);
-			
-			statement.executeUpdate();
-		} catch (SQLException e) {
-			throw new PersistenceException("updating document file", e);
-		} finally {
-			DataSourceUtils.releaseConnection(connection, dataSource);
-		}
-		
-	}
+	// Update
 	
 	public void updateOriginalFilename(Long documentId, String originalFilename) {
 		String sql = """
@@ -512,7 +486,33 @@ public class DocumentDao {
 		
 	}
 	
-	// ---- Delete ----
+	public void replace(Long documentId, String filePath, String originalFilename, LocalDateTime uploadedAt) {
+		String sql = """
+					 UPDATE documents
+					 SET file_path         = ?,
+					     original_filename = ?,
+					     uploaded_at       = ?
+					 WHERE document_id = ?
+					 """;
+		
+		Connection connection = DataSourceUtils.getConnection(dataSource);
+		
+		try (PreparedStatement statement = connection.prepareStatement(sql)) {
+			statement.setString(1, filePath);
+			statement.setString(2, originalFilename);
+			statement.setTimestamp(3, Timestamp.valueOf(uploadedAt));
+			statement.setLong(4, documentId);
+			
+			statement.executeUpdate();
+		} catch (SQLException e) {
+			throw new PersistenceException("updating document file", e);
+		} finally {
+			DataSourceUtils.releaseConnection(connection, dataSource);
+		}
+		
+	}
+	
+	// Delete
 	
 	public void deleteAllById(List<Long> documentIds) {
 		
@@ -544,7 +544,7 @@ public class DocumentDao {
 		
 	}
 	
-	// ---- Private Helpers ----
+	// Private Helpers
 	
 	private Document mapRow(ResultSet resultSet) throws SQLException {
 		Long documentId = resultSet.getLong("document_id");

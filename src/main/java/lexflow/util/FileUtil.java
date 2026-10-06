@@ -16,7 +16,10 @@ import java.util.UUID;
 public class FileUtil {
 	
 	private static final Path UPLOAD_DIRECTORY = Paths.get("uploads");
+	
 	private static final String DEFAULT_FILENAME = "file";
+	
+	// Create
 	
 	public static String store(MultipartFile file, Long ownerId, DocumentType documentType) {
 		
@@ -54,19 +57,7 @@ public class FileUtil {
 		
 	}
 	
-	public static void delete(String filePath) {
-		
-		if (filePath == null) {
-			return;
-		}
-		
-		try {
-			Files.deleteIfExists(Paths.get(filePath));
-		} catch (IOException e) {
-			throw new PersistenceException("deleting file", e);
-		}
-		
-	}
+	// Read
 	
 	public static Resource loadAsResource(String filePath) {
 		
@@ -86,10 +77,24 @@ public class FileUtil {
 		
 	}
 	
-	// ---- Private Helpers ----
+	// Delete
 	
-	// Stored name: <ownerId>-<documentType>-<randomSuffix>-<cleaned original name>. The random suffix keeps two uploads
-	// with the same name apart; the final check keeps every write inside the upload directory.
+	public static void delete(String filePath) {
+		
+		if (filePath == null) {
+			return;
+		}
+		
+		try {
+			Files.deleteIfExists(Paths.get(filePath));
+		} catch (IOException e) {
+			throw new PersistenceException("deleting file", e);
+		}
+		
+	}
+	
+	// Private Helpers
+	
 	private static Path resolveTarget(Long ownerId, DocumentType documentType, String originalFilename) {
 		String randomSuffix = UUID.randomUUID().toString().substring(0, 6);
 		
@@ -105,8 +110,6 @@ public class FileUtil {
 		return target;
 	}
 	
-	// The browser sends the original name, so a crafted request can put folders or ".." in it. Only the last part is
-	// kept, and characters Windows does not allow in a file name are replaced.
 	private static String cleanFilename(String originalFilename) {
 		
 		if (originalFilename == null) {

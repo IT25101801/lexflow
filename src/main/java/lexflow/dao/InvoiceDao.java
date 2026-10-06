@@ -211,7 +211,7 @@ public class InvoiceDao {
 		InvoiceStatus invoiceStatus = InvoiceStatus.valueOf(resultSet.getString("invoice_status"));
 		LocalDateTime compiledAt = resultSet.getTimestamp("compiled_at").toLocalDateTime();
 		
-		InvoiceDocument invoiceDocument = documentDao.findInvoiceDocumentByInvoiceId(invoiceId);
+		InvoiceDocument invoiceDocument = documentDao.findByInvoiceId(invoiceId);
 		
 		LocalDateTime paidAt = null;
 		Timestamp paidAtSql = resultSet.getTimestamp("paid_at");

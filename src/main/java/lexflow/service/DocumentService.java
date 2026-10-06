@@ -48,7 +48,7 @@ public class DocumentService {
 	
 	// ---- Create ----
 	
-	public void attachNicDocument(User user, MultipartFile nicFile, LocalDateTime uploadedAt) {
+	public void attachNic(User user, MultipartFile nicFile, LocalDateTime uploadedAt) {
 		
 		if (nicFile == null || nicFile.isEmpty()) {
 			throw new MissingRequiredDocumentException("NIC");
@@ -65,7 +65,7 @@ public class DocumentService {
 		user.setNicDocument(nicDocument);
 	}
 	
-	public void attachBarDocument(User user, MultipartFile barFile, LocalDateTime uploadedAt) {
+	public void attachBar(User user, MultipartFile barFile, LocalDateTime uploadedAt) {
 		
 		if (barFile == null || barFile.isEmpty()) {
 			throw new MissingRequiredDocumentException("Bar");
@@ -83,7 +83,7 @@ public class DocumentService {
 	}
 	
 	@Transactional
-	public List<ConsultationDocument> attachConsultationDocuments(Consultation consultation, List<MultipartFile> consultationFiles, LocalDateTime uploadedAt) {
+	public List<ConsultationDocument> attach(Consultation consultation, List<MultipartFile> consultationFiles, LocalDateTime uploadedAt) {
 		List<ConsultationDocument> consultationDocuments = new ArrayList<>();
 		
 		for (MultipartFile consultationFile : consultationFiles) {
@@ -99,7 +99,7 @@ public class DocumentService {
 	}
 	
 	@Transactional
-	public List<CaseDocument> stageCaseDocuments(Case case_, List<MultipartFile> caseFiles, LocalDateTime uploadedAt) {
+	public List<CaseDocument> stage(Case case_, List<MultipartFile> caseFiles, LocalDateTime uploadedAt) {
 		
 		if (case_.getCaseStatus() != CaseStatus.OPEN) {
 			throw new InvalidCaseStateException(case_.getCaseId(), case_.getCaseStatus(), CaseStatus.OPEN);
@@ -120,7 +120,7 @@ public class DocumentService {
 	}
 	
 	@Transactional
-	public List<CaseDocument> attachCaseDocuments(Case case_, Long taskId, List<MultipartFile> caseFiles, LocalDateTime uploadedAt) {
+	public List<CaseDocument> attach(Case case_, Long taskId, List<MultipartFile> caseFiles, LocalDateTime uploadedAt) {
 		
 		if (case_.getCaseStatus() != CaseStatus.OPEN) {
 			throw new InvalidCaseStateException(case_.getCaseId(), case_.getCaseStatus(), CaseStatus.OPEN);
@@ -140,7 +140,7 @@ public class DocumentService {
 		return caseDocuments;
 	}
 	
-	public InvoiceDocument attachInvoiceDocument(Case case_, Invoice invoice, byte[] pdfBytes, LocalDateTime uploadedAt) {
+	public InvoiceDocument attach(Case case_, Invoice invoice, byte[] pdfBytes, LocalDateTime uploadedAt) {
 		String originalFilename = invoice.getInvoiceCode() + ".pdf";
 		
 		String filePath = FileUtil.store(pdfBytes, case_.getCaseId(), DocumentType.INVOICE_DOCUMENT, originalFilename);
@@ -156,29 +156,29 @@ public class DocumentService {
 		return documentDao.findById(documentId);
 	}
 	
-	public List<ConsultationDocument> findConsultationDocuments(Consultation consultation) {
+	public List<ConsultationDocument> findByConsultation(Consultation consultation) {
 		return documentDao.findByConsultationId(consultation.getConsultationId());
 	}
 	
-	public List<CaseDocument> findStagedDocuments(Case case_) {
+	public List<CaseDocument> findStagedByCase(Case case_) {
 		return documentDao.findByCaseIdAndInStaging(case_.getCaseId(), true);
 	}
 	
-	public List<CaseDocument> findCaseDocuments(Case case_) {
+	public List<CaseDocument> findByCase(Case case_) {
 		return documentDao.findByCaseIdAndInStaging(case_.getCaseId(), false);
 	}
 	
-	public List<CaseDocument> findTaskDocuments(Task task) {
+	public List<CaseDocument> findByTask(Task task) {
 		return documentDao.findByTaskId(task.getTaskId());
 	}
 	
-	public Map<Long, List<CaseDocument>> findDocumentsByTasks(List<Task> tasks) {
+	public Map<Long, List<CaseDocument>> findByTasks(List<Task> tasks) {
 		Map<Long, List<CaseDocument>> taskDocuments = new HashMap<>();
 		
 		for (Task task : tasks) {
 			
 			if (task.isDocumentingTask()) {
-				taskDocuments.put(task.getTaskId(), findTaskDocuments(task));
+				taskDocuments.put(task.getTaskId(), findByTask(task));
 			}
 			
 		}
@@ -186,13 +186,13 @@ public class DocumentService {
 		return taskDocuments;
 	}
 	
-	public List<CaseDocument> searchCaseDocuments(Case case_, String keyword) {
+	public List<CaseDocument> findByCaseAndKeyword(Case case_, String keyword) {
 		
 		if (keyword == null || keyword.isBlank()) {
-			return findCaseDocuments(case_);
+			return findByCase(case_);
 		}
 		
-		return documentDao.searchCaseDocumentsByFilenameKeyword(case_.getCaseId(), keyword);
+		return documentDao.findByCaseIdAndFilenameKeyword(case_.getCaseId(), keyword);
 	}
 	
 	public ResponseEntity<Resource> streamUserDocument(Document document, User requester) {
@@ -270,7 +270,7 @@ public class DocumentService {
 		
 	}
 	
-	public void replaceNicDocument(User user, MultipartFile nicFile) {
+	public void replaceNic(User user, MultipartFile nicFile) {
 		
 		if (nicFile == null || nicFile.isEmpty()) {
 			return;
@@ -286,7 +286,7 @@ public class DocumentService {
 		if (currentNicDocument != null) {
 			String oldFilePath = currentNicDocument.getFilePath();
 			
-			documentDao.replaceDocument(currentNicDocument.getDocumentId(), filePath, currentNicDocument.getOriginalFilename(), uploadedAt);
+			documentDao.replace(currentNicDocument.getDocumentId(), filePath, currentNicDocument.getOriginalFilename(), uploadedAt);
 			
 			currentNicDocument.setFilePath(filePath);
 			currentNicDocument.setUploadedAt(uploadedAt);
@@ -300,7 +300,7 @@ public class DocumentService {
 		
 	}
 	
-	public void replaceBarDocument(User user, MultipartFile barFile) {
+	public void replaceBar(User user, MultipartFile barFile) {
 		
 		if (barFile == null || barFile.isEmpty()) {
 			return;
@@ -316,7 +316,7 @@ public class DocumentService {
 		if (currentBarDocument != null) {
 			String oldFilePath = currentBarDocument.getFilePath();
 			
-			documentDao.replaceDocument(currentBarDocument.getDocumentId(), filePath, currentBarDocument.getOriginalFilename(), uploadedAt);
+			documentDao.replace(currentBarDocument.getDocumentId(), filePath, currentBarDocument.getOriginalFilename(), uploadedAt);
 			
 			currentBarDocument.setFilePath(filePath);
 			currentBarDocument.setUploadedAt(uploadedAt);
@@ -330,7 +330,7 @@ public class DocumentService {
 		
 	}
 	
-	public void renameConsultationDocument(Consultation consultation, Long documentId, String newFilename) {
+	public void rename(Consultation consultation, Long documentId, String newFilename) {
 		ConsultationDocument consultationDocument = documentDao.findConsultationDocumentById(documentId);
 		
 		if (!consultationDocument.getConsultationId().equals(consultation.getConsultationId())) {
@@ -340,7 +340,7 @@ public class DocumentService {
 		documentDao.updateOriginalFilename(documentId, newFilename);
 	}
 	
-	public void renameCaseDocument(Case case_, Long documentId, String newFilename) {
+	public void rename(Case case_, Long documentId, String newFilename) {
 		CaseDocument caseDocument = documentDao.findCaseDocumentById(documentId);
 		
 		if (!caseDocument.getCaseId().equals(case_.getCaseId())) {
@@ -351,7 +351,7 @@ public class DocumentService {
 	}
 	
 	@Transactional
-	public void addStagedDocumentsToCase(Case case_, List<Long> documentIds) {
+	public void addStagedToCase(Case case_, List<Long> documentIds) {
 		
 		if (documentIds == null) {
 			return;
@@ -371,7 +371,7 @@ public class DocumentService {
 	
 	// ---- Delete ----
 	
-	public void deleteConsultationDocuments(Consultation consultation, List<Long> documentIds) {
+	public void delete(Consultation consultation, List<Long> documentIds) {
 		
 		if (documentIds == null) {
 			return;
@@ -397,18 +397,18 @@ public class DocumentService {
 		
 	}
 	
-	public void deleteAllConsultationDocuments(Consultation consultation) {
-		List<ConsultationDocument> consultationDocuments = findConsultationDocuments(consultation);
+	public void deleteAll(Consultation consultation) {
+		List<ConsultationDocument> consultationDocuments = findByConsultation(consultation);
 		List<Long> documentIds = new ArrayList<>();
 		
 		for (ConsultationDocument consultationDocument : consultationDocuments) {
 			documentIds.add(consultationDocument.getDocumentId());
 		}
 		
-		deleteConsultationDocuments(consultation, documentIds);
+		delete(consultation, documentIds);
 	}
 	
-	public void deleteStagedDocuments(Case case_, List<Long> documentIds) {
+	public void deleteStaged(Case case_, List<Long> documentIds) {
 		
 		if (documentIds == null) {
 			return;

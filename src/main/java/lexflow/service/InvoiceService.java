@@ -71,7 +71,7 @@ public class InvoiceService {
 		String html = templateEngine.process("pdf/invoice", context);
 		byte[] pdfBytes = PdfUtil.render(html, invoice.getInvoiceCode());
 		
-		InvoiceDocument invoiceDocument = documentService.attachInvoiceDocument(case_, invoice, pdfBytes, compiledAt);
+		InvoiceDocument invoiceDocument = documentService.attach(case_, invoice, pdfBytes, compiledAt);
 		invoice.setInvoiceDocument(invoiceDocument);
 		
 		return invoice;

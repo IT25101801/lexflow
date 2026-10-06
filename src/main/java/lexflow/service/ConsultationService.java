@@ -44,7 +44,7 @@ public class ConsultationService {
 		
 		consultationDao.insert(consultation);
 		
-		documentService.attachConsultationDocuments(consultation, consultationFiles, submittedAt);
+		documentService.attach(consultation, consultationFiles, submittedAt);
 		
 		return consultation;
 	}
@@ -194,8 +194,8 @@ public class ConsultationService {
 		consultation.setOpposingParties(opposingParties);
 		consultation.setDescription(description);
 		
-		documentService.attachConsultationDocuments(consultation, consultationFiles, LocalDateTime.now());
-		documentService.deleteConsultationDocuments(consultation, documentIdsToDelete);
+		documentService.attach(consultation, consultationFiles, LocalDateTime.now());
+		documentService.delete(consultation, documentIdsToDelete);
 		
 		if (documentIds != null) {
 			
@@ -206,7 +206,7 @@ public class ConsultationService {
 					continue;
 				}
 				
-				documentService.renameConsultationDocument(consultation, documentId, originalFilenames.get(i));
+				documentService.rename(consultation, documentId, originalFilenames.get(i));
 			}
 			
 		}
@@ -231,7 +231,7 @@ public class ConsultationService {
 	}
 	
 	public void applyDelete(Consultation consultation) {
-		documentService.deleteAllConsultationDocuments(consultation);
+		documentService.deleteAll(consultation);
 		consultationDao.deleteById(consultation.getConsultationId());
 	}
 	

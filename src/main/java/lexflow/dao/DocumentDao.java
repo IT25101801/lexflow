@@ -155,7 +155,7 @@ public class DocumentDao {
 		
 	}
 	
-	public NicDocument findNicDocumentByUserId(Long userId) {
+	public NicDocument findNicByUserId(Long userId) {
 		String sql = """
 					 SELECT %s
 					 FROM documents
@@ -185,7 +185,7 @@ public class DocumentDao {
 		
 	}
 	
-	public BarDocument findBarDocumentByUserId(Long userId) {
+	public BarDocument findBarByUserId(Long userId) {
 		String sql = """
 					 SELECT %s
 					 FROM documents
@@ -373,7 +373,7 @@ public class DocumentDao {
 		return documents;
 	}
 	
-	public List<CaseDocument> searchCaseDocumentsByFilenameKeyword(Long caseId, String keyword) {
+	public List<CaseDocument> findByCaseIdAndFilenameKeyword(Long caseId, String keyword) {
 		String sql = """
 					 SELECT %s
 					 FROM documents
@@ -410,7 +410,7 @@ public class DocumentDao {
 		return documents;
 	}
 	
-	public InvoiceDocument findInvoiceDocumentByInvoiceId(Long invoiceId) {
+	public InvoiceDocument findByInvoiceId(Long invoiceId) {
 		String sql = """
 					 SELECT %s
 					 FROM documents
@@ -442,7 +442,7 @@ public class DocumentDao {
 	
 	// ---- Update ----
 	
-	public void replaceDocument(Long documentId, String filePath, String originalFilename, LocalDateTime uploadedAt) {
+	public void replace(Long documentId, String filePath, String originalFilename, LocalDateTime uploadedAt) {
 		String sql = """
 					 UPDATE documents
 					 SET file_path         = ?,

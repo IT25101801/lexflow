@@ -302,7 +302,7 @@ public class PartnerController {
 	
 	private void populateConsultationDetailModel(Consultation consultation, Model model) {
 		model.addAttribute("consultation", consultation);
-		model.addAttribute("consultationDocuments", documentService.findConsultationDocuments(consultation));
+		model.addAttribute("consultationDocuments", documentService.findByConsultation(consultation));
 		model.addAttribute("associates", userService.findActiveAssociates());
 		model.addAttribute("paralegals", userService.findActiveParalegals());
 		model.addAttribute("meetings", eventService.findByConsultation(consultation));
@@ -472,7 +472,7 @@ public class PartnerController {
 		Case case_ = caseService.findById(caseId);
 		populateCaseDetailModel(case_, model);
 		
-		model.addAttribute("caseDocuments", documentService.searchCaseDocuments(case_, documentKeyword));
+		model.addAttribute("caseDocuments", documentService.findByCaseAndKeyword(case_, documentKeyword));
 		model.addAttribute("documentKeyword", documentKeyword);
 		
 		return "partner/case-details";
@@ -482,13 +482,13 @@ public class PartnerController {
 		model.addAttribute("case", case_);
 		model.addAttribute("associates", userService.findActiveAssociates());
 		model.addAttribute("paralegals", userService.findActiveParalegals());
-		model.addAttribute("stagedDocuments", documentService.findStagedDocuments(case_));
-		model.addAttribute("caseDocuments", documentService.findCaseDocuments(case_));
+		model.addAttribute("stagedDocuments", documentService.findStagedByCase(case_));
+		model.addAttribute("caseDocuments", documentService.findByCase(case_));
 		model.addAttribute("contacts", contactService.findByCase(case_));
 		
 		List<Task> tasks = taskService.findByCase(case_);
 		model.addAttribute("tasks", tasks);
-		model.addAttribute("taskDocuments", documentService.findDocumentsByTasks(tasks));
+		model.addAttribute("taskDocuments", documentService.findByTasks(tasks));
 		model.addAttribute("unbilledCharges", taskService.findUnbilledByCase(case_));
 		model.addAttribute("unpaidInvoices", invoiceService.findByCaseAndStatus(case_, InvoiceStatus.UNPAID));
 		model.addAttribute("paidInvoices", invoiceService.findByCaseAndStatus(case_, InvoiceStatus.PAID));
@@ -522,7 +522,7 @@ public class PartnerController {
 	@PostMapping("/partner/cases/{id}/documents/{documentId}/accept")
 	public String acceptStagedDocument(@PathVariable("id") Long caseId, @PathVariable Long documentId, Model model) {
 		Case case_ = caseService.findById(caseId);
-		documentService.addStagedDocumentsToCase(case_, List.of(documentId));
+		documentService.addStagedToCase(case_, List.of(documentId));
 		
 		populateCaseDetailModel(case_, model);
 		model.addAttribute("success", "Document added to case.");
@@ -532,7 +532,7 @@ public class PartnerController {
 	@PostMapping("/partner/cases/{id}/documents/{documentId}/reject")
 	public String rejectStagedDocument(@PathVariable("id") Long caseId, @PathVariable Long documentId, Model model) {
 		Case case_ = caseService.findById(caseId);
-		documentService.deleteStagedDocuments(case_, List.of(documentId));
+		documentService.deleteStaged(case_, List.of(documentId));
 		
 		populateCaseDetailModel(case_, model);
 		model.addAttribute("success", "Document deleted.");
@@ -551,7 +551,7 @@ public class PartnerController {
 			return "partner/case-details";
 		}
 		
-		documentService.renameCaseDocument(case_, documentId, form.getOriginalFilename());
+		documentService.rename(case_, documentId, form.getOriginalFilename());
 		
 		populateCaseDetailModel(case_, model);
 		model.addAttribute("success", "Document renamed.");
@@ -561,7 +561,7 @@ public class PartnerController {
 	@PostMapping("/partner/cases/{id}/documents/{documentId}/delete")
 	public String deleteCaseDocument(@PathVariable("id") Long caseId, @PathVariable Long documentId, Model model) {
 		Case case_ = caseService.findById(caseId);
-		documentService.deleteStagedDocuments(case_, List.of(documentId));
+		documentService.deleteStaged(case_, List.of(documentId));
 		
 		populateCaseDetailModel(case_, model);
 		model.addAttribute("success", "Document deleted.");

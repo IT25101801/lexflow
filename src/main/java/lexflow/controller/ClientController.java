@@ -144,7 +144,7 @@ public class ClientController {
 	
 	private void populateConsultationDetailModel(Consultation consultation, Model model) {
 		model.addAttribute("consultation", consultation);
-		model.addAttribute("consultationDocuments", documentService.findConsultationDocuments(consultation));
+		model.addAttribute("consultationDocuments", documentService.findByConsultation(consultation));
 		model.addAttribute("caseTypes", CaseType.values());
 		model.addAttribute("existingCase", caseService.findByConsultation(consultation));
 	}
@@ -221,7 +221,7 @@ public class ClientController {
 		Case case_ = caseService.findOwnedByClient(caseId, currentClient(authentication));
 		populateCaseDetailModel(case_, model);
 		
-		model.addAttribute("caseDocuments", documentService.searchCaseDocuments(case_, documentKeyword));
+		model.addAttribute("caseDocuments", documentService.findByCaseAndKeyword(case_, documentKeyword));
 		model.addAttribute("documentKeyword", documentKeyword);
 		
 		return "client/case-details";
@@ -229,8 +229,8 @@ public class ClientController {
 	
 	private void populateCaseDetailModel(Case case_, Model model) {
 		model.addAttribute("case", case_);
-		model.addAttribute("stagedDocuments", documentService.findStagedDocuments(case_));
-		model.addAttribute("caseDocuments", documentService.findCaseDocuments(case_));
+		model.addAttribute("stagedDocuments", documentService.findStagedByCase(case_));
+		model.addAttribute("caseDocuments", documentService.findByCase(case_));
 		model.addAttribute("tasks", taskService.findByCase(case_));
 	}
 	
@@ -242,7 +242,7 @@ public class ClientController {
 		List<MultipartFile> caseFiles = form.getCaseFiles() != null ? form.getCaseFiles() : List.of();
 		
 		try {
-			documentService.stageCaseDocuments(case_, caseFiles, LocalDateTime.now());
+			documentService.stage(case_, caseFiles, LocalDateTime.now());
 			populateCaseDetailModel(case_, model);
 			model.addAttribute("success", "Document uploaded.");
 		} catch (InvalidCaseStateException e) {

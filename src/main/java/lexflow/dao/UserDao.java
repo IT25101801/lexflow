@@ -722,16 +722,16 @@ public class UserDao {
 		List<String> addresses = findAddresses(userId);
 		List<String> phoneNumbers = findPhoneNumbers(userId);
 		String nicNumber = resultSet.getString("nic_number");
-		NicDocument nicDocument = documentDao.findNicDocumentByUserId(userId);
+		NicDocument nicDocument = documentDao.findNicByUserId(userId);
 		AccountStatus accountStatus = AccountStatus.valueOf(resultSet.getString("account_status"));
 		LocalDateTime registeredAt = resultSet.getTimestamp("registered_at").toLocalDateTime();
 		
 		if (role == Role.PARTNER) {
-			return new Partner(userId, userCode, email, password, name, dateOfBirth, gender, addresses, phoneNumbers, nicNumber, nicDocument, accountStatus, registeredAt, resultSet.getString("bar_number"), documentDao.findBarDocumentByUserId(userId));
+			return new Partner(userId, userCode, email, password, name, dateOfBirth, gender, addresses, phoneNumbers, nicNumber, nicDocument, accountStatus, registeredAt, resultSet.getString("bar_number"), documentDao.findBarByUserId(userId));
 		}
 		
 		if (role == Role.ASSOCIATE) {
-			return new Associate(userId, userCode, email, password, name, dateOfBirth, gender, addresses, phoneNumbers, nicNumber, nicDocument, accountStatus, registeredAt, resultSet.getString("bar_number"), documentDao.findBarDocumentByUserId(userId));
+			return new Associate(userId, userCode, email, password, name, dateOfBirth, gender, addresses, phoneNumbers, nicNumber, nicDocument, accountStatus, registeredAt, resultSet.getString("bar_number"), documentDao.findBarByUserId(userId));
 		}
 		
 		if (role == Role.PARALEGAL) {

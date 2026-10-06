@@ -114,7 +114,7 @@ public class ParalegalController {
 	public String consultationDetails(@PathVariable("id") Long consultationId, Authentication authentication, Model model) {
 		Consultation consultation = consultationService.findOwnedByParalegal(consultationId, currentParalegal(authentication));
 		model.addAttribute("consultation", consultation);
-		model.addAttribute("consultationDocuments", documentService.findConsultationDocuments(consultation));
+		model.addAttribute("consultationDocuments", documentService.findByConsultation(consultation));
 		model.addAttribute("existingCase", caseService.findByConsultation(consultation));
 		return "paralegal/consultation-details";
 	}
@@ -150,7 +150,7 @@ public class ParalegalController {
 		Case case_ = caseService.findOwnedByParalegal(caseId, currentParalegal(authentication));
 		populateCaseDetailModel(case_, model);
 		
-		model.addAttribute("caseDocuments", documentService.searchCaseDocuments(case_, documentKeyword));
+		model.addAttribute("caseDocuments", documentService.findByCaseAndKeyword(case_, documentKeyword));
 		model.addAttribute("documentKeyword", documentKeyword);
 		
 		return "paralegal/case-details";
@@ -160,13 +160,13 @@ public class ParalegalController {
 	
 	private void populateCaseDetailModel(Case case_, Model model) {
 		model.addAttribute("case", case_);
-		model.addAttribute("stagedDocuments", documentService.findStagedDocuments(case_));
-		model.addAttribute("caseDocuments", documentService.findCaseDocuments(case_));
+		model.addAttribute("stagedDocuments", documentService.findStagedByCase(case_));
+		model.addAttribute("caseDocuments", documentService.findByCase(case_));
 		model.addAttribute("contacts", contactService.findByCase(case_));
 		
 		List<Task> tasks = taskService.findByCase(case_);
 		model.addAttribute("tasks", tasks);
-		model.addAttribute("taskDocuments", documentService.findDocumentsByTasks(tasks));
+		model.addAttribute("taskDocuments", documentService.findByTasks(tasks));
 	}
 	
 	@PostMapping("/paralegal/cases/{id}/contacts")
@@ -262,7 +262,7 @@ public class ParalegalController {
 	@PostMapping("/paralegal/cases/{id}/documents/{documentId}/accept")
 	public String acceptStagedDocument(@PathVariable("id") Long caseId, @PathVariable Long documentId, Authentication authentication, Model model) {
 		Case case_ = caseService.findOwnedByParalegal(caseId, currentParalegal(authentication));
-		documentService.addStagedDocumentsToCase(case_, List.of(documentId));
+		documentService.addStagedToCase(case_, List.of(documentId));
 		populateCaseDetailModel(case_, model);
 		model.addAttribute("success", "Document added to case.");
 		return "paralegal/case-details";
@@ -271,7 +271,7 @@ public class ParalegalController {
 	@PostMapping("/paralegal/cases/{id}/documents/{documentId}/reject")
 	public String rejectStagedDocument(@PathVariable("id") Long caseId, @PathVariable Long documentId, Authentication authentication, Model model) {
 		Case case_ = caseService.findOwnedByParalegal(caseId, currentParalegal(authentication));
-		documentService.deleteStagedDocuments(case_, List.of(documentId));
+		documentService.deleteStaged(case_, List.of(documentId));
 		populateCaseDetailModel(case_, model);
 		model.addAttribute("success", "Document deleted.");
 		return "paralegal/case-details";
@@ -288,7 +288,7 @@ public class ParalegalController {
 			return "paralegal/case-details";
 		}
 		
-		documentService.renameCaseDocument(case_, documentId, form.getOriginalFilename());
+		documentService.rename(case_, documentId, form.getOriginalFilename());
 		
 		populateCaseDetailModel(case_, model);
 		model.addAttribute("success", "Document renamed.");

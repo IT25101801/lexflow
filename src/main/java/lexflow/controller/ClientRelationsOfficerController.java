@@ -305,7 +305,7 @@ public class ClientRelationsOfficerController {
 	
 	private void populateConsultationDetailModel(Consultation consultation, Model model) {
 		model.addAttribute("consultation", consultation);
-		model.addAttribute("consultationDocuments", documentService.findConsultationDocuments(consultation));
+		model.addAttribute("consultationDocuments", documentService.findByConsultation(consultation));
 		model.addAttribute("caseTypes", CaseType.values());
 	}
 	

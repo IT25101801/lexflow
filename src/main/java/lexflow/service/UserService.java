@@ -49,7 +49,7 @@ public class UserService {
 		
 		Client insertedClient = (Client) userDao.insert(client);
 		
-		documentService.attachNicDocument(insertedClient, nicFile, registeredAt);
+		documentService.attachNic(insertedClient, nicFile, registeredAt);
 		
 		return insertedClient;
 	}
@@ -74,10 +74,10 @@ public class UserService {
 		
 		User insertedUser = userDao.insert(user);
 		
-		documentService.attachNicDocument(insertedUser, nicFile, registeredAt);
+		documentService.attachNic(insertedUser, nicFile, registeredAt);
 		
 		if (insertedUser instanceof Partner || insertedUser instanceof Associate) {
-			documentService.attachBarDocument(insertedUser, barFile, registeredAt);
+			documentService.attachBar(insertedUser, barFile, registeredAt);
 		}
 		
 		return insertedUser;
@@ -187,10 +187,10 @@ public class UserService {
 		user.setAddresses(addresses);
 		user.setPhoneNumbers(phoneNumbers);
 		
-		documentService.replaceNicDocument(user, nicFile);
+		documentService.replaceNic(user, nicFile);
 		
 		if (user instanceof Partner || user instanceof Associate) {
-			documentService.replaceBarDocument(user, barFile);
+			documentService.replaceBar(user, barFile);
 		}
 		
 		return userDao.update(user);

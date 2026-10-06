@@ -70,7 +70,7 @@ public class TaskService {
 		}
 		
 		if (isDocumentingTask && caseFiles != null && !caseFiles.isEmpty()) {
-			documentService.attachCaseDocuments(case_, task.getTaskId(), caseFiles, loggedAt);
+			documentService.attach(case_, task.getTaskId(), caseFiles, loggedAt);
 		}
 		
 		return task;

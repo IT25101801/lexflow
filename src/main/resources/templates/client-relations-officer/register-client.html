@@ -44,7 +44,7 @@
 			<div class="field-row">
 				<div class="field">
 					<label for="dateOfBirth">Date of Birth</label>
-					<input id="dateOfBirth" type="date" name="dateOfBirth" required/>
+					<input id="dateOfBirth" type="date" name="dateOfBirth" required data-adult-birth-date/>
 				</div>
 				<div class="field">
 					<label for="gender">Gender</label>
@@ -99,8 +99,10 @@
 <!-- Demo Buttons -->
 <div class="demo-btn-row">
 	<span class="demo-btn-label">Demo</span>
-	<button class="demo-btn" type="button" title="Fill Kasun Athukorala (Client)" onclick="fillWalkinClientRegisterFormB()">B</button>
-	<button class="demo-btn" type="button" title="Fill Dilan Jayasekara (Client)" onclick="fillWalkinClientRegisterFormD()">D</button>
+	<button class="demo-btn" type="button" title="Fill Kasun Athukorala With an Invalid NIC and Phone Number" onclick="fillWalkinClientRegisterFormB1()">B1</button>
+	<button class="demo-btn" type="button" title="Fill Kasun Athukorala (Client)" onclick="fillWalkinClientRegisterFormB2()">B2</button>
+	<button class="demo-btn" type="button" title="Fill Dilan Jayasekara Without an NIC Document" onclick="fillWalkinClientRegisterFormD1()">D1</button>
+	<button class="demo-btn" type="button" title="Fill Dilan Jayasekara (Client)" onclick="fillWalkinClientRegisterFormD2()">D2</button>
 </div>
 
 <script th:src="@{/js/demo.js}"></script>
@@ -108,7 +110,6 @@
 <!-- Field Validation & State Restore -->
 <script>
 	// Set max date on date of birth to today so future dates cannot be selected.
-	document.getElementById("dateOfBirth").max = new Date().toISOString().split("T")[0];
 	
 	// Save fields to sessionStorage before submitting, so they can be restored if the
 	// server redirects back with an error (a redirect is a fresh page load – every

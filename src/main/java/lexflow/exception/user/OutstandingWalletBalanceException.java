@@ -12,7 +12,7 @@ public class OutstandingWalletBalanceException extends BusinessRuleViolationExce
 	private final BigDecimal walletBalance;
 	
 	public OutstandingWalletBalanceException(Long clientId, BigDecimal walletBalance) {
-		super(String.format("Client %d cannot be deleted: the trust account still holds %,.2f, which the client must collect from the finance officer first", clientId, walletBalance));
+		super(String.format("This client cannot be deleted: the trust account still holds %,.2f, which the client must collect from the finance officer first", walletBalance));
 		this.clientId = clientId;
 		this.walletBalance = walletBalance;
 	}

@@ -11,4 +11,9 @@ public class HomeController {
 		return "public/index";
 	}
 	
+	@GetMapping("/favicon.ico")
+	public String favicon() {
+		return "forward:/favicon.svg";
+	}
+	
 }

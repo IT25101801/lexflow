@@ -8,6 +8,7 @@ import lexflow.exception.user.ActiveConsultationAssignmentException;
 import lexflow.exception.user.DuplicateActiveAccountException;
 import lexflow.exception.user.OpenCaseAssignmentException;
 import lexflow.exception.user.OutstandingWalletBalanceException;
+import lexflow.exception.user.UnpaidInvoiceException;
 import lexflow.util.CodeUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.datasource.DataSourceUtils;
@@ -28,6 +29,7 @@ public class UserDao {
 	private static final int OUTSTANDING_WALLET_BALANCE_ERROR_NUMBER = 50001;
 	private static final int ACTIVE_CONSULTATION_ASSIGNMENT_ERROR_NUMBER = 50002;
 	private static final int OPEN_CASE_ASSIGNMENT_ERROR_NUMBER = 50003;
+	private static final int UNPAID_INVOICE_ERROR_NUMBER = 50004;
 	private static final int UNIQUE_INDEX_VIOLATION_ERROR_NUMBER = 2601;
 	
 	private static final String SELECT_COLUMNS = """
@@ -421,12 +423,14 @@ public class UserDao {
 			statement.executeUpdate();
 		} catch (SQLException e) {
 			
-			if (e.getErrorCode() == OUTSTANDING_WALLET_BALANCE_ERROR_NUMBER && findById(userId) instanceof Client client) {
-				throw new OutstandingWalletBalanceException(userId, client.getWalletBalance());
+			if (e.getErrorCode() == ACTIVE_CONSULTATION_ASSIGNMENT_ERROR_NUMBER) {
+				throw new ActiveConsultationAssignmentException(userId, findActiveConsultationCodes(userId));
 			} else if (e.getErrorCode() == OPEN_CASE_ASSIGNMENT_ERROR_NUMBER) {
 				throw new OpenCaseAssignmentException(userId, findOpenCaseCodes(userId));
-			} else if (e.getErrorCode() == ACTIVE_CONSULTATION_ASSIGNMENT_ERROR_NUMBER) {
-				throw new ActiveConsultationAssignmentException(userId, findActiveConsultationCodes(userId));
+			} else if (e.getErrorCode() == UNPAID_INVOICE_ERROR_NUMBER) {
+				throw new UnpaidInvoiceException(userId, findUnpaidInvoiceCodes(userId));
+			} else if (e.getErrorCode() == OUTSTANDING_WALLET_BALANCE_ERROR_NUMBER && findById(userId) instanceof Client client) {
+				throw new OutstandingWalletBalanceException(userId, client.getWalletBalance());
 			}
 			
 			throw new PersistenceException("deleting user", e);
@@ -689,6 +693,20 @@ public class UserDao {
 		insertAddresses(userId, addresses);
 	}
 	
+	private List<String> findActiveConsultationCodes(Long userId) {
+		String sql = """
+					 SELECT cn.consultation_code
+					 FROM consultations cn
+					 WHERE (cn.consultation_status IN ('PENDING', 'ACCEPTED_BY_PARTNER', 'SCHEDULED') OR (cn.consultation_status = 'ACCEPTED_BY_ASSOCIATE' AND NOT EXISTS (SELECT 1
+					                                                                                                                                                       FROM cases cs
+					                                                                                                                                                       WHERE cs.consultation_id = cn.consultation_id)))
+					   AND (cn.client_id = ? OR cn.associate_id = ? OR cn.paralegal_id = ?)
+					 ORDER BY cn.consultation_id
+					 """;
+		
+		return findCodesForUser(sql, userId, "finding active consultations blocking a user deletion");
+	}
+	
 	private List<String> findOpenCaseCodes(Long userId) {
 		String sql = """
 					 SELECT case_code
@@ -701,14 +719,31 @@ public class UserDao {
 		return findCodesForUser(sql, userId, "finding open cases blocking a user deletion");
 	}
 	
+	private List<String> findUnpaidInvoiceCodes(Long userId) {
+		String sql = """
+					 SELECT i.invoice_code
+					 FROM invoices i
+					 INNER JOIN cases cs
+					     ON cs.case_id = i.case_id
+					 WHERE i.invoice_status = 'UNPAID'
+					   AND cs.client_id = ?
+					 ORDER BY i.invoice_id
+					 """;
+
+		return findCodesForUser(sql, userId, "finding unpaid invoices blocking a client deletion");
+	}
+	
 	private List<String> findCodesForUser(String sql, Long userId, String operation) {
 		List<String> codes = new ArrayList<>();
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
-			statement.setLong(1, userId);
-			statement.setLong(2, userId);
-			statement.setLong(3, userId);
+			int parameterCount = statement.getParameterMetaData().getParameterCount();
+			
+			for (int i = 1; i <= parameterCount; i++) {
+				statement.setLong(i, userId);
+			}
+			
 			
 			try (ResultSet resultSet = statement.executeQuery()) {
 				
@@ -725,20 +760,6 @@ public class UserDao {
 		}
 		
 		return codes;
-	}
-	
-	private List<String> findActiveConsultationCodes(Long userId) {
-		String sql = """
-					 SELECT cn.consultation_code
-					 FROM consultations cn
-					 WHERE (cn.consultation_status IN ('PENDING', 'ACCEPTED_BY_PARTNER', 'SCHEDULED') OR (cn.consultation_status = 'ACCEPTED_BY_ASSOCIATE' AND NOT EXISTS (SELECT 1
-					                                                                                                                                                       FROM cases cs
-					                                                                                                                                                       WHERE cs.consultation_id = cn.consultation_id)))
-					   AND (cn.client_id = ? OR cn.associate_id = ? OR cn.paralegal_id = ?)
-					 ORDER BY cn.consultation_id
-					 """;
-		
-		return findCodesForUser(sql, userId, "finding active consultations blocking a user deletion");
 	}
 	
 }

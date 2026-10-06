@@ -5,11 +5,21 @@ function fillLogin(email, password) {
 	document.getElementById("password").value = password;
 }
 
-// Delta's addresses/phoneNumbers are multi-input-row lists, not single fields -- fill
-// just the first row, which every registration form starts with exactly one of.
+// Multi-input-row lists: remove every extra row a previous fill added, then fill the first row.
 function fillMultiInputRow(containerId, fieldName, value) {
-	const input = document.querySelector("#" + containerId + " input[name='" + fieldName + "']");
-	if (input) input.value = value;
+	let inputs = document.querySelectorAll("#" + containerId + " input[name='" + fieldName + "']");
+	
+	if (inputs.length === 0) {
+		addMultiInputRow(containerId, fieldName);
+		inputs = document.querySelectorAll("#" + containerId + " input[name='" + fieldName + "']");
+	}
+	
+	for (let i = 1; i < inputs.length; i++) {
+		const row = inputs[i].closest(".multi-input-row");
+		if (row) row.remove();
+	}
+	
+	if (inputs.length > 0) inputs[0].value = value;
 }
 
 // Adds a second row (via the page's own addMultiInputRow, from multi-input.js) and fills it.
@@ -23,19 +33,42 @@ function addAndFillMultiInputRow(containerId, fieldName, placeholder, value) {
 // buttons fetch a sample PDF already sitting in static resources and hand it to the input
 // as an actual File object through a DataTransfer, the same way a browser would after a user
 // picks a file. Fire-and-forget: the caller doesn't await this.
+// Demo fills replace whatever the file field holds; file-picker.js would otherwise add to its list on every press.
+function setDemoFiles(input, files) {
+	const dataTransfer = new DataTransfer();
+	
+	for (let i = 0; i < files.length; i++) {
+		dataTransfer.items.add(files[i]);
+	}
+	
+	input.dataset.replacePicked = "true";
+	input.files = dataTransfer.files;
+	input.dispatchEvent(new Event("change", {bubbles: true}));
+}
+
+function clearFileInput(inputId) {
+	setDemoFiles(document.getElementById(inputId), []);
+}
+
+function fillLargeFileInput(inputId, filename) {
+	setDemoFiles(document.getElementById(inputId), [new File([new Uint8Array(51 * 1024 * 1024)], filename, {type: "application/pdf"})]);
+}
+
 async function fillFileInput(inputId, url, filename) {
 	const input = document.getElementById(inputId);
 	if (!input) return;
 	const response = await fetch(url);
 	const blob = await response.blob();
-	const file = new File([blob], filename, {type: "application/pdf"});
-	const dataTransfer = new DataTransfer();
-	dataTransfer.items.add(file);
-	input.files = dataTransfer.files;
-	input.dispatchEvent(new Event("change", {bubbles: true}));
+	setDemoFiles(input, [new File([blob], filename, {type: "application/pdf"})]);
 }
 
-function fillClientRegisterFormB() {
+function fillClientRegisterFormB1() {
+	fillClientRegisterFormB2();
+	document.querySelector("#phoneNumberRows input[name='phoneNumbers']").value = "07610";
+	document.getElementById("nicNumber").value = "93587V";
+}
+
+function fillClientRegisterFormB2() {
 	// Nimali Karunatilake — a new client, not yet in the system. Two phone numbers.
 	document.getElementById("email").value = "nimali.karunatilake@gmail.com";
 	document.getElementById("password").value = "nimali.karunatilake@gmail.com";
@@ -59,10 +92,25 @@ function fillClientRegisterFormD() {
 	fillMultiInputRow("addressRows", "addresses", "No. 14, Kandy Road, Kurunegala");
 	fillMultiInputRow("phoneNumberRows", "phoneNumbers", "0761000008");
 	document.getElementById("nicNumber").value = "968071234V";
+}
+
+function fillClientRegisterFormD1() {
+	fillClientRegisterFormD();
+	clearFileInput("nicFile");
+}
+
+function fillClientRegisterFormD2() {
+	fillClientRegisterFormD();
 	fillFileInput("nicFile", "/demo-files/nic-document.pdf", "NIC Document.pdf");
 }
 
-function fillWalkinClientRegisterFormB() {
+function fillWalkinClientRegisterFormB1() {
+	fillWalkinClientRegisterFormB2();
+	document.querySelector("#phoneNumberRows input[name='phoneNumbers']").value = "07610";
+	document.getElementById("nicNumber").value = "91195V";
+}
+
+function fillWalkinClientRegisterFormB2() {
 	// Kasun Athukorala — a different new client, for the Client Relations Officer's walk-in registration form. Two addresses.
 	document.getElementById("email").value = "kasun.athukorala@gmail.com";
 	document.getElementById("password").value = "kasun.athukorala@gmail.com";
@@ -86,6 +134,15 @@ function fillWalkinClientRegisterFormD() {
 	fillMultiInputRow("addressRows", "addresses", "No. 7, Galle Road, Mount Lavinia");
 	fillMultiInputRow("phoneNumberRows", "phoneNumbers", "0761000009");
 	document.getElementById("nicNumber").value = "891392345V";
+}
+
+function fillWalkinClientRegisterFormD1() {
+	fillWalkinClientRegisterFormD();
+	clearFileInput("nicFile");
+}
+
+function fillWalkinClientRegisterFormD2() {
+	fillWalkinClientRegisterFormD();
 	fillFileInput("nicFile", "/demo-files/nic-document.pdf", "NIC Document.pdf");
 }
 
@@ -105,6 +162,9 @@ function fillRegisterStaffRole(role, data) {
 	if (data.barNumber) {
 		document.getElementById("barNumber").value = data.barNumber;
 		fillFileInput("barFile", "/demo-files/bar-document.pdf", "Bar Document.pdf");
+	} else {
+		document.getElementById("barNumber").value = "";
+		clearFileInput("barFile");
 	}
 }
 
@@ -144,7 +204,16 @@ function fillRegisterStaffClientRelationsOfficer() {
 	});
 }
 
-function fillPaymentForm() {
+function fillPaymentFormT1() {
+	fillPaymentFormT2();
+	document.getElementById("cardNumberDisplay").value = "1234 5678 9012";
+	document.getElementById("cardNumber").value = "123456789012";
+	document.getElementById("card-preview").textContent = "1234 5678 9012";
+	document.getElementById("expiry").value = "13/29";
+	document.getElementById("expiry-preview").textContent = "13/29";
+}
+
+function fillPaymentFormT2() {
 	// Demo card — passes the 16-digit/MM-YY/3-digit CVV format checks.
 	const cardNumberDisplay = document.getElementById("cardNumberDisplay");
 	cardNumberDisplay.value = "1234 5678 9012 3456";
@@ -160,7 +229,123 @@ function fillPaymentForm() {
 	document.getElementById("cvv").value = "123";
 }
 
-function fillConsultationFormR() {
+function demoDate(daysAhead) {
+	const date = new Date();
+	date.setDate(date.getDate() + daysAhead);
+
+	return date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0") + "-" + String(date.getDate()).padStart(2, "0");
+}
+
+function fillMeetingForm(subject, daysAhead, startTime, endTime, location, notes) {
+	document.getElementById("subject").value = subject;
+	document.getElementById("date").value = demoDate(daysAhead);
+	document.getElementById("startTime").value = startTime;
+	document.getElementById("endTime").value = endTime;
+	document.getElementById("location").value = location;
+	document.getElementById("notes").value = notes;
+}
+
+function fillScheduleMeetingFormS1() {
+	fillMeetingForm("Initial consultation meeting", 1, "11:00", "10:00", "LexFlow Office, Meeting Room 2", "Bring the supply agreement and the written complaints.");
+}
+
+function fillScheduleMeetingFormS2() {
+	fillMeetingForm("Initial consultation meeting", 1, "10:00", "11:00", "LexFlow Office, Meeting Room 2", "Bring the supply agreement and the written complaints.");
+}
+
+function fillRescheduleMeetingFormS3() {
+	fillMeetingForm("Initial consultation meeting", 2, "14:00", "15:00", "LexFlow Office, Meeting Room 1", "Moved at the client's request.");
+}
+
+function fillPartnerRejectionFormR() {
+	document.getElementById("rejectionReason").value =
+		"The conflict check found that the opposing party is an existing client of the firm, so the firm cannot act against them.";
+}
+
+function fillAssociateRejectionFormR() {
+	document.getElementById("rejectionReason").value =
+		"After the meeting, the matter was found to fall outside the firm's practice areas, so the firm cannot take it on.";
+}
+
+function fillContactForm(prefix, phoneNumber, email) {
+	document.getElementById(prefix + "Name").value = "Sunil Wickramaratne";
+	fillMultiInputRow(prefix + "PhoneRows", "phoneNumbers", phoneNumber);
+	fillMultiInputRow(prefix + "EmailRows", "emails", email);
+	fillMultiInputRow(prefix + "AddressRows", "addresses", "No. 47, Temple Road, Kadawatha");
+	document.getElementById(prefix + "Notes").value = "Neighbour who built the boundary wall. Opposing party in this case.";
+}
+
+function fillContactFormP1(prefix) {
+	fillContactForm(prefix, "07712", "sunil.wickramaratne@");
+}
+
+function fillContactFormP2(prefix) {
+	fillContactForm(prefix, "0771234567", "sunil.wickramaratne@gmail.com");
+}
+
+function setTaskType(documenting, scheduling, billing) {
+	const types = [["documentingTask", documenting], ["schedulingTask", scheduling], ["billingTask", billing]];
+
+	for (let i = 0; i < types.length; i++) {
+		const checkbox = document.querySelector("#taskAddModal input[name='" + types[i][0] + "']");
+		checkbox.checked = types[i][1];
+		checkbox.dispatchEvent(new Event("change", {bubbles: true}));
+	}
+
+}
+
+function fillTaskForm(title, documenting, scheduling, billing) {
+	document.getElementById("taskAddTitle").value = title;
+	setTaskType(documenting, scheduling, billing);
+	clearFileInput("taskAddDocumentFiles");
+	document.getElementById("taskAddDate").value = "";
+	document.getElementById("taskAddStartTime").value = "";
+	document.getElementById("taskAddEndTime").value = "";
+	document.getElementById("taskAddLocation").value = "";
+	document.getElementById("taskAddNotes").value = "";
+	document.getElementById("taskAddBillableAmount").value = "";
+}
+
+function fillTaskSchedule(daysAhead, startTime, endTime, location, notes) {
+	document.getElementById("taskAddDate").value = demoDate(daysAhead);
+	document.getElementById("taskAddStartTime").value = startTime;
+	document.getElementById("taskAddEndTime").value = endTime;
+	document.getElementById("taskAddLocation").value = location;
+	document.getElementById("taskAddNotes").value = notes;
+}
+
+function fillTaskFormP1() {
+	fillTaskForm("Drafting the letter of demand", false, false, true);
+}
+
+function fillTaskFormP2() {
+	fillTaskForm("Drafting the letter of demand", false, false, true);
+	document.getElementById("taskAddBillableAmount").value = "15000.00";
+}
+
+function fillTaskFormP3() {
+	fillTaskForm("File the 2019 survey plan", true, false, false);
+	fillFileInput("taskAddDocumentFiles", "/demo-files/case-document.pdf", "Survey Plan.pdf");
+}
+
+function fillTaskFormP4() {
+	fillTaskForm("Site inspection at the boundary wall", false, true, false);
+	fillTaskSchedule(3, "09:30", "10:30", "No. 45, Temple Road, Kadawatha", "Meet the licensed surveyor at the site.");
+}
+
+function fillTaskFormP5() {
+	fillTaskForm("Court appearance at the District Court", false, true, true);
+	fillTaskSchedule(5, "09:00", "12:00", "District Court, Gampaha", "First calling of the case.");
+	document.getElementById("taskAddBillableAmount").value = "25000.00";
+}
+
+function fillConsultationFormR1() {
+	document.getElementById("caseType").value = "CONTRACT_COMMERCIAL";
+	fillMultiInputRow("opposingPartyRows", "opposingParties", "Meridian Textiles (Pvt) Ltd");
+	document.getElementById("description").value = "   ";
+}
+
+function fillConsultationFormR2() {
 	document.getElementById("caseType").value = "CONTRACT_COMMERCIAL";
 	fillMultiInputRow("opposingPartyRows", "opposingParties", "Meridian Textiles (Pvt) Ltd");
 	document.getElementById("description").value =
@@ -179,6 +364,15 @@ function fillConsultationFormR() {
 		"own client.";
 }
 
+function fillConsultationFormR3() {
+	document.getElementById("caseType").value = "PROPERTY";
+	fillMultiInputRow("opposingPartyRows", "opposingParties", "Sunil Wickramaratne");
+	document.getElementById("description").value =
+		"My neighbour Mr. Sunil Wickramaratne has built a boundary wall about two feet inside my land in Kadawatha. " +
+		"The survey plan from 2019 shows the original boundary clearly. I would like advice on having the wall " +
+		"removed and the boundary restored.";
+}
+
 function fillConsultationFormD() {
 	document.getElementById("caseType").value = "EMPLOYMENT";
 	fillMultiInputRow("opposingPartyRows", "opposingParties", "Brightline Logistics (Pvt) Ltd");
@@ -190,10 +384,24 @@ function fillConsultationFormD() {
 		"not been remitted. I would like advice on challenging the termination before the Labour Tribunal, " +
 		"recovering the unpaid overtime and salary, and compelling the company to settle the outstanding EPF and " +
 		"ETF contributions. My appointment letter and the overtime complaint are attached.";
+}
+
+function fillConsultationFormD1() {
+	fillConsultationFormD();
+	fillLargeFileInput("consultationFiles", "Large Document.pdf");
+}
+
+function fillConsultationFormD2() {
+	fillConsultationFormD();
 	fillFileInput("consultationFiles", "/demo-files/consultation-document.pdf", "Consultation Document.pdf");
 }
 
-function fillCroConsultationFormR() {
+function fillCroConsultationFormR1() {
+	fillCroConsultationFormR2();
+	document.getElementById("description").value = "   ";
+}
+
+function fillCroConsultationFormR2() {
 	// Lal Yapa — default seeded client, walked in to submit a new request.
 	document.getElementById("clientCode").value = "CLT-31-70617268";
 	document.getElementById("caseType").value = "PROPERTY";
@@ -222,16 +430,35 @@ function fillCroConsultationFormD() {
 		"calls, and a written demand for a refund sent on 20 August 2026 has gone unanswered. Mr. Yapa would like " +
 		"advice on recovering the advance through a civil action and on whether the matter should also be reported " +
 		"to the police as cheating. The receipt for the advance and the demand letter are attached.";
+}
+
+function fillCroConsultationFormD1() {
+	fillCroConsultationFormD();
+	fillLargeFileInput("consultationFiles", "Large Document.pdf");
+}
+
+function fillCroConsultationFormD2() {
+	fillCroConsultationFormD();
 	fillFileInput("consultationFiles", "/demo-files/consultation-document.pdf", "Consultation Document.pdf");
 }
 
-function fillCashTopUpForm() {
+function fillCashTopUpFormT1() {
+	document.getElementById("clientCode").value = "CLT-00-00000000";
+	document.getElementById("amount").value = -5000;
+}
+
+function fillCashTopUpFormT2() {
 	// Lal Yapa — default seeded client.
 	document.getElementById("clientCode").value = "CLT-31-70617268";
 	document.getElementById("amount").value = 5000;
 }
 
-function fillWithdrawalForm() {
+function fillWithdrawalFormT1() {
+	document.getElementById("clientCode").value = "CLT-00-00000000";
+	document.getElementById("amount").value = -1000;
+}
+
+function fillWithdrawalFormT2() {
 	// Lal Yapa — default seeded client.
 	document.getElementById("clientCode").value = "CLT-31-70617268";
 	document.getElementById("amount").value = 1000;

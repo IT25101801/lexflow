@@ -188,7 +188,7 @@ public class UserService {
 	// Delete
 	
 	public void delete(User user) {
-		userDao.deleteById(user.getUserId());
+		stateFor(user.getAccountStatus()).delete(user, this);
 	}
 	
 	// State Pattern
@@ -199,8 +199,13 @@ public class UserService {
 		
 		user.setPassword(hashedPassword);
 		user.setAccountStatus(AccountStatus.ACTIVE);
-		
+
 		return user;
+	}
+
+	public void applyDelete(User user) {
+		userDao.deleteById(user.getUserId());
+		user.setAccountStatus(AccountStatus.DELETED);
 	}
 	
 	private AccountState stateFor(AccountStatus accountStatus) {

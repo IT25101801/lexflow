@@ -21,6 +21,12 @@ public class AnalyticsService {
 	private final AnalyticsDao analyticsDao;
 	private final UserDao userDao;
 	
+	// User
+	
+	public BigDecimal totalClientWalletFloat() {
+		return analyticsDao.sumClientWalletBalance();
+	}
+	
 	// Case
 	
 	public Map<CaseResolutionStatus, Integer> caseResolutionBreakdown() {
@@ -55,6 +61,32 @@ public class AnalyticsService {
 		return analyticsDao.averageCaseDurationDaysForParalegal(paralegalId);
 	}
 	
+	// Task
+	
+	public BigDecimal billableAmountThisMonthForAssociate(Long associateId) {
+		LocalDate now = LocalDate.now();
+		
+		return analyticsDao.sumBillableAmountForAssociateInMonth(associateId, now.getYear(), now.getMonthValue());
+	}
+	
+	public BigDecimal billableAmountLastMonthForAssociate(Long associateId) {
+		LocalDate lastMonth = LocalDate.now().minusMonths(1);
+		
+		return analyticsDao.sumBillableAmountForAssociateInMonth(associateId, lastMonth.getYear(), lastMonth.getMonthValue());
+	}
+	
+	public BigDecimal billableAmountThisMonthForParalegal(Long paralegalId) {
+		LocalDate now = LocalDate.now();
+		
+		return analyticsDao.sumBillableAmountForParalegalInMonth(paralegalId, now.getYear(), now.getMonthValue());
+	}
+	
+	public BigDecimal billableAmountLastMonthForParalegal(Long paralegalId) {
+		LocalDate lastMonth = LocalDate.now().minusMonths(1);
+		
+		return analyticsDao.sumBillableAmountForParalegalInMonth(paralegalId, lastMonth.getYear(), lastMonth.getMonthValue());
+	}
+	
 	// Invoice
 	
 	public Map<Integer, BigDecimal> revenueByMonth(int year) {
@@ -85,38 +117,6 @@ public class AnalyticsService {
 	
 	public Map<TransactionType, Integer> topUpCountComparison() {
 		return analyticsDao.countTopUpsByType();
-	}
-	
-	// User
-	
-	public BigDecimal totalClientWalletFloat() {
-		return analyticsDao.sumClientWalletBalance();
-	}
-	
-	// Task
-	
-	public BigDecimal billableAmountThisMonthForAssociate(Long associateId) {
-		LocalDate now = LocalDate.now();
-		
-		return analyticsDao.sumBillableAmountForAssociateInMonth(associateId, now.getYear(), now.getMonthValue());
-	}
-	
-	public BigDecimal billableAmountLastMonthForAssociate(Long associateId) {
-		LocalDate lastMonth = LocalDate.now().minusMonths(1);
-		
-		return analyticsDao.sumBillableAmountForAssociateInMonth(associateId, lastMonth.getYear(), lastMonth.getMonthValue());
-	}
-	
-	public BigDecimal billableAmountThisMonthForParalegal(Long paralegalId) {
-		LocalDate now = LocalDate.now();
-		
-		return analyticsDao.sumBillableAmountForParalegalInMonth(paralegalId, now.getYear(), now.getMonthValue());
-	}
-	
-	public BigDecimal billableAmountLastMonthForParalegal(Long paralegalId) {
-		LocalDate lastMonth = LocalDate.now().minusMonths(1);
-		
-		return analyticsDao.sumBillableAmountForParalegalInMonth(paralegalId, lastMonth.getYear(), lastMonth.getMonthValue());
 	}
 	
 	// Private Helpers

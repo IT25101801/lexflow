@@ -84,7 +84,6 @@
 				<div class="section-card">
 					<div class="section-title">Change Password</div>
 					<form method="post" th:action="@{/client-relations-officer/profile/change-password}"
-						  onsubmit="if(this.newPassword.value !== this.confirmPassword.value){ alert('New passwords do not match.'); return false; }"
 						  style="display:flex;flex-direction:column;gap:0.9rem;">
 						<div class="field">
 							<label for="currentPassword">Current Password</label>

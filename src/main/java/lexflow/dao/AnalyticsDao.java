@@ -24,6 +24,38 @@ public class AnalyticsDao {
 	
 	private final DataSource dataSource;
 	
+	// User
+	
+	public BigDecimal sumClientWalletBalance() {
+		String sql = """
+					 SELECT SUM(wallet_balance) AS total_wallet_balance
+					 FROM users
+					 WHERE role = 'CLIENT'
+					 """;
+		
+		Connection connection = DataSourceUtils.getConnection(dataSource);
+		
+		try (PreparedStatement statement = connection.prepareStatement(sql)) {
+			
+			try (ResultSet resultSet = statement.executeQuery()) {
+				
+				if (resultSet.next()) {
+					BigDecimal total = resultSet.getBigDecimal("total_wallet_balance");
+					
+					return total != null ? total : BigDecimal.ZERO;
+				}
+				
+				return BigDecimal.ZERO;
+			}
+			
+		} catch (SQLException e) {
+			throw new PersistenceException("summing client wallet balance", e);
+		} finally {
+			DataSourceUtils.releaseConnection(connection, dataSource);
+		}
+		
+	}
+	
 	// Case
 	
 	public Map<CaseResolutionStatus, Integer> countCasesByResolutionStatus() {
@@ -118,6 +150,38 @@ public class AnalyticsDao {
 					 """;
 		
 		return countByUserId(sql, "paralegal_id", "counting closed cases by paralegal");
+	}
+	
+	// Task
+	
+	public BigDecimal sumBillableAmountForAssociateInMonth(Long associateId, int year, int month) {
+		String sql = """
+					 SELECT SUM(tk.billable_amount) AS total_billable_amount
+					 FROM tasks tk
+					 INNER JOIN cases cs
+					     ON cs.case_id = tk.case_id
+					 WHERE tk.billing_task = 1
+					   AND cs.associate_id = ?
+					   AND YEAR(tk.logged_at) = ?
+					   AND MONTH(tk.logged_at) = ?
+					 """;
+		
+		return sumBillableAmountForStaffInMonth(sql, associateId, year, month);
+	}
+	
+	public BigDecimal sumBillableAmountForParalegalInMonth(Long paralegalId, int year, int month) {
+		String sql = """
+					 SELECT SUM(tk.billable_amount) AS total_billable_amount
+					 FROM tasks tk
+					 INNER JOIN cases cs
+					     ON cs.case_id = tk.case_id
+					 WHERE tk.billing_task = 1
+					   AND cs.paralegal_id = ?
+					   AND YEAR(tk.logged_at) = ?
+					   AND MONTH(tk.logged_at) = ?
+					 """;
+		
+		return sumBillableAmountForStaffInMonth(sql, paralegalId, year, month);
 	}
 	
 	// Invoice
@@ -262,70 +326,6 @@ public class AnalyticsDao {
 		}
 		
 		return counts;
-	}
-	
-	// User
-	
-	public BigDecimal sumClientWalletBalance() {
-		String sql = """
-					 SELECT SUM(wallet_balance) AS total_wallet_balance
-					 FROM users
-					 WHERE role = 'CLIENT'
-					 """;
-		
-		Connection connection = DataSourceUtils.getConnection(dataSource);
-		
-		try (PreparedStatement statement = connection.prepareStatement(sql)) {
-			
-			try (ResultSet resultSet = statement.executeQuery()) {
-				
-				if (resultSet.next()) {
-					BigDecimal total = resultSet.getBigDecimal("total_wallet_balance");
-					
-					return total != null ? total : BigDecimal.ZERO;
-				}
-				
-				return BigDecimal.ZERO;
-			}
-			
-		} catch (SQLException e) {
-			throw new PersistenceException("summing client wallet balance", e);
-		} finally {
-			DataSourceUtils.releaseConnection(connection, dataSource);
-		}
-		
-	}
-	
-	// Task
-	
-	public BigDecimal sumBillableAmountForAssociateInMonth(Long associateId, int year, int month) {
-		String sql = """
-					 SELECT SUM(tk.billable_amount) AS total_billable_amount
-					 FROM tasks tk
-					 INNER JOIN cases cs
-					     ON cs.case_id = tk.case_id
-					 WHERE tk.billing_task = 1
-					   AND cs.associate_id = ?
-					   AND YEAR(tk.logged_at) = ?
-					   AND MONTH(tk.logged_at) = ?
-					 """;
-		
-		return sumBillableAmountForStaffInMonth(sql, associateId, year, month);
-	}
-	
-	public BigDecimal sumBillableAmountForParalegalInMonth(Long paralegalId, int year, int month) {
-		String sql = """
-					 SELECT SUM(tk.billable_amount) AS total_billable_amount
-					 FROM tasks tk
-					 INNER JOIN cases cs
-					     ON cs.case_id = tk.case_id
-					 WHERE tk.billing_task = 1
-					   AND cs.paralegal_id = ?
-					   AND YEAR(tk.logged_at) = ?
-					   AND MONTH(tk.logged_at) = ?
-					 """;
-		
-		return sumBillableAmountForStaffInMonth(sql, paralegalId, year, month);
 	}
 	
 	// Private Helpers

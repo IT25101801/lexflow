@@ -1,5 +1,6 @@
 package lexflow.dto.user;
 
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.*;
 import lexflow.entity.user.Gender;
 import lombok.Getter;
@@ -17,7 +18,6 @@ public class EditProfileRequest {
 	private String name;
 	
 	@NotNull(message = "Date of birth is required")
-	@Past(message = "Date of birth must be in the past")
 	private LocalDate dateOfBirth;
 	
 	@NotNull(message = "Gender is required")
@@ -32,5 +32,10 @@ public class EditProfileRequest {
 	private MultipartFile nicFile;
 	
 	private MultipartFile barFile;
+	
+	@AssertTrue(message = "Must be at least 18 years old")
+	public boolean isAdult() {
+		return dateOfBirth == null || !dateOfBirth.isAfter(LocalDate.now().minusYears(18));
+	}
 	
 }

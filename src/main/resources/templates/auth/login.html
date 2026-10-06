@@ -57,6 +57,12 @@
 </div>
 
 <script th:src="@{/js/demo.js}"></script>
+<script>
+	try {
+		sessionStorage.removeItem("sidebarScrollTop");
+	} catch (e) {
+	}
+</script>
 
 </body>
 </html>

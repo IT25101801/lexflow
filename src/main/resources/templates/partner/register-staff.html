@@ -64,7 +64,7 @@
 			<div class="field-row">
 				<div class="field">
 					<label for="dateOfBirth">Date of Birth</label>
-					<input id="dateOfBirth" type="date" name="dateOfBirth" required/>
+					<input id="dateOfBirth" type="date" name="dateOfBirth" required data-adult-birth-date/>
 				</div>
 				<div class="field">
 					<label for="gender">Gender</label>
@@ -168,7 +168,6 @@
 <!-- Field Validation & State Restore -->
 <script>
 	// Set max date on date of birth to today so future dates cannot be selected.
-	document.getElementById("dateOfBirth").max = new Date().toISOString().split("T")[0];
 	
 	// Save fields to sessionStorage before submitting, so they can be restored if the
 	// server redirects back with an error (a redirect is a fresh page load – every

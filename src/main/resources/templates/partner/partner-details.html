@@ -155,7 +155,7 @@
 			<div class="field-row">
 				<div class="field">
 					<label for="dateOfBirth">Date of Birth</label>
-					<input id="dateOfBirth" type="date" name="dateOfBirth" th:value="${#temporals.format(user.dateOfBirth, 'yyyy-MM-dd')}" required/>
+					<input id="dateOfBirth" type="date" name="dateOfBirth" th:value="${#temporals.format(user.dateOfBirth, 'yyyy-MM-dd')}" required data-adult-birth-date/>
 				</div>
 				<div class="field">
 					<label for="gender">Gender</label>

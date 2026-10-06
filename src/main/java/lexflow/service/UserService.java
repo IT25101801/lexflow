@@ -26,10 +26,12 @@ import java.util.List;
 public class UserService {
 	
 	private final UserDao userDao;
+	
 	private final DocumentService documentService;
+	
 	private final PasswordEncoder passwordEncoder;
 	
-	// ---- Create ----
+	// Create
 	
 	@Transactional
 	public Client register(String email, String password, String name, LocalDate dateOfBirth, Gender gender, List<String> addresses, List<String> phoneNumbers, String nicNumber, MultipartFile nicFile) {
@@ -61,7 +63,6 @@ public class UserService {
 			throw new EntityAlreadyExistsException("User", email);
 		}
 		
-		// A rehire into the same role is reactivated, not registered again; a promotion is a different role, so it registers.
 		if (userDao.existsDeleted(role, email, nicNumber)) {
 			throw new DeletedAccountExistsException(role, email, nicNumber);
 		}
@@ -83,7 +84,7 @@ public class UserService {
 		return insertedUser;
 	}
 	
-	// ---- Read ----
+	// Read
 	
 	public User findById(Long userId) {
 		return userDao.findById(userId);
@@ -113,6 +114,26 @@ public class UserService {
 		return client;
 	}
 	
+	public List<Associate> findActiveAssociates() {
+		List<Associate> associates = new ArrayList<>();
+		
+		for (User user : userDao.findActiveByRole(Role.ASSOCIATE)) {
+			associates.add((Associate) user);
+		}
+		
+		return associates;
+	}
+	
+	public List<Paralegal> findActiveParalegals() {
+		List<Paralegal> paralegals = new ArrayList<>();
+		
+		for (User user : userDao.findActiveByRole(Role.PARALEGAL)) {
+			paralegals.add((Paralegal) user);
+		}
+		
+		return paralegals;
+	}
+	
 	public List<User> findByRoleAndKeyword(Role role, String keyword) {
 		List<User> users = userDao.findByRole(role);
 		
@@ -134,47 +155,11 @@ public class UserService {
 		return matches;
 	}
 	
-	public List<Associate> findActiveAssociates() {
-		List<Associate> associates = new ArrayList<>();
-		
-		for (User user : userDao.findActiveByRole(Role.ASSOCIATE)) {
-			associates.add((Associate) user);
-		}
-		
-		return associates;
-	}
-	
-	public List<Paralegal> findActiveParalegals() {
-		List<Paralegal> paralegals = new ArrayList<>();
-		
-		for (User user : userDao.findActiveByRole(Role.PARALEGAL)) {
-			paralegals.add((Paralegal) user);
-		}
-		
-		return paralegals;
-	}
-	
-	private boolean matchesKeyword(User user, String lowerKeyword) {
-		String barNumber = null;
-		
-		if (user instanceof Partner partner) {
-			barNumber = partner.getBarNumber();
-		} else if (user instanceof Associate associate) {
-			barNumber = associate.getBarNumber();
-		}
-		
-		return user.getName().toLowerCase().contains(lowerKeyword)
-			   || user.getEmail().toLowerCase().contains(lowerKeyword)
-			   || user.getUserCode().toLowerCase().contains(lowerKeyword)
-			   || user.getNicNumber().toLowerCase().contains(lowerKeyword)
-			   || (barNumber != null && barNumber.toLowerCase().contains(lowerKeyword));
-	}
-	
 	public boolean verifyPassword(User user, String rawPassword) {
 		return passwordEncoder.matches(rawPassword, user.getPassword());
 	}
 	
-	// ---- Update ----
+	// Update
 	
 	@Transactional
 	public User updateDetails(User user, String name, LocalDate dateOfBirth, Gender gender, List<String> addresses, List<String> phoneNumbers, MultipartFile nicFile, MultipartFile barFile) {
@@ -207,22 +192,23 @@ public class UserService {
 		return stateFor(user.getAccountStatus()).reactivate(user, this, temporaryPassword);
 	}
 	
-	// ---- Delete ----
+	// Delete
 	
 	public void delete(User user) {
 		userDao.deleteById(user.getUserId());
 	}
 	
-	// ---- Private Helpers ----
+	// State Pattern
 	
-	private User findByEmailOrNull(String email) {
+	public User applyReactivation(User user, String temporaryPassword) {
+		String hashedPassword = passwordEncoder.encode(temporaryPassword);
 		
-		try {
-			return userDao.findByEmail(email);
-		} catch (EntityNotFoundException e) {
-			return null;
-		}
+		userDao.reactivateById(user.getUserId(), hashedPassword);
 		
+		user.setPassword(hashedPassword);
+		user.setAccountStatus(AccountStatus.ACTIVE);
+		
+		return user;
 	}
 	
 	private AccountState stateFor(AccountStatus accountStatus) {
@@ -235,17 +221,32 @@ public class UserService {
 		
 	}
 	
-	// ---- State Transitions (called by AccountState implementations) ----
+	// Private Helpers
 	
-	public User applyReactivation(User user, String temporaryPassword) {
-		String hashedPassword = passwordEncoder.encode(temporaryPassword);
+	private User findByEmailOrNull(String email) {
 		
-		userDao.reactivateById(user.getUserId(), hashedPassword);
+		try {
+			return userDao.findByEmail(email);
+		} catch (EntityNotFoundException e) {
+			return null;
+		}
 		
-		user.setPassword(hashedPassword);
-		user.setAccountStatus(AccountStatus.ACTIVE);
+	}
+	
+	private boolean matchesKeyword(User user, String lowerKeyword) {
+		String barNumber = null;
 		
-		return user;
+		if (user instanceof Partner partner) {
+			barNumber = partner.getBarNumber();
+		} else if (user instanceof Associate associate) {
+			barNumber = associate.getBarNumber();
+		}
+		
+		return user.getName().toLowerCase().contains(lowerKeyword)
+			   || user.getEmail().toLowerCase().contains(lowerKeyword)
+			   || user.getUserCode().toLowerCase().contains(lowerKeyword)
+			   || user.getNicNumber().toLowerCase().contains(lowerKeyword)
+			   || (barNumber != null && barNumber.toLowerCase().contains(lowerKeyword));
 	}
 	
 }

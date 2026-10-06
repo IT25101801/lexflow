@@ -26,8 +26,11 @@ import java.util.List;
 public class UserDao {
 	
 	private static final int OUTSTANDING_WALLET_BALANCE_ERROR_NUMBER = 50001;
+	
 	private static final int ACTIVE_CONSULTATION_ASSIGNMENT_ERROR_NUMBER = 50002;
+	
 	private static final int OPEN_CASE_ASSIGNMENT_ERROR_NUMBER = 50003;
+	
 	private static final int UNIQUE_INDEX_VIOLATION_ERROR_NUMBER = 2601;
 	
 	private static final String SELECT_COLUMNS = """
@@ -47,9 +50,10 @@ public class UserDao {
 												 """;
 	
 	private final DataSource dataSource;
+	
 	private final DocumentDao documentDao;
 	
-	// ---- Create ----
+	// Create
 	
 	public User insert(User user) {
 		String sql = """
@@ -145,7 +149,7 @@ public class UserDao {
 		return user;
 	}
 	
-	// ---- Read ----
+	// Read
 	
 	public User findById(Long userId) {
 		String sql = """
@@ -318,32 +322,7 @@ public class UserDao {
 		
 	}
 	
-	private List<User> findUsers(String sql, Role role) {
-		List<User> users = new ArrayList<>();
-		
-		Connection connection = DataSourceUtils.getConnection(dataSource);
-		
-		try (PreparedStatement statement = connection.prepareStatement(sql)) {
-			statement.setString(1, role.name());
-			
-			try (ResultSet resultSet = statement.executeQuery()) {
-				
-				while (resultSet.next()) {
-					users.add(mapRow(resultSet));
-				}
-				
-			}
-			
-		} catch (SQLException e) {
-			throw new PersistenceException("finding users by role", e);
-		} finally {
-			DataSourceUtils.releaseConnection(connection, dataSource);
-		}
-		
-		return users;
-	}
-	
-	// ---- Update ----
+	// Update
 	
 	public User update(User user) {
 		String sql = """
@@ -431,7 +410,7 @@ public class UserDao {
 		
 	}
 	
-	// ---- Delete ----
+	// Delete
 	
 	public void deleteById(Long userId) {
 		String sql = """
@@ -463,60 +442,7 @@ public class UserDao {
 		
 	}
 	
-	// ---- Private Helpers ----
-	
-	private List<String> findOpenCaseCodes(Long userId) {
-		String sql = """
-					 SELECT case_code
-					 FROM cases
-					 WHERE case_status = 'OPEN'
-					   AND (client_id = ? OR associate_id = ? OR paralegal_id = ?)
-					 ORDER BY case_id
-					 """;
-		
-		return findCodesForUser(sql, userId, "finding open cases blocking a user deletion");
-	}
-	
-	private List<String> findActiveConsultationCodes(Long userId) {
-		String sql = """
-					 SELECT cn.consultation_code
-					 FROM consultations cn
-					 WHERE (cn.consultation_status IN ('PENDING', 'ACCEPTED_BY_PARTNER', 'SCHEDULED') OR (cn.consultation_status = 'ACCEPTED_BY_ASSOCIATE' AND NOT EXISTS (SELECT 1
-					                                                                                                                                                       FROM cases cs
-					                                                                                                                                                       WHERE cs.consultation_id = cn.consultation_id)))
-					   AND (cn.client_id = ? OR cn.associate_id = ? OR cn.paralegal_id = ?)
-					 ORDER BY cn.consultation_id
-					 """;
-		
-		return findCodesForUser(sql, userId, "finding active consultations blocking a user deletion");
-	}
-	
-	private List<String> findCodesForUser(String sql, Long userId, String operation) {
-		List<String> codes = new ArrayList<>();
-		
-		Connection connection = DataSourceUtils.getConnection(dataSource);
-		
-		try (PreparedStatement statement = connection.prepareStatement(sql)) {
-			statement.setLong(1, userId);
-			statement.setLong(2, userId);
-			statement.setLong(3, userId);
-			
-			try (ResultSet resultSet = statement.executeQuery()) {
-				
-				while (resultSet.next()) {
-					codes.add(resultSet.getString(1));
-				}
-				
-			}
-			
-		} catch (SQLException e) {
-			throw new PersistenceException(operation, e);
-		} finally {
-			DataSourceUtils.releaseConnection(connection, dataSource);
-		}
-		
-		return codes;
-	}
+	// Private Helpers
 	
 	private RuntimeException toDuplicateActiveAccountException(SQLException e, User user) {
 		String message = e.getMessage();
@@ -604,35 +530,44 @@ public class UserDao {
 		
 	}
 	
-	private List<String> findPhoneNumbers(Long userId) {
-		String sql = """
-					 SELECT phone_number
-					 FROM user_phone_numbers
-					 WHERE user_id = ?
-					 """;
+	private User mapRow(ResultSet resultSet) throws SQLException {
+		Long userId = resultSet.getLong("user_id");
+		Role role = Role.valueOf(resultSet.getString("role"));
+		String userCode = resultSet.getString("user_code");
+		String email = resultSet.getString("email");
+		String password = resultSet.getString("password");
+		String name = resultSet.getString("name");
+		LocalDate dateOfBirth = resultSet.getDate("date_of_birth").toLocalDate();
+		Gender gender = Gender.valueOf(resultSet.getString("gender"));
+		List<String> addresses = findAddresses(userId);
+		List<String> phoneNumbers = findPhoneNumbers(userId);
+		String nicNumber = resultSet.getString("nic_number");
+		NicDocument nicDocument = documentDao.findNicByUserId(userId);
+		AccountStatus accountStatus = AccountStatus.valueOf(resultSet.getString("account_status"));
+		LocalDateTime registeredAt = resultSet.getTimestamp("registered_at").toLocalDateTime();
 		
-		List<String> phoneNumbers = new ArrayList<>();
-		
-		Connection connection = DataSourceUtils.getConnection(dataSource);
-		
-		try (PreparedStatement statement = connection.prepareStatement(sql)) {
-			statement.setLong(1, userId);
-			
-			try (ResultSet resultSet = statement.executeQuery()) {
-				
-				while (resultSet.next()) {
-					phoneNumbers.add(resultSet.getString("phone_number"));
-				}
-				
-			}
-			
-		} catch (SQLException e) {
-			throw new PersistenceException("finding phone numbers", e);
-		} finally {
-			DataSourceUtils.releaseConnection(connection, dataSource);
+		if (role == Role.PARTNER) {
+			return new Partner(userId, userCode, email, password, name, dateOfBirth, gender, addresses, phoneNumbers, nicNumber, nicDocument, accountStatus, registeredAt, resultSet.getString("bar_number"), documentDao.findBarByUserId(userId));
 		}
 		
-		return phoneNumbers;
+		if (role == Role.ASSOCIATE) {
+			return new Associate(userId, userCode, email, password, name, dateOfBirth, gender, addresses, phoneNumbers, nicNumber, nicDocument, accountStatus, registeredAt, resultSet.getString("bar_number"), documentDao.findBarByUserId(userId));
+		}
+		
+		if (role == Role.PARALEGAL) {
+			return new Paralegal(userId, userCode, email, password, name, dateOfBirth, gender, addresses, phoneNumbers, nicNumber, nicDocument, accountStatus, registeredAt);
+		}
+		
+		if (role == Role.CLIENT) {
+			return new Client(userId, userCode, email, password, name, dateOfBirth, gender, addresses, phoneNumbers, nicNumber, nicDocument, accountStatus, registeredAt, resultSet.getBigDecimal("wallet_balance"));
+		}
+		
+		if (role == Role.CLIENT_RELATIONS_OFFICER) {
+			return new ClientRelationsOfficer(userId, userCode, email, password, name, dateOfBirth, gender, addresses, phoneNumbers, nicNumber, nicDocument, accountStatus, registeredAt);
+		}
+		
+		return new FinanceOfficer(userId, userCode, email, password, name, dateOfBirth, gender, addresses, phoneNumbers, nicNumber, nicDocument, accountStatus, registeredAt);
+		
 	}
 	
 	private List<String> findAddresses(Long userId) {
@@ -664,6 +599,62 @@ public class UserDao {
 		}
 		
 		return addresses;
+	}
+	
+	private List<String> findPhoneNumbers(Long userId) {
+		String sql = """
+					 SELECT phone_number
+					 FROM user_phone_numbers
+					 WHERE user_id = ?
+					 """;
+		
+		List<String> phoneNumbers = new ArrayList<>();
+		
+		Connection connection = DataSourceUtils.getConnection(dataSource);
+		
+		try (PreparedStatement statement = connection.prepareStatement(sql)) {
+			statement.setLong(1, userId);
+			
+			try (ResultSet resultSet = statement.executeQuery()) {
+				
+				while (resultSet.next()) {
+					phoneNumbers.add(resultSet.getString("phone_number"));
+				}
+				
+			}
+			
+		} catch (SQLException e) {
+			throw new PersistenceException("finding phone numbers", e);
+		} finally {
+			DataSourceUtils.releaseConnection(connection, dataSource);
+		}
+		
+		return phoneNumbers;
+	}
+	
+	private List<User> findUsers(String sql, Role role) {
+		List<User> users = new ArrayList<>();
+		
+		Connection connection = DataSourceUtils.getConnection(dataSource);
+		
+		try (PreparedStatement statement = connection.prepareStatement(sql)) {
+			statement.setString(1, role.name());
+			
+			try (ResultSet resultSet = statement.executeQuery()) {
+				
+				while (resultSet.next()) {
+					users.add(mapRow(resultSet));
+				}
+				
+			}
+			
+		} catch (SQLException e) {
+			throw new PersistenceException("finding users by role", e);
+		} finally {
+			DataSourceUtils.releaseConnection(connection, dataSource);
+		}
+		
+		return users;
 	}
 	
 	private void replacePhoneNumbers(Long userId, List<String> phoneNumbers) {
@@ -710,44 +701,57 @@ public class UserDao {
 		insertAddresses(userId, addresses);
 	}
 	
-	private User mapRow(ResultSet resultSet) throws SQLException {
-		Long userId = resultSet.getLong("user_id");
-		Role role = Role.valueOf(resultSet.getString("role"));
-		String userCode = resultSet.getString("user_code");
-		String email = resultSet.getString("email");
-		String password = resultSet.getString("password");
-		String name = resultSet.getString("name");
-		LocalDate dateOfBirth = resultSet.getDate("date_of_birth").toLocalDate();
-		Gender gender = Gender.valueOf(resultSet.getString("gender"));
-		List<String> addresses = findAddresses(userId);
-		List<String> phoneNumbers = findPhoneNumbers(userId);
-		String nicNumber = resultSet.getString("nic_number");
-		NicDocument nicDocument = documentDao.findNicByUserId(userId);
-		AccountStatus accountStatus = AccountStatus.valueOf(resultSet.getString("account_status"));
-		LocalDateTime registeredAt = resultSet.getTimestamp("registered_at").toLocalDateTime();
+	private List<String> findOpenCaseCodes(Long userId) {
+		String sql = """
+					 SELECT case_code
+					 FROM cases
+					 WHERE case_status = 'OPEN'
+					   AND (client_id = ? OR associate_id = ? OR paralegal_id = ?)
+					 ORDER BY case_id
+					 """;
 		
-		if (role == Role.PARTNER) {
-			return new Partner(userId, userCode, email, password, name, dateOfBirth, gender, addresses, phoneNumbers, nicNumber, nicDocument, accountStatus, registeredAt, resultSet.getString("bar_number"), documentDao.findBarByUserId(userId));
+		return findCodesForUser(sql, userId, "finding open cases blocking a user deletion");
+	}
+	
+	private List<String> findCodesForUser(String sql, Long userId, String operation) {
+		List<String> codes = new ArrayList<>();
+		
+		Connection connection = DataSourceUtils.getConnection(dataSource);
+		
+		try (PreparedStatement statement = connection.prepareStatement(sql)) {
+			statement.setLong(1, userId);
+			statement.setLong(2, userId);
+			statement.setLong(3, userId);
+			
+			try (ResultSet resultSet = statement.executeQuery()) {
+				
+				while (resultSet.next()) {
+					codes.add(resultSet.getString(1));
+				}
+				
+			}
+			
+		} catch (SQLException e) {
+			throw new PersistenceException(operation, e);
+		} finally {
+			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
 		
-		if (role == Role.ASSOCIATE) {
-			return new Associate(userId, userCode, email, password, name, dateOfBirth, gender, addresses, phoneNumbers, nicNumber, nicDocument, accountStatus, registeredAt, resultSet.getString("bar_number"), documentDao.findBarByUserId(userId));
-		}
+		return codes;
+	}
+	
+	private List<String> findActiveConsultationCodes(Long userId) {
+		String sql = """
+					 SELECT cn.consultation_code
+					 FROM consultations cn
+					 WHERE (cn.consultation_status IN ('PENDING', 'ACCEPTED_BY_PARTNER', 'SCHEDULED') OR (cn.consultation_status = 'ACCEPTED_BY_ASSOCIATE' AND NOT EXISTS (SELECT 1
+					                                                                                                                                                       FROM cases cs
+					                                                                                                                                                       WHERE cs.consultation_id = cn.consultation_id)))
+					   AND (cn.client_id = ? OR cn.associate_id = ? OR cn.paralegal_id = ?)
+					 ORDER BY cn.consultation_id
+					 """;
 		
-		if (role == Role.PARALEGAL) {
-			return new Paralegal(userId, userCode, email, password, name, dateOfBirth, gender, addresses, phoneNumbers, nicNumber, nicDocument, accountStatus, registeredAt);
-		}
-		
-		if (role == Role.CLIENT) {
-			return new Client(userId, userCode, email, password, name, dateOfBirth, gender, addresses, phoneNumbers, nicNumber, nicDocument, accountStatus, registeredAt, resultSet.getBigDecimal("wallet_balance"));
-		}
-		
-		if (role == Role.CLIENT_RELATIONS_OFFICER) {
-			return new ClientRelationsOfficer(userId, userCode, email, password, name, dateOfBirth, gender, addresses, phoneNumbers, nicNumber, nicDocument, accountStatus, registeredAt);
-		}
-		
-		return new FinanceOfficer(userId, userCode, email, password, name, dateOfBirth, gender, addresses, phoneNumbers, nicNumber, nicDocument, accountStatus, registeredAt);
-		
+		return findCodesForUser(sql, userId, "finding active consultations blocking a user deletion");
 	}
 	
 }

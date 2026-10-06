@@ -42,14 +42,12 @@ import java.util.Map;
 public class DocumentService {
 	
 	private final DocumentDao documentDao;
-	
 	private final ConsultationDao consultationDao;
-	
 	private final CaseDao caseDao;
-	
 	private final InvoiceDao invoiceDao;
 	
 	// Create
+	
 	public void attachNic(User user, MultipartFile nicFile, LocalDateTime uploadedAt) {
 		
 		if (nicFile == null || nicFile.isEmpty()) {
@@ -62,7 +60,6 @@ public class DocumentService {
 		NicDocument nicDocument = new NicDocument(filePath, nicDocumentLabel(user), uploadedAt, user.getUserId());
 		
 		documentDao.insert(nicDocument);
-		
 		user.setNicDocument(nicDocument);
 	}
 	
@@ -78,7 +75,6 @@ public class DocumentService {
 		BarDocument barDocument = new BarDocument(filePath, barDocumentLabel(user), uploadedAt, user.getUserId());
 		
 		documentDao.insert(barDocument);
-		
 		setBarDocument(user, barDocument);
 	}
 	
@@ -149,6 +145,7 @@ public class DocumentService {
 	}
 	
 	// Read
+	
 	public Document findById(Long documentId) {
 		return documentDao.findById(documentId);
 	}
@@ -266,6 +263,7 @@ public class DocumentService {
 	}
 	
 	// Update
+	
 	public void replaceNic(User user, MultipartFile nicFile) {
 		
 		if (nicFile == null || nicFile.isEmpty()) {
@@ -280,7 +278,6 @@ public class DocumentService {
 		
 		if (currentNicDocument != null) {
 			String oldFilePath = currentNicDocument.getFilePath();
-			
 			documentDao.replace(currentNicDocument.getDocumentId(), filePath, currentNicDocument.getOriginalFilename(), uploadedAt);
 			
 			currentNicDocument.setFilePath(filePath);
@@ -289,7 +286,6 @@ public class DocumentService {
 			FileUtil.delete(oldFilePath);
 		} else {
 			NicDocument newNicDocument = new NicDocument(filePath, nicDocumentLabel(user), uploadedAt, user.getUserId());
-			
 			user.setNicDocument((NicDocument) documentDao.insert(newNicDocument));
 		}
 		
@@ -309,7 +305,6 @@ public class DocumentService {
 		
 		if (currentBarDocument != null) {
 			String oldFilePath = currentBarDocument.getFilePath();
-			
 			documentDao.replace(currentBarDocument.getDocumentId(), filePath, currentBarDocument.getOriginalFilename(), uploadedAt);
 			
 			currentBarDocument.setFilePath(filePath);
@@ -318,7 +313,6 @@ public class DocumentService {
 			FileUtil.delete(oldFilePath);
 		} else {
 			BarDocument newBarDocument = new BarDocument(filePath, barDocumentLabel(user), uploadedAt, user.getUserId());
-			
 			setBarDocument(user, (BarDocument) documentDao.insert(newBarDocument));
 		}
 		
@@ -364,6 +358,7 @@ public class DocumentService {
 	}
 	
 	// Delete
+	
 	public void delete(Consultation consultation, List<Long> documentIds) {
 		
 		if (documentIds == null) {
@@ -428,6 +423,7 @@ public class DocumentService {
 	}
 	
 	// Strategy Pattern
+	
 	private boolean canAccessUserDocument(UserDocument userDocument, User requester) {
 		return requester instanceof Partner || requester instanceof ClientRelationsOfficer || userDocument.getUserId().equals(requester.getUserId());
 	}
@@ -479,6 +475,7 @@ public class DocumentService {
 	}
 	
 	// Private Helpers
+	
 	private String nicDocumentLabel(User user) {
 		return user.getUserId() + "-" + DocumentType.NIC_DOCUMENT.name();
 	}

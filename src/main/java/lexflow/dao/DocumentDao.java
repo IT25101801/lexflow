@@ -34,11 +34,13 @@ public class DocumentDao {
 	private final DataSource dataSource;
 	
 	// Create
+	
 	public Document insert(Document document) {
 		String sql = """
 					 INSERT INTO documents (document_type, file_path, original_filename, uploaded_at, user_id, consultation_id, case_id, in_staging, task_id, invoice_id)
 					 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 					 """;
+		
 		Long userId = null;
 		Long consultationId = null;
 		Long caseId = null;
@@ -123,12 +125,14 @@ public class DocumentDao {
 	}
 	
 	// Read
+	
 	public Document findById(Long documentId) {
 		String sql = """
 					 SELECT %s
 					 FROM documents
 					 WHERE document_id = ?
 					 """.formatted(SELECT_COLUMNS);
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -158,6 +162,7 @@ public class DocumentDao {
 					 WHERE user_id = ?
 					   AND document_type = 'NIC_DOCUMENT'
 					 """.formatted(SELECT_COLUMNS);
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -187,6 +192,7 @@ public class DocumentDao {
 					 WHERE user_id = ?
 					   AND document_type = 'BAR_DOCUMENT'
 					 """.formatted(SELECT_COLUMNS);
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -216,6 +222,7 @@ public class DocumentDao {
 					 WHERE document_id = ?
 					   AND document_type = 'CONSULTATION_DOCUMENT'
 					 """.formatted(SELECT_COLUMNS);
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -245,6 +252,7 @@ public class DocumentDao {
 					 WHERE document_id = ?
 					   AND document_type = 'CASE_DOCUMENT'
 					 """.formatted(SELECT_COLUMNS);
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -274,6 +282,7 @@ public class DocumentDao {
 					 WHERE invoice_id = ?
 					   AND document_type = 'INVOICE_DOCUMENT'
 					 """.formatted(SELECT_COLUMNS);
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -303,6 +312,7 @@ public class DocumentDao {
 					 WHERE consultation_id = ?
 					   AND document_type = 'CONSULTATION_DOCUMENT'
 					 """.formatted(SELECT_COLUMNS);
+		
 		List<ConsultationDocument> documents = new ArrayList<>();
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
@@ -334,6 +344,7 @@ public class DocumentDao {
 					   AND in_staging = ?
 					   AND document_type = 'CASE_DOCUMENT'
 					 """.formatted(SELECT_COLUMNS);
+		
 		List<CaseDocument> documents = new ArrayList<>();
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
@@ -365,6 +376,7 @@ public class DocumentDao {
 					 WHERE task_id = ?
 					   AND document_type = 'CASE_DOCUMENT'
 					 """.formatted(SELECT_COLUMNS);
+		
 		List<CaseDocument> documents = new ArrayList<>();
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
@@ -397,6 +409,7 @@ public class DocumentDao {
 					   AND document_type = 'CASE_DOCUMENT'
 					   AND LOWER(original_filename) LIKE ?
 					 """.formatted(SELECT_COLUMNS);
+		
 		List<CaseDocument> documents = new ArrayList<>();
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
@@ -422,12 +435,14 @@ public class DocumentDao {
 	}
 	
 	// Update
+	
 	public void updateOriginalFilename(Long documentId, String originalFilename) {
 		String sql = """
 					 UPDATE documents
 					 SET original_filename = ?
 					 WHERE document_id = ?
 					 """;
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -449,6 +464,7 @@ public class DocumentDao {
 					 SET in_staging = ?
 					 WHERE document_id = ?
 					 """;
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -472,6 +488,7 @@ public class DocumentDao {
 					     uploaded_at       = ?
 					 WHERE document_id = ?
 					 """;
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -490,6 +507,7 @@ public class DocumentDao {
 	}
 	
 	// Delete
+	
 	public void deleteAllById(List<Long> documentIds) {
 		
 		if (documentIds == null || documentIds.isEmpty()) {
@@ -501,13 +519,13 @@ public class DocumentDao {
 					 FROM documents
 					 WHERE document_id = ?
 					 """;
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
 			
 			for (Long documentId : documentIds) {
 				statement.setLong(1, documentId);
-				
 				statement.executeUpdate();
 			}
 			
@@ -520,6 +538,7 @@ public class DocumentDao {
 	}
 	
 	// Private Helpers
+	
 	private Document mapRow(ResultSet resultSet) throws SQLException {
 		Long documentId = resultSet.getLong("document_id");
 		DocumentType documentType = DocumentType.valueOf(resultSet.getString("document_type"));

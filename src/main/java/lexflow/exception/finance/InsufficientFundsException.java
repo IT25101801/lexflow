@@ -13,7 +13,7 @@ public class InsufficientFundsException extends BusinessRuleViolationException {
 	private final BigDecimal requiredAmount;
 	
 	public InsufficientFundsException(Long clientId, BigDecimal availableAmount, BigDecimal requiredAmount) {
-		super(String.format("Client %d has insufficient funds: available %,.2f, required %,.2f", clientId, availableAmount, requiredAmount));
+		super(String.format("This client has insufficient funds: available %,.2f, required %,.2f", availableAmount, requiredAmount));
 		this.clientId = clientId;
 		this.availableAmount = availableAmount;
 		this.requiredAmount = requiredAmount;

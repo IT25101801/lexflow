@@ -52,7 +52,7 @@
 			</div>
 			<div class="detail-row" th:if="${case.caseResolutionStatus != null}">
 				<span class="detail-label">Resolution Status</span>
-				<span class="detail-value" th:text="${case.caseResolutionStatus}"></span>
+				<span class="detail-value"><span class="badge" th:classappend="'badge-' + ${case.caseResolutionStatus}" th:text="${case.caseResolutionStatus}"></span></span>
 			</div>
 			<div class="detail-row" th:if="${case.closedAt != null}">
 				<span class="detail-label">Closed At</span>
@@ -108,7 +108,7 @@
 						<form method="post" th:action="@{/finance-officer/cases/{id}/invoices/{invoiceId}/charge(id=${case.caseId},invoiceId=${invoice.invoiceId})}">
 							<button class="action-btn action-btn-create" type="submit">Charge</button>
 						</form>
-						<form method="post" th:action="@{/finance-officer/cases/{id}/invoices/{invoiceId}/void(id=${case.caseId},invoiceId=${invoice.invoiceId})}">
+						<form method="post" th:action="@{/finance-officer/cases/{id}/invoices/{invoiceId}/void(id=${case.caseId},invoiceId=${invoice.invoiceId})}" onsubmit="return confirm('Void this invoice? Its charges will be released. This action cannot be undone.');">
 							<button class="action-btn action-btn-delete" type="submit">Void</button>
 						</form>
 					</div>
@@ -128,7 +128,7 @@
 					<div style="display:flex;align-items:center;gap:0.75rem;flex-shrink:0;">
 						<span class="detail-value" th:text="${#numbers.formatDecimal(invoice.totalAmount, 1, 'COMMA', 2, 'POINT')}"></span>
 						<a class="action-btn action-btn-view" th:href="@{/finance-officer/documents/invoice/{id}(id=${invoice.invoiceDocument != null ? invoice.invoiceDocument.documentId : 0})}" target="_blank">View</a>
-						<form method="post" th:action="@{/finance-officer/cases/{id}/invoices/{invoiceId}/void-refund(id=${case.caseId},invoiceId=${invoice.invoiceId})}">
+						<form method="post" th:action="@{/finance-officer/cases/{id}/invoices/{invoiceId}/void-refund(id=${case.caseId},invoiceId=${invoice.invoiceId})}" onsubmit="return confirm('Void this invoice and refund the client? This action cannot be undone.');">
 							<button class="action-btn action-btn-delete" type="submit">Void &amp; Refund</button>
 						</form>
 					</div>

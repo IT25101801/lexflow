@@ -9,7 +9,7 @@ public class NoChargesSelectedException extends BusinessRuleViolationException {
 	private final Long caseId;
 	
 	public NoChargesSelectedException(Long caseId) {
-		super(String.format("No charges were selected to compile an invoice for case %d", caseId));
+		super("No charges were selected to compile an invoice");
 		this.caseId = caseId;
 	}
 	

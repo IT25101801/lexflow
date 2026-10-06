@@ -9,7 +9,7 @@ public class BillableAmountNotEditableException extends BusinessRuleViolationExc
 	private final Long taskId;
 	
 	public BillableAmountNotEditableException(Long taskId) {
-		super(String.format("Task %d's billable amount cannot be edited: it is already billed on an invoice", taskId));
+		super("This task's billable amount cannot be edited: it is already billed on an invoice");
 		this.taskId = taskId;
 	}
 	

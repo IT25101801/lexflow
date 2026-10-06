@@ -12,7 +12,7 @@ public class InvalidInvoiceStateException extends InvalidStateException {
 	private final InvoiceStatus requiredStatus;
 	
 	public InvalidInvoiceStateException(Long invoiceId, InvoiceStatus currentStatus, InvoiceStatus requiredStatus) {
-		super(String.format("Invoice %d cannot be processed: status must be %s, but it is currently %s", invoiceId, requiredStatus, currentStatus));
+		super(String.format("This invoice cannot be processed: status must be %s, but it is currently %s", requiredStatus, currentStatus));
 		this.invoiceId = invoiceId;
 		this.currentStatus = currentStatus;
 		this.requiredStatus = requiredStatus;

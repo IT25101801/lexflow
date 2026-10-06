@@ -26,12 +26,11 @@ import java.util.List;
 public class UserService {
 	
 	private final UserDao userDao;
-	
 	private final DocumentService documentService;
-	
 	private final PasswordEncoder passwordEncoder;
 	
 	// Create
+	
 	@Transactional
 	public Client register(String email, String password, String name, LocalDate dateOfBirth, Gender gender, List<String> addresses, List<String> phoneNumbers, String nicNumber, MultipartFile nicFile) {
 		
@@ -77,6 +76,7 @@ public class UserService {
 	}
 	
 	// Read
+	
 	public User findById(Long userId) {
 		return userDao.findById(userId);
 	}
@@ -153,6 +153,7 @@ public class UserService {
 	}
 	
 	// Update
+	
 	@Transactional
 	public User updateDetails(User user, String name, LocalDate dateOfBirth, Gender gender, List<String> addresses, List<String> phoneNumbers, MultipartFile nicFile, MultipartFile barFile) {
 		documentService.requirePdf(nicFile, "NIC");
@@ -185,14 +186,15 @@ public class UserService {
 	}
 	
 	// Delete
+	
 	public void delete(User user) {
 		userDao.deleteById(user.getUserId());
 	}
 	
 	// State Pattern
+	
 	public User applyReactivation(User user, String temporaryPassword) {
 		String hashedPassword = passwordEncoder.encode(temporaryPassword);
-		
 		userDao.reactivateById(user.getUserId(), hashedPassword);
 		
 		user.setPassword(hashedPassword);
@@ -212,6 +214,7 @@ public class UserService {
 	}
 	
 	// Private Helpers
+	
 	private User findByEmailOrNull(String email) {
 		
 		try {

@@ -27,7 +27,6 @@ public class RoleBasedSuccessHandler implements AuthenticationSuccessHandler {
 			case CLIENT_RELATIONS_OFFICER -> "/client-relations-officer/dashboard";
 			case FINANCE_OFFICER -> "/finance-officer/dashboard";
 		};
-		
 	}
 	
 }

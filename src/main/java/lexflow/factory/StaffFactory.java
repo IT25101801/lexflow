@@ -17,11 +17,13 @@ public class StaffFactory {
 		
 		if (role == Role.PARTNER) {
 			requireBarNumber(barNumber);
+			
 			return new Partner(email, hashedPassword, name, dateOfBirth, gender, addresses, phoneNumbers, nicNumber, registeredAt, barNumber);
 		}
 		
 		if (role == Role.ASSOCIATE) {
 			requireBarNumber(barNumber);
+			
 			return new Associate(email, hashedPassword, name, dateOfBirth, gender, addresses, phoneNumbers, nicNumber, registeredAt, barNumber);
 		}
 		

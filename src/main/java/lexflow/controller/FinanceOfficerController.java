@@ -46,7 +46,7 @@ public class FinanceOfficerController {
 	private final TaskService taskService;
 	private final AnalyticsService analyticsService;
 	
-	// Overview (Dashboard, Profile)
+	// Overview
 	
 	@GetMapping("/finance-officer/dashboard")
 	public String dashboard(Authentication authentication, Model model) {
@@ -55,10 +55,24 @@ public class FinanceOfficerController {
 		return "finance-officer/dashboard";
 	}
 	
-	private FinanceOfficer currentFinanceOfficer(Authentication authentication) {
-		CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
+	@GetMapping("/finance-officer/analytics")
+	public String analytics(Authentication authentication, Model model) {
+		model.addAttribute("user", currentFinanceOfficer(authentication));
 		
-		return (FinanceOfficer) principal.user();
+		Map<Integer, BigDecimal> revenueByMonth = analyticsService.revenueByMonth(LocalDate.now().getYear());
+		model.addAttribute("revenueByMonthLabels", monthLabels());
+		model.addAttribute("revenueByMonthValues", revenueByMonth.values());
+		
+		model.addAttribute("outstandingInvoiceTotal", analyticsService.outstandingInvoiceTotal());
+		model.addAttribute("averageDaysToPayment", analyticsService.averageDaysToPayment());
+		
+		Map<TransactionType, Integer> topUpCountComparison = analyticsService.topUpCountComparison();
+		model.addAttribute("cardTopUpCount", topUpCountComparison.getOrDefault(TransactionType.CARD_TOP_UP, 0));
+		model.addAttribute("cashTopUpCount", topUpCountComparison.getOrDefault(TransactionType.CASH_TOP_UP, 0));
+		
+		model.addAttribute("totalClientWalletFloat", analyticsService.totalClientWalletFloat());
+		
+		return "finance-officer/analytics";
 	}
 	
 	@GetMapping("/finance-officer/profile")
@@ -94,12 +108,7 @@ public class FinanceOfficerController {
 		return "finance-officer/profile";
 	}
 	
-	@GetMapping("/finance-officer/documents/user/{id}")
-	public ResponseEntity<Resource> viewUserDocument(@PathVariable("id") Long documentId, Authentication authentication) {
-		return documentService.streamUserDocument(documentService.findById(documentId), currentFinanceOfficer(authentication));
-	}
-	
-	// Cases (Open, Closed, Details)
+	// Cases
 	
 	@GetMapping("/finance-officer/cases/open")
 	public String openCases(Model model) {
@@ -126,18 +135,28 @@ public class FinanceOfficerController {
 		return "finance-officer/case-details";
 	}
 	
-	// Private Helpers
-	
-	private void populateCaseDetailModel(Case case_, Model model) {
-		model.addAttribute("case", case_);
-		model.addAttribute("tasks", taskService.findByCase(case_));
-		model.addAttribute("unbilledTasks", taskService.findUnbilledByCase(case_));
-		model.addAttribute("unpaidInvoices", invoiceService.findByCaseAndStatus(case_, InvoiceStatus.UNPAID));
-		model.addAttribute("paidInvoices", invoiceService.findByCaseAndStatus(case_, InvoiceStatus.PAID));
-		model.addAttribute("voidedInvoices", invoiceService.findByCaseAndStatus(case_, InvoiceStatus.VOIDED));
+	@PostMapping("/finance-officer/cases/{id}/tasks/{taskId}/edit-billable-amount")
+	public String editBillableAmount(@PathVariable("id") Long caseId, @PathVariable Long taskId, @Valid @ModelAttribute EditBillableAmountRequest form, BindingResult bindingResult, Model model) {
+		Case case_ = caseService.findById(caseId);
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			populateCaseDetailModel(case_, model);
+			
+			return "finance-officer/case-details";
+		}
+		
+		try {
+			taskService.updateBillableAmount(taskService.findById(taskId), form.getAmount());
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("success", "Charge amount updated.");
+		} catch (BusinessRuleViolationException e) {
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "finance-officer/case-details";
 	}
-	
-	// Invoices & Documents
 	
 	@PostMapping("/finance-officer/cases/{id}/invoices/compile")
 	public String compileInvoice(@PathVariable("id") Long caseId, @Valid @ModelAttribute CompileInvoiceRequest form, Model model) {
@@ -164,29 +183,6 @@ public class FinanceOfficerController {
 			populateCaseDetailModel(case_, model);
 			model.addAttribute("success", "Invoice charged successfully.");
 		} catch (InvalidInvoiceStateException | InsufficientFundsException e) {
-			populateCaseDetailModel(case_, model);
-			model.addAttribute("error", e.getMessage());
-		}
-		
-		return "finance-officer/case-details";
-	}
-	
-	@PostMapping("/finance-officer/cases/{id}/tasks/{taskId}/edit-billable-amount")
-	public String editBillableAmount(@PathVariable("id") Long caseId, @PathVariable Long taskId, @Valid @ModelAttribute EditBillableAmountRequest form, BindingResult bindingResult, Model model) {
-		Case case_ = caseService.findById(caseId);
-		
-		if (bindingResult.hasErrors()) {
-			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
-			populateCaseDetailModel(case_, model);
-			
-			return "finance-officer/case-details";
-		}
-		
-		try {
-			taskService.updateBillableAmount(taskService.findById(taskId), form.getAmount());
-			populateCaseDetailModel(case_, model);
-			model.addAttribute("success", "Charge amount updated.");
-		} catch (BusinessRuleViolationException e) {
 			populateCaseDetailModel(case_, model);
 			model.addAttribute("error", e.getMessage());
 		}
@@ -226,21 +222,6 @@ public class FinanceOfficerController {
 		return "finance-officer/case-details";
 	}
 	
-	@GetMapping("/finance-officer/documents/invoice/{id}")
-	public ResponseEntity<Resource> viewInvoiceDocument(@PathVariable("id") Long documentId, Authentication authentication) {
-		return documentService.streamInvoiceDocument(documentService.findById(documentId), currentFinanceOfficer(authentication));
-	}
-	
-	@GetMapping("/finance-officer/transactions")
-	public String transactions(Model model) {
-		model.addAttribute("transactions", transactionService.findAll());
-		model.addAttribute("totalCharges", transactionService.totalCharges());
-		model.addAttribute("totalRefunds", transactionService.totalRefunds());
-		model.addAttribute("netRevenue", transactionService.netRevenue());
-		
-		return "finance-officer/transactions";
-	}
-	
 	// Clients
 	
 	@GetMapping("/finance-officer/clients")
@@ -262,6 +243,45 @@ public class FinanceOfficerController {
 		model.addAttribute("relatedTransactions", transactionService.findAllForClient(client));
 		
 		return "finance-officer/client-details";
+	}
+	
+	// Payments
+	
+	@GetMapping("/finance-officer/cash-top-up")
+	public String showCashTopUpForm(Model model) {
+		return "finance-officer/cash-top-up";
+	}
+	
+	@PostMapping("/finance-officer/cash-top-up")
+	public String topUpByCash(@Valid @ModelAttribute TopUpByCashRequest form, BindingResult bindingResult, Model model) {
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			
+			return "finance-officer/cash-top-up";
+		}
+		
+		Client client;
+		
+		try {
+			client = userService.findClientByUserCode(form.getClientCode());
+		} catch (EntityNotFoundException e) {
+			model.addAttribute("error", "No client found with code " + form.getClientCode() + ".");
+			
+			return "finance-officer/cash-top-up";
+		}
+		
+		try {
+			transactionService.topUpByCash(client, form.getAmount());
+		} catch (PersistenceException e) {
+			model.addAttribute("error", "The cash top-up could not be processed. Please try again.");
+			
+			return "finance-officer/cash-top-up";
+		}
+		
+		model.addAttribute("success", "Trust account topped up successfully for " + client.getName() + ".");
+		
+		return "finance-officer/cash-top-up";
 	}
 	
 	@GetMapping("/finance-officer/withdrawal")
@@ -305,67 +325,47 @@ public class FinanceOfficerController {
 		return "finance-officer/withdrawal";
 	}
 	
-	// Payments (Cash Top-Up, Transactions)
-	
-	@GetMapping("/finance-officer/cash-top-up")
-	public String showCashTopUpForm(Model model) {
-		return "finance-officer/cash-top-up";
+	@GetMapping("/finance-officer/transactions")
+	public String transactions(Model model) {
+		model.addAttribute("transactions", transactionService.findAll());
+		model.addAttribute("totalCharges", transactionService.totalCharges());
+		model.addAttribute("totalRefunds", transactionService.totalRefunds());
+		model.addAttribute("netRevenue", transactionService.netRevenue());
+		
+		return "finance-officer/transactions";
 	}
 	
-	@PostMapping("/finance-officer/cash-top-up")
-	public String topUpByCash(@Valid @ModelAttribute TopUpByCashRequest form, BindingResult bindingResult, Model model) {
-		
-		if (bindingResult.hasErrors()) {
-			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
-			
-			return "finance-officer/cash-top-up";
-		}
-		
-		Client client;
-		
-		try {
-			client = userService.findClientByUserCode(form.getClientCode());
-		} catch (EntityNotFoundException e) {
-			model.addAttribute("error", "No client found with code " + form.getClientCode() + ".");
-			
-			return "finance-officer/cash-top-up";
-		}
-		
-		try {
-			transactionService.topUpByCash(client, form.getAmount());
-		} catch (PersistenceException e) {
-			model.addAttribute("error", "The cash top-up could not be processed. Please try again.");
-			
-			return "finance-officer/cash-top-up";
-		}
-		
-		model.addAttribute("success", "Trust account topped up successfully for " + client.getName() + ".");
-		
-		return "finance-officer/cash-top-up";
+	// Documents
+	
+	@GetMapping("/finance-officer/documents/user/{id}")
+	public ResponseEntity<Resource> viewUserDocument(@PathVariable("id") Long documentId, Authentication authentication) {
+		return documentService.streamUserDocument(documentService.findById(documentId), currentFinanceOfficer(authentication));
 	}
 	
-	@GetMapping("/finance-officer/analytics")
-	public String analytics(Authentication authentication, Model model) {
-		model.addAttribute("user", currentFinanceOfficer(authentication));
+	@GetMapping("/finance-officer/documents/invoice/{id}")
+	public ResponseEntity<Resource> viewInvoiceDocument(@PathVariable("id") Long documentId, Authentication authentication) {
+		return documentService.streamInvoiceDocument(documentService.findById(documentId), currentFinanceOfficer(authentication));
+	}
+	
+	// Private Helpers
+	
+	private FinanceOfficer currentFinanceOfficer(Authentication authentication) {
+		CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
 		
-		Map<Integer, BigDecimal> revenueByMonth = analyticsService.revenueByMonth(LocalDate.now().getYear());
-		model.addAttribute("revenueByMonthLabels", monthLabels());
-		model.addAttribute("revenueByMonthValues", revenueByMonth.values());
-		
-		model.addAttribute("outstandingInvoiceTotal", analyticsService.outstandingInvoiceTotal());
-		model.addAttribute("averageDaysToPayment", analyticsService.averageDaysToPayment());
-		
-		Map<TransactionType, Integer> topUpCountComparison = analyticsService.topUpCountComparison();
-		model.addAttribute("cardTopUpCount", topUpCountComparison.getOrDefault(TransactionType.CARD_TOP_UP, 0));
-		model.addAttribute("cashTopUpCount", topUpCountComparison.getOrDefault(TransactionType.CASH_TOP_UP, 0));
-		
-		model.addAttribute("totalClientWalletFloat", analyticsService.totalClientWalletFloat());
-		
-		return "finance-officer/analytics";
+		return (FinanceOfficer) principal.user();
 	}
 	
 	private List<String> monthLabels() {
 		return List.of("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+	}
+	
+	private void populateCaseDetailModel(Case case_, Model model) {
+		model.addAttribute("case", case_);
+		model.addAttribute("tasks", taskService.findByCase(case_));
+		model.addAttribute("unbilledTasks", taskService.findUnbilledByCase(case_));
+		model.addAttribute("unpaidInvoices", invoiceService.findByCaseAndStatus(case_, InvoiceStatus.UNPAID));
+		model.addAttribute("paidInvoices", invoiceService.findByCaseAndStatus(case_, InvoiceStatus.PAID));
+		model.addAttribute("voidedInvoices", invoiceService.findByCaseAndStatus(case_, InvoiceStatus.VOIDED));
 	}
 	
 }

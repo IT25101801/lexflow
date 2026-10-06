@@ -40,7 +40,7 @@ public class ParalegalController {
 	private final ContactService contactService;
 	private final AnalyticsService analyticsService;
 	
-	// Overview (Dashboard, Profile)
+	// Overview
 	
 	@GetMapping("/paralegal/dashboard")
 	public String dashboard(Authentication authentication, Model model) {
@@ -49,10 +49,17 @@ public class ParalegalController {
 		return "paralegal/dashboard";
 	}
 	
-	private Paralegal currentParalegal(Authentication authentication) {
-		CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
+	@GetMapping("/paralegal/analytics")
+	public String analytics(Authentication authentication, Model model) {
+		Paralegal paralegal = currentParalegal(authentication);
+		model.addAttribute("user", paralegal);
 		
-		return (Paralegal) principal.user();
+		model.addAttribute("winRate", analyticsService.winRateForParalegal(paralegal.getUserId()));
+		model.addAttribute("averageCaseDurationDays", analyticsService.averageCaseDurationDaysForParalegal(paralegal.getUserId()));
+		model.addAttribute("billableAmountThisMonth", analyticsService.billableAmountThisMonthForParalegal(paralegal.getUserId()));
+		model.addAttribute("billableAmountLastMonth", analyticsService.billableAmountLastMonthForParalegal(paralegal.getUserId()));
+		
+		return "paralegal/analytics";
 	}
 	
 	@GetMapping("/paralegal/profile")
@@ -88,12 +95,7 @@ public class ParalegalController {
 		return "paralegal/profile";
 	}
 	
-	@GetMapping("/paralegal/documents/user/{id}")
-	public ResponseEntity<Resource> viewUserDocument(@PathVariable("id") Long documentId, Authentication authentication) {
-		return documentService.streamUserDocument(documentService.findById(documentId), currentParalegal(authentication));
-	}
-	
-	// Consultations (Unscheduled, All)
+	// Consultations
 	
 	@GetMapping("/paralegal/consultations/pending")
 	public String pendingConsultations(Authentication authentication, Model model) {
@@ -119,14 +121,7 @@ public class ParalegalController {
 		return "paralegal/consultation-details";
 	}
 	
-	// Documents
-	
-	@GetMapping("/paralegal/documents/consultation/{id}")
-	public ResponseEntity<Resource> viewConsultationDocument(@PathVariable("id") Long documentId, Authentication authentication) {
-		return documentService.streamConsultationDocument(documentService.findById(documentId), currentParalegal(authentication));
-	}
-	
-	// Cases (Open, Closed, Details & Actions)
+	// Cases
 	
 	@GetMapping("/paralegal/cases/open")
 	public String openCases(Authentication authentication, Model model) {
@@ -153,42 +148,6 @@ public class ParalegalController {
 		
 		model.addAttribute("caseDocuments", documentService.findByCaseAndKeyword(case_, documentKeyword));
 		model.addAttribute("documentKeyword", documentKeyword);
-		
-		return "paralegal/case-details";
-	}
-	
-	// Private Helpers
-	
-	private void populateCaseDetailModel(Case case_, Model model) {
-		model.addAttribute("case", case_);
-		model.addAttribute("stagedDocuments", documentService.findStagedByCase(case_));
-		model.addAttribute("caseDocuments", documentService.findByCase(case_));
-		model.addAttribute("contacts", contactService.findByCase(case_));
-		
-		List<Task> tasks = taskService.findByCase(case_);
-		model.addAttribute("tasks", tasks);
-		model.addAttribute("taskDocuments", documentService.findByTasks(tasks));
-	}
-	
-	@PostMapping("/paralegal/cases/{id}/contacts")
-	public String addContact(@PathVariable("id") Long caseId, @Valid @ModelAttribute SaveContactRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
-		Case case_ = caseService.findOwnedByParalegal(caseId, currentParalegal(authentication));
-		
-		if (bindingResult.hasErrors()) {
-			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
-			populateCaseDetailModel(case_, model);
-			
-			return "paralegal/case-details";
-		}
-		
-		try {
-			contactService.add(case_, form.getName(), form.getPhoneNumbers(), form.getEmails(), form.getAddresses(), form.getNotes());
-			populateCaseDetailModel(case_, model);
-			model.addAttribute("success", "Contact added.");
-		} catch (InvalidStateException e) {
-			populateCaseDetailModel(case_, model);
-			model.addAttribute("error", e.getMessage());
-		}
 		
 		return "paralegal/case-details";
 	}
@@ -268,16 +227,6 @@ public class ParalegalController {
 		return "paralegal/case-details";
 	}
 	
-	@PostMapping("/paralegal/cases/{id}/documents/{documentId}/reject")
-	public String rejectStagedDocument(@PathVariable("id") Long caseId, @PathVariable Long documentId, Authentication authentication, Model model) {
-		Case case_ = caseService.findOwnedByParalegal(caseId, currentParalegal(authentication));
-		documentService.deleteStaged(case_, List.of(documentId));
-		populateCaseDetailModel(case_, model);
-		model.addAttribute("success", "Document deleted.");
-		
-		return "paralegal/case-details";
-	}
-	
 	@PostMapping("/paralegal/cases/{id}/documents/{documentId}/rename")
 	public String renameCaseDocument(@PathVariable("id") Long caseId, @PathVariable Long documentId, @Valid @ModelAttribute RenameDocumentRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
 		Case case_ = caseService.findOwnedByParalegal(caseId, currentParalegal(authentication));
@@ -297,12 +246,40 @@ public class ParalegalController {
 		return "paralegal/case-details";
 	}
 	
-	@GetMapping("/paralegal/documents/case/{id}")
-	public ResponseEntity<Resource> viewCaseDocument(@PathVariable("id") Long documentId, Authentication authentication) {
-		return documentService.streamCaseDocument(documentService.findById(documentId), currentParalegal(authentication));
+	@PostMapping("/paralegal/cases/{id}/documents/{documentId}/reject")
+	public String rejectStagedDocument(@PathVariable("id") Long caseId, @PathVariable Long documentId, Authentication authentication, Model model) {
+		Case case_ = caseService.findOwnedByParalegal(caseId, currentParalegal(authentication));
+		documentService.deleteStaged(case_, List.of(documentId));
+		populateCaseDetailModel(case_, model);
+		model.addAttribute("success", "Document deleted.");
+		
+		return "paralegal/case-details";
 	}
 	
-	// Schedule (My Events)
+	@PostMapping("/paralegal/cases/{id}/contacts")
+	public String addContact(@PathVariable("id") Long caseId, @Valid @ModelAttribute SaveContactRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
+		Case case_ = caseService.findOwnedByParalegal(caseId, currentParalegal(authentication));
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			populateCaseDetailModel(case_, model);
+			
+			return "paralegal/case-details";
+		}
+		
+		try {
+			contactService.add(case_, form.getName(), form.getPhoneNumbers(), form.getEmails(), form.getAddresses(), form.getNotes());
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("success", "Contact added.");
+		} catch (InvalidStateException e) {
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "paralegal/case-details";
+	}
+	
+	// Schedule
 	
 	@GetMapping("/paralegal/events")
 	public String events(Authentication authentication, Model model) {
@@ -318,17 +295,40 @@ public class ParalegalController {
 		return "paralegal/event-details";
 	}
 	
-	@GetMapping("/paralegal/analytics")
-	public String analytics(Authentication authentication, Model model) {
-		Paralegal paralegal = currentParalegal(authentication);
-		model.addAttribute("user", paralegal);
+	// Documents
+	
+	@GetMapping("/paralegal/documents/user/{id}")
+	public ResponseEntity<Resource> viewUserDocument(@PathVariable("id") Long documentId, Authentication authentication) {
+		return documentService.streamUserDocument(documentService.findById(documentId), currentParalegal(authentication));
+	}
+	
+	@GetMapping("/paralegal/documents/consultation/{id}")
+	public ResponseEntity<Resource> viewConsultationDocument(@PathVariable("id") Long documentId, Authentication authentication) {
+		return documentService.streamConsultationDocument(documentService.findById(documentId), currentParalegal(authentication));
+	}
+	
+	@GetMapping("/paralegal/documents/case/{id}")
+	public ResponseEntity<Resource> viewCaseDocument(@PathVariable("id") Long documentId, Authentication authentication) {
+		return documentService.streamCaseDocument(documentService.findById(documentId), currentParalegal(authentication));
+	}
+	
+	// Private Helpers
+	
+	private Paralegal currentParalegal(Authentication authentication) {
+		CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
 		
-		model.addAttribute("winRate", analyticsService.winRateForParalegal(paralegal.getUserId()));
-		model.addAttribute("averageCaseDurationDays", analyticsService.averageCaseDurationDaysForParalegal(paralegal.getUserId()));
-		model.addAttribute("billableAmountThisMonth", analyticsService.billableAmountThisMonthForParalegal(paralegal.getUserId()));
-		model.addAttribute("billableAmountLastMonth", analyticsService.billableAmountLastMonthForParalegal(paralegal.getUserId()));
+		return (Paralegal) principal.user();
+	}
+	
+	private void populateCaseDetailModel(Case case_, Model model) {
+		model.addAttribute("case", case_);
+		model.addAttribute("stagedDocuments", documentService.findStagedByCase(case_));
+		model.addAttribute("caseDocuments", documentService.findByCase(case_));
+		model.addAttribute("contacts", contactService.findByCase(case_));
 		
-		return "paralegal/analytics";
+		List<Task> tasks = taskService.findByCase(case_);
+		model.addAttribute("tasks", tasks);
+		model.addAttribute("taskDocuments", documentService.findByTasks(tasks));
 	}
 	
 }

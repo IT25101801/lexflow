@@ -44,7 +44,7 @@ public class AssociateController {
 	private final TaskService taskService;
 	private final UserService userService;
 	
-	// Overview (Dashboard, Profile)
+	// Overview
 	
 	@GetMapping("/associate/dashboard")
 	public String dashboard(Authentication authentication, Model model) {
@@ -53,12 +53,17 @@ public class AssociateController {
 		return "associate/dashboard";
 	}
 	
-	// Private Helpers
-	
-	private Associate currentAssociate(Authentication authentication) {
-		CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
+	@GetMapping("/associate/analytics")
+	public String analytics(Authentication authentication, Model model) {
+		Associate associate = currentAssociate(authentication);
+		model.addAttribute("user", associate);
 		
-		return (Associate) principal.user();
+		model.addAttribute("winRate", analyticsService.winRateForAssociate(associate.getUserId()));
+		model.addAttribute("averageCaseDurationDays", analyticsService.averageCaseDurationDaysForAssociate(associate.getUserId()));
+		model.addAttribute("billableAmountThisMonth", analyticsService.billableAmountThisMonthForAssociate(associate.getUserId()));
+		model.addAttribute("billableAmountLastMonth", analyticsService.billableAmountLastMonthForAssociate(associate.getUserId()));
+		
+		return "associate/analytics";
 	}
 	
 	@GetMapping("/associate/profile")
@@ -94,12 +99,7 @@ public class AssociateController {
 		return "associate/profile";
 	}
 	
-	@GetMapping("/associate/documents/user/{id}")
-	public ResponseEntity<Resource> viewUserDocument(@PathVariable("id") Long documentId, Authentication authentication) {
-		return documentService.streamUserDocument(documentService.findById(documentId), currentAssociate(authentication));
-	}
-	
-	// Consultations (Pending, All)
+	// Consultations
 	
 	@GetMapping("/associate/consultations/pending")
 	public String pendingConsultations(Authentication authentication, Model model) {
@@ -119,53 +119,6 @@ public class AssociateController {
 	public String consultationDetails(@PathVariable("id") Long consultationId, Authentication authentication, Model model) {
 		Consultation consultation = consultationService.findOwnedByAssociate(consultationId, currentAssociate(authentication));
 		populateConsultationDetailModel(consultation, model);
-		
-		return "associate/consultation-details";
-	}
-	
-	private void populateConsultationDetailModel(Consultation consultation, Model model) {
-		model.addAttribute("consultation", consultation);
-		model.addAttribute("consultationDocuments", documentService.findByConsultation(consultation));
-		model.addAttribute("consultationEvents", eventService.findByConsultation(consultation));
-		model.addAttribute("hasCompletedMeeting", consultationService.hasCompletedMeeting(consultation));
-		model.addAttribute("existingCase", caseService.findByConsultation(consultation));
-	}
-	
-	@PostMapping("/associate/consultations/{id}/accept")
-	public String acceptConsultation(@PathVariable("id") Long consultationId, Authentication authentication, Model model) {
-		Consultation consultation = consultationService.findOwnedByAssociate(consultationId, currentAssociate(authentication));
-		
-		try {
-			consultation = consultationService.associateAccept(consultation);
-			populateConsultationDetailModel(consultation, model);
-			model.addAttribute("success", "Consultation request accepted.");
-		} catch (InvalidStateException | BusinessRuleViolationException e) {
-			populateConsultationDetailModel(consultation, model);
-			model.addAttribute("error", e.getMessage());
-		}
-		
-		return "associate/consultation-details";
-	}
-	
-	@PostMapping("/associate/consultations/{id}/reject")
-	public String rejectConsultation(@PathVariable("id") Long consultationId, @Valid @ModelAttribute RejectConsultationRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
-		Consultation consultation = consultationService.findOwnedByAssociate(consultationId, currentAssociate(authentication));
-		
-		if (bindingResult.hasErrors()) {
-			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
-			populateConsultationDetailModel(consultation, model);
-			
-			return "associate/consultation-details";
-		}
-		
-		try {
-			consultation = consultationService.associateReject(consultation, form.getRejectionReason());
-			populateConsultationDetailModel(consultation, model);
-			model.addAttribute("success", "Consultation request rejected.");
-		} catch (InvalidStateException | BusinessRuleViolationException e) {
-			populateConsultationDetailModel(consultation, model);
-			model.addAttribute("error", e.getMessage());
-		}
 		
 		return "associate/consultation-details";
 	}
@@ -218,6 +171,55 @@ public class AssociateController {
 		return "associate/consultation-details";
 	}
 	
+	@PostMapping("/associate/consultations/{id}/accept")
+	public String acceptConsultation(@PathVariable("id") Long consultationId, Authentication authentication, Model model) {
+		Consultation consultation = consultationService.findOwnedByAssociate(consultationId, currentAssociate(authentication));
+		
+		try {
+			consultation = consultationService.associateAccept(consultation);
+			populateConsultationDetailModel(consultation, model);
+			model.addAttribute("success", "Consultation request accepted.");
+		} catch (InvalidStateException | BusinessRuleViolationException e) {
+			populateConsultationDetailModel(consultation, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "associate/consultation-details";
+	}
+	
+	@PostMapping("/associate/consultations/{id}/reject")
+	public String rejectConsultation(@PathVariable("id") Long consultationId, @Valid @ModelAttribute RejectConsultationRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
+		Consultation consultation = consultationService.findOwnedByAssociate(consultationId, currentAssociate(authentication));
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			populateConsultationDetailModel(consultation, model);
+			
+			return "associate/consultation-details";
+		}
+		
+		try {
+			consultation = consultationService.associateReject(consultation, form.getRejectionReason());
+			populateConsultationDetailModel(consultation, model);
+			model.addAttribute("success", "Consultation request rejected.");
+		} catch (InvalidStateException | BusinessRuleViolationException e) {
+			populateConsultationDetailModel(consultation, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "associate/consultation-details";
+	}
+	
+	@PostMapping("/associate/consultations/{id}/open-case")
+	public String openCase(@PathVariable("id") Long consultationId, Authentication authentication, RedirectAttributes redirectAttributes) {
+		Consultation consultation = consultationService.findOwnedByAssociate(consultationId, currentAssociate(authentication));
+		Case case_ = caseService.open(consultation);
+		
+		redirectAttributes.addFlashAttribute("success", "Case opened successfully.");
+		
+		return "redirect:/associate/cases/" + case_.getCaseId();
+	}
+	
 	@PostMapping("/associate/consultations/{id}/events/{eventId}/complete")
 	public String completeMeeting(@PathVariable("id") Long consultationId, @PathVariable Long eventId, Authentication authentication, Model model) {
 		Consultation consultation = consultationService.findOwnedByAssociate(consultationId, currentAssociate(authentication));
@@ -250,24 +252,7 @@ public class AssociateController {
 		return "associate/consultation-details";
 	}
 	
-	@PostMapping("/associate/consultations/{id}/open-case")
-	public String openCase(@PathVariable("id") Long consultationId, Authentication authentication, RedirectAttributes redirectAttributes) {
-		Consultation consultation = consultationService.findOwnedByAssociate(consultationId, currentAssociate(authentication));
-		Case case_ = caseService.open(consultation);
-		
-		redirectAttributes.addFlashAttribute("success", "Case opened successfully.");
-		
-		return "redirect:/associate/cases/" + case_.getCaseId();
-	}
-	
-	// Documents
-	
-	@GetMapping("/associate/documents/consultation/{id}")
-	public ResponseEntity<Resource> viewConsultationDocument(@PathVariable("id") Long documentId, Authentication authentication) {
-		return documentService.streamConsultationDocument(documentService.findById(documentId), currentAssociate(authentication));
-	}
-	
-	// Cases (Open, Closed)
+	// Cases
 	
 	@GetMapping("/associate/cases/open")
 	public String openCases(Authentication authentication, Model model) {
@@ -294,104 +279,6 @@ public class AssociateController {
 		
 		model.addAttribute("caseDocuments", documentService.findByCaseAndKeyword(case_, documentKeyword));
 		model.addAttribute("documentKeyword", documentKeyword);
-		
-		return "associate/case-details";
-	}
-	
-	private void populateCaseDetailModel(Case case_, Model model) {
-		model.addAttribute("case", case_);
-		model.addAttribute("stagedDocuments", documentService.findStagedByCase(case_));
-		model.addAttribute("caseDocuments", documentService.findByCase(case_));
-		model.addAttribute("contacts", contactService.findByCase(case_));
-		
-		List<Task> tasks = taskService.findByCase(case_);
-		model.addAttribute("tasks", tasks);
-		model.addAttribute("taskDocuments", documentService.findByTasks(tasks));
-	}
-	
-	@PostMapping("/associate/cases/{id}/close")
-	public String closeCase(@PathVariable("id") Long caseId, @Valid @ModelAttribute CloseCaseRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
-		Case case_ = caseService.findOwnedByAssociate(caseId, currentAssociate(authentication));
-		
-		if (bindingResult.hasErrors()) {
-			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
-			populateCaseDetailModel(case_, model);
-			
-			return "associate/case-details";
-		}
-		
-		try {
-			case_ = caseService.close(case_, form.getCaseResolutionStatus());
-			populateCaseDetailModel(case_, model);
-			model.addAttribute("success", "Case closed successfully.");
-		} catch (InvalidStateException e) {
-			populateCaseDetailModel(case_, model);
-			model.addAttribute("error", e.getMessage());
-		}
-		
-		return "associate/case-details";
-	}
-	
-	@PostMapping("/associate/cases/{id}/documents/{documentId}/accept")
-	public String acceptStagedDocument(@PathVariable("id") Long caseId, @PathVariable Long documentId, Authentication authentication, Model model) {
-		Case case_ = caseService.findOwnedByAssociate(caseId, currentAssociate(authentication));
-		documentService.addStagedToCase(case_, List.of(documentId));
-		
-		populateCaseDetailModel(case_, model);
-		model.addAttribute("success", "Document added to case.");
-		
-		return "associate/case-details";
-	}
-	
-	@PostMapping("/associate/cases/{id}/documents/{documentId}/reject")
-	public String rejectStagedDocument(@PathVariable("id") Long caseId, @PathVariable Long documentId, Authentication authentication, Model model) {
-		Case case_ = caseService.findOwnedByAssociate(caseId, currentAssociate(authentication));
-		documentService.deleteStaged(case_, List.of(documentId));
-		
-		populateCaseDetailModel(case_, model);
-		model.addAttribute("success", "Document deleted.");
-		
-		return "associate/case-details";
-	}
-	
-	@PostMapping("/associate/cases/{id}/documents/{documentId}/rename")
-	public String renameCaseDocument(@PathVariable("id") Long caseId, @PathVariable Long documentId, @Valid @ModelAttribute RenameDocumentRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
-		Case case_ = caseService.findOwnedByAssociate(caseId, currentAssociate(authentication));
-		
-		if (bindingResult.hasErrors()) {
-			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
-			populateCaseDetailModel(case_, model);
-			
-			return "associate/case-details";
-		}
-		
-		documentService.rename(case_, documentId, form.getOriginalFilename());
-		
-		populateCaseDetailModel(case_, model);
-		model.addAttribute("success", "Document renamed.");
-		
-		return "associate/case-details";
-	}
-	
-	@PostMapping("/associate/cases/{id}/contacts")
-	public String addContact(@PathVariable("id") Long caseId, @Valid @ModelAttribute SaveContactRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
-		Case case_ = caseService.findOwnedByAssociate(caseId, currentAssociate(authentication));
-		
-		if (bindingResult.hasErrors()) {
-			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
-			populateCaseDetailModel(case_, model);
-			
-			return "associate/case-details";
-		}
-		
-		try {
-			contactService.add(case_, form.getName(), form.getPhoneNumbers(), form.getEmails(), form.getAddresses(), form.getNotes());
-			populateCaseDetailModel(case_, model);
-			model.addAttribute("success", "Contact added.");
-		} catch (InvalidStateException e) {
-			populateCaseDetailModel(case_, model);
-			model.addAttribute("error", e.getMessage());
-		}
 		
 		return "associate/case-details";
 	}
@@ -461,12 +348,94 @@ public class AssociateController {
 		return "associate/case-details";
 	}
 	
-	@GetMapping("/associate/documents/case/{id}")
-	public ResponseEntity<Resource> viewCaseDocument(@PathVariable("id") Long documentId, Authentication authentication) {
-		return documentService.streamCaseDocument(documentService.findById(documentId), currentAssociate(authentication));
+	@PostMapping("/associate/cases/{id}/documents/{documentId}/accept")
+	public String acceptStagedDocument(@PathVariable("id") Long caseId, @PathVariable Long documentId, Authentication authentication, Model model) {
+		Case case_ = caseService.findOwnedByAssociate(caseId, currentAssociate(authentication));
+		documentService.addStagedToCase(case_, List.of(documentId));
+		
+		populateCaseDetailModel(case_, model);
+		model.addAttribute("success", "Document added to case.");
+		
+		return "associate/case-details";
 	}
 	
-	// Schedule (My Events)
+	@PostMapping("/associate/cases/{id}/documents/{documentId}/rename")
+	public String renameCaseDocument(@PathVariable("id") Long caseId, @PathVariable Long documentId, @Valid @ModelAttribute RenameDocumentRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
+		Case case_ = caseService.findOwnedByAssociate(caseId, currentAssociate(authentication));
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			populateCaseDetailModel(case_, model);
+			
+			return "associate/case-details";
+		}
+		
+		documentService.rename(case_, documentId, form.getOriginalFilename());
+		
+		populateCaseDetailModel(case_, model);
+		model.addAttribute("success", "Document renamed.");
+		
+		return "associate/case-details";
+	}
+	
+	@PostMapping("/associate/cases/{id}/documents/{documentId}/reject")
+	public String rejectStagedDocument(@PathVariable("id") Long caseId, @PathVariable Long documentId, Authentication authentication, Model model) {
+		Case case_ = caseService.findOwnedByAssociate(caseId, currentAssociate(authentication));
+		documentService.deleteStaged(case_, List.of(documentId));
+		
+		populateCaseDetailModel(case_, model);
+		model.addAttribute("success", "Document deleted.");
+		
+		return "associate/case-details";
+	}
+	
+	@PostMapping("/associate/cases/{id}/close")
+	public String closeCase(@PathVariable("id") Long caseId, @Valid @ModelAttribute CloseCaseRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
+		Case case_ = caseService.findOwnedByAssociate(caseId, currentAssociate(authentication));
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			populateCaseDetailModel(case_, model);
+			
+			return "associate/case-details";
+		}
+		
+		try {
+			case_ = caseService.close(case_, form.getCaseResolutionStatus());
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("success", "Case closed successfully.");
+		} catch (InvalidStateException e) {
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "associate/case-details";
+	}
+	
+	@PostMapping("/associate/cases/{id}/contacts")
+	public String addContact(@PathVariable("id") Long caseId, @Valid @ModelAttribute SaveContactRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
+		Case case_ = caseService.findOwnedByAssociate(caseId, currentAssociate(authentication));
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			populateCaseDetailModel(case_, model);
+			
+			return "associate/case-details";
+		}
+		
+		try {
+			contactService.add(case_, form.getName(), form.getPhoneNumbers(), form.getEmails(), form.getAddresses(), form.getNotes());
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("success", "Contact added.");
+		} catch (InvalidStateException e) {
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "associate/case-details";
+	}
+	
+	// Schedule
 	
 	@GetMapping("/associate/events")
 	public String events(Authentication authentication, Model model) {
@@ -510,17 +479,48 @@ public class AssociateController {
 		return "redirect:/associate/events/{id}";
 	}
 	
-	@GetMapping("/associate/analytics")
-	public String analytics(Authentication authentication, Model model) {
-		Associate associate = currentAssociate(authentication);
-		model.addAttribute("user", associate);
+	// Documents
+	
+	@GetMapping("/associate/documents/user/{id}")
+	public ResponseEntity<Resource> viewUserDocument(@PathVariable("id") Long documentId, Authentication authentication) {
+		return documentService.streamUserDocument(documentService.findById(documentId), currentAssociate(authentication));
+	}
+	
+	@GetMapping("/associate/documents/consultation/{id}")
+	public ResponseEntity<Resource> viewConsultationDocument(@PathVariable("id") Long documentId, Authentication authentication) {
+		return documentService.streamConsultationDocument(documentService.findById(documentId), currentAssociate(authentication));
+	}
+	
+	@GetMapping("/associate/documents/case/{id}")
+	public ResponseEntity<Resource> viewCaseDocument(@PathVariable("id") Long documentId, Authentication authentication) {
+		return documentService.streamCaseDocument(documentService.findById(documentId), currentAssociate(authentication));
+	}
+	
+	// Private Helpers
+	
+	private Associate currentAssociate(Authentication authentication) {
+		CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
 		
-		model.addAttribute("winRate", analyticsService.winRateForAssociate(associate.getUserId()));
-		model.addAttribute("averageCaseDurationDays", analyticsService.averageCaseDurationDaysForAssociate(associate.getUserId()));
-		model.addAttribute("billableAmountThisMonth", analyticsService.billableAmountThisMonthForAssociate(associate.getUserId()));
-		model.addAttribute("billableAmountLastMonth", analyticsService.billableAmountLastMonthForAssociate(associate.getUserId()));
+		return (Associate) principal.user();
+	}
+	
+	private void populateConsultationDetailModel(Consultation consultation, Model model) {
+		model.addAttribute("consultation", consultation);
+		model.addAttribute("consultationDocuments", documentService.findByConsultation(consultation));
+		model.addAttribute("consultationEvents", eventService.findByConsultation(consultation));
+		model.addAttribute("hasCompletedMeeting", consultationService.hasCompletedMeeting(consultation));
+		model.addAttribute("existingCase", caseService.findByConsultation(consultation));
+	}
+	
+	private void populateCaseDetailModel(Case case_, Model model) {
+		model.addAttribute("case", case_);
+		model.addAttribute("stagedDocuments", documentService.findStagedByCase(case_));
+		model.addAttribute("caseDocuments", documentService.findByCase(case_));
+		model.addAttribute("contacts", contactService.findByCase(case_));
 		
-		return "associate/analytics";
+		List<Task> tasks = taskService.findByCase(case_);
+		model.addAttribute("tasks", tasks);
+		model.addAttribute("taskDocuments", documentService.findByTasks(tasks));
 	}
 	
 }

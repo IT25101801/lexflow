@@ -42,19 +42,13 @@ public class ClientController {
 	private final TransactionService transactionService;
 	private final TaskService taskService;
 	
-	// Overview (Dashboard, Profile)
+	// Overview
 	
 	@GetMapping("/client/dashboard")
 	public String dashboard(Authentication authentication, Model model) {
 		model.addAttribute("user", currentClient(authentication));
 		
 		return "client/dashboard";
-	}
-	
-	private Client currentClient(Authentication authentication) {
-		CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
-		
-		return (Client) principal.user();
 	}
 	
 	@GetMapping("/client/profile")
@@ -90,12 +84,7 @@ public class ClientController {
 		return "client/profile";
 	}
 	
-	@GetMapping("/client/documents/user/{id}")
-	public ResponseEntity<Resource> viewUserDocument(@PathVariable("id") Long documentId, Authentication authentication) {
-		return documentService.streamUserDocument(documentService.findById(documentId), currentClient(authentication));
-	}
-	
-	// Consultations (Submit, Requests)
+	// Consultations
 	
 	@GetMapping("/client/consultations/new")
 	public String showConsultationForm(Model model) {
@@ -144,13 +133,21 @@ public class ClientController {
 		return "client/consultation-details";
 	}
 	
-	// Private Helpers
-	
-	private void populateConsultationDetailModel(Consultation consultation, Model model) {
-		model.addAttribute("consultation", consultation);
-		model.addAttribute("consultationDocuments", documentService.findByConsultation(consultation));
-		model.addAttribute("caseTypes", CaseType.values());
-		model.addAttribute("existingCase", caseService.findByConsultation(consultation));
+	@PostMapping("/client/consultations/{id}/delete")
+	public String deleteConsultation(@PathVariable("id") Long consultationId, Authentication authentication, RedirectAttributes redirectAttributes) {
+		Consultation consultation = consultationService.findOwnedByClient(consultationId, currentClient(authentication));
+		
+		try {
+			consultationService.delete(consultation);
+		} catch (InvalidConsultationStateException e) {
+			redirectAttributes.addFlashAttribute("error", e.getMessage());
+			
+			return "redirect:/client/consultations/" + consultationId;
+		}
+		
+		redirectAttributes.addFlashAttribute("success", "Consultation request deleted.");
+		
+		return "redirect:/client/consultations";
 	}
 	
 	@PostMapping("/client/consultations/{id}/edit")
@@ -178,31 +175,7 @@ public class ClientController {
 		return "client/consultation-details";
 	}
 	
-	@PostMapping("/client/consultations/{id}/delete")
-	public String deleteConsultation(@PathVariable("id") Long consultationId, Authentication authentication, RedirectAttributes redirectAttributes) {
-		Consultation consultation = consultationService.findOwnedByClient(consultationId, currentClient(authentication));
-		
-		try {
-			consultationService.delete(consultation);
-		} catch (InvalidConsultationStateException e) {
-			redirectAttributes.addFlashAttribute("error", e.getMessage());
-			
-			return "redirect:/client/consultations/" + consultationId;
-		}
-		
-		redirectAttributes.addFlashAttribute("success", "Consultation request deleted.");
-		
-		return "redirect:/client/consultations";
-	}
-	
-	// Documents
-	
-	@GetMapping("/client/documents/consultation/{id}")
-	public ResponseEntity<Resource> viewConsultationDocument(@PathVariable("id") Long documentId, Authentication authentication) {
-		return documentService.streamConsultationDocument(documentService.findById(documentId), currentClient(authentication));
-	}
-	
-	// Cases (Open, Closed)
+	// Cases
 	
 	@GetMapping("/client/cases/open")
 	public String openCases(Authentication authentication, Model model) {
@@ -233,13 +206,6 @@ public class ClientController {
 		return "client/case-details";
 	}
 	
-	private void populateCaseDetailModel(Case case_, Model model) {
-		model.addAttribute("case", case_);
-		model.addAttribute("stagedDocuments", documentService.findStagedByCase(case_));
-		model.addAttribute("caseDocuments", documentService.findByCase(case_));
-		model.addAttribute("tasks", taskService.findByCase(case_));
-	}
-	
 	@PostMapping("/client/cases/{id}/documents/stage")
 	public String stageCaseDocument(@PathVariable("id") Long caseId, @Valid @ModelAttribute UploadCaseDocumentsRequest form, Authentication authentication, Model model) {
 		Case case_ = caseService.findOwnedByClient(caseId, currentClient(authentication));
@@ -257,12 +223,23 @@ public class ClientController {
 		return "client/case-details";
 	}
 	
-	@GetMapping("/client/documents/case/{id}")
-	public ResponseEntity<Resource> viewCaseDocument(@PathVariable("id") Long documentId, Authentication authentication) {
-		return documentService.streamCaseDocument(documentService.findById(documentId), currentClient(authentication));
+	// Schedule
+	
+	@GetMapping("/client/events")
+	public String events(Authentication authentication, Model model) {
+		model.addAttribute("events", eventService.findAllForClient(currentClient(authentication)));
+		
+		return "client/event-list";
 	}
 	
-	// Payments (Transactions)
+	@GetMapping("/client/events/{id}")
+	public String eventDetails(@PathVariable("id") Long eventId, Authentication authentication, Model model) {
+		model.addAttribute("event", eventService.findOwnedByClient(eventId, currentClient(authentication)));
+		
+		return "client/event-details";
+	}
+	
+	// Payments
 	
 	@GetMapping("/client/transactions")
 	public String transactions(Authentication authentication, Model model) {
@@ -288,20 +265,43 @@ public class ClientController {
 		return "redirect:/payment/portal?amount=" + form.getAmount();
 	}
 	
-	// Schedule (My Events)
+	// Documents
 	
-	@GetMapping("/client/events")
-	public String events(Authentication authentication, Model model) {
-		model.addAttribute("events", eventService.findAllForClient(currentClient(authentication)));
-		
-		return "client/event-list";
+	@GetMapping("/client/documents/user/{id}")
+	public ResponseEntity<Resource> viewUserDocument(@PathVariable("id") Long documentId, Authentication authentication) {
+		return documentService.streamUserDocument(documentService.findById(documentId), currentClient(authentication));
 	}
 	
-	@GetMapping("/client/events/{id}")
-	public String eventDetails(@PathVariable("id") Long eventId, Authentication authentication, Model model) {
-		model.addAttribute("event", eventService.findOwnedByClient(eventId, currentClient(authentication)));
+	@GetMapping("/client/documents/consultation/{id}")
+	public ResponseEntity<Resource> viewConsultationDocument(@PathVariable("id") Long documentId, Authentication authentication) {
+		return documentService.streamConsultationDocument(documentService.findById(documentId), currentClient(authentication));
+	}
+	
+	@GetMapping("/client/documents/case/{id}")
+	public ResponseEntity<Resource> viewCaseDocument(@PathVariable("id") Long documentId, Authentication authentication) {
+		return documentService.streamCaseDocument(documentService.findById(documentId), currentClient(authentication));
+	}
+	
+	// Private Helpers
+	
+	private Client currentClient(Authentication authentication) {
+		CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
 		
-		return "client/event-details";
+		return (Client) principal.user();
+	}
+	
+	private void populateConsultationDetailModel(Consultation consultation, Model model) {
+		model.addAttribute("consultation", consultation);
+		model.addAttribute("consultationDocuments", documentService.findByConsultation(consultation));
+		model.addAttribute("caseTypes", CaseType.values());
+		model.addAttribute("existingCase", caseService.findByConsultation(consultation));
+	}
+	
+	private void populateCaseDetailModel(Case case_, Model model) {
+		model.addAttribute("case", case_);
+		model.addAttribute("stagedDocuments", documentService.findStagedByCase(case_));
+		model.addAttribute("caseDocuments", documentService.findByCase(case_));
+		model.addAttribute("tasks", taskService.findByCase(case_));
 	}
 	
 }

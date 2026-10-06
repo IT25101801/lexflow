@@ -40,19 +40,13 @@ public class ClientRelationsOfficerController {
 	private final DocumentService documentService;
 	private final EventService eventService;
 	
-	// Overview (Dashboard, Profile)
+	// Overview
 	
 	@GetMapping("/client-relations-officer/dashboard")
 	public String dashboard(Authentication authentication, Model model) {
 		model.addAttribute("user", currentClientRelationsOfficer(authentication));
 		
 		return "client-relations-officer/dashboard";
-	}
-	
-	private ClientRelationsOfficer currentClientRelationsOfficer(Authentication authentication) {
-		CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
-		
-		return (ClientRelationsOfficer) principal.user();
 	}
 	
 	@GetMapping("/client-relations-officer/profile")
@@ -88,12 +82,7 @@ public class ClientRelationsOfficerController {
 		return "client-relations-officer/profile";
 	}
 	
-	@GetMapping("/client-relations-officer/documents/user/{id}")
-	public ResponseEntity<Resource> viewUserDocument(@PathVariable("id") Long documentId, Authentication authentication) {
-		return documentService.streamUserDocument(documentService.findById(documentId), currentClientRelationsOfficer(authentication));
-	}
-	
-	// Clients (Register Client)
+	// Clients
 	
 	@GetMapping("/client-relations-officer/register-client")
 	public String showRegisterClientForm(Model model) {
@@ -131,7 +120,124 @@ public class ClientRelationsOfficerController {
 		return "redirect:/client-relations-officer/register-client";
 	}
 	
-	// Consultations (Submit Consultation, Consultation Requests)
+	@GetMapping("/client-relations-officer/clients")
+	public String clients(@RequestParam(required = false) String keyword, Model model) {
+		model.addAttribute("users", userService.findByRoleAndKeyword(Role.CLIENT, keyword));
+		model.addAttribute("keyword", keyword);
+		model.addAttribute("title", "Clients");
+		model.addAttribute("active", "clients");
+		
+		return "client-relations-officer/client-list";
+	}
+	
+	@GetMapping("/client-relations-officer/clients/{id}")
+	public String clientDetails(@PathVariable("id") Long userId, Model model) {
+		Client client = userService.findClientById(userId);
+		model.addAttribute("user", client);
+		model.addAttribute("genders", Gender.values());
+		populateClientDetailModel(client, model);
+		
+		return "client-relations-officer/client-details";
+	}
+	
+	@PostMapping("/client-relations-officer/clients/{id}/delete")
+	public String deleteClient(@PathVariable("id") Long userId, Model model, RedirectAttributes redirectAttributes) {
+		Client client = userService.findClientById(userId);
+		
+		try {
+			userService.delete(client);
+		} catch (BusinessRuleViolationException e) {
+			model.addAttribute("user", client);
+			model.addAttribute("genders", Gender.values());
+			populateClientDetailModel(client, model);
+			model.addAttribute("error", e.getMessage());
+			
+			return "client-relations-officer/client-details";
+		}
+		
+		redirectAttributes.addFlashAttribute("success", "Client deleted successfully.");
+		
+		return "redirect:/client-relations-officer/clients";
+	}
+	
+	@PostMapping("/client-relations-officer/clients/{id}/reactivate")
+	public String reactivateClient(@PathVariable("id") Long userId, @Valid @ModelAttribute ReactivateAccountRequest form, BindingResult bindingResult, Model model) {
+		Client client = userService.findClientById(userId);
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			model.addAttribute("user", client);
+			model.addAttribute("genders", Gender.values());
+			populateClientDetailModel(client, model);
+			
+			return "client-relations-officer/client-details";
+		}
+		
+		try {
+			client = (Client) userService.reactivate(client, form.getTemporaryPassword());
+			model.addAttribute("success", "Client account reactivated. Give the client the temporary password so they can log in and change it.");
+		} catch (InvalidStateException | BusinessRuleViolationException e) {
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		model.addAttribute("user", client);
+		model.addAttribute("genders", Gender.values());
+		populateClientDetailModel(client, model);
+		
+		return "client-relations-officer/client-details";
+	}
+	
+	@PostMapping("/client-relations-officer/clients/{id}/reset-password")
+	public String resetClientPassword(@PathVariable("id") Long userId, @Valid @ModelAttribute ResetPasswordRequest form, BindingResult bindingResult, Model model) {
+		Client client = userService.findClientById(userId);
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			model.addAttribute("user", client);
+			model.addAttribute("genders", Gender.values());
+			populateClientDetailModel(client, model);
+			
+			return "client-relations-officer/client-details";
+		}
+		
+		client = (Client) userService.changePassword(client, form.getTemporaryPassword());
+		
+		model.addAttribute("user", client);
+		model.addAttribute("genders", Gender.values());
+		populateClientDetailModel(client, model);
+		model.addAttribute("success", "Password reset successfully.");
+		
+		return "client-relations-officer/client-details";
+	}
+	
+	@PostMapping("/client-relations-officer/clients/{id}/edit")
+	public String editClient(@PathVariable("id") Long userId, @Valid @ModelAttribute EditProfileRequest form, BindingResult bindingResult, Model model) {
+		Client client = userService.findClientById(userId);
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			model.addAttribute("user", client);
+			model.addAttribute("genders", Gender.values());
+			populateClientDetailModel(client, model);
+			
+			return "client-relations-officer/client-details";
+		}
+		
+		try {
+			client = (Client) userService.updateDetails(client, form.getName(), form.getDateOfBirth(), form.getGender(), form.getAddresses(), form.getPhoneNumbers(), form.getNicFile(), null);
+			model.addAttribute("success", "Client updated successfully.");
+		} catch (NonPdfDocumentException e) {
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		model.addAttribute("user", client);
+		model.addAttribute("genders", Gender.values());
+		populateClientDetailModel(client, model);
+		
+		return "client-relations-officer/client-details";
+	}
+	
+	// Consultations
 	
 	@GetMapping("/client-relations-officer/consultations/new")
 	public String showConsultationForm(Model model) {
@@ -185,130 +291,6 @@ public class ClientRelationsOfficerController {
 		return "client-relations-officer/consultation-list";
 	}
 	
-	@GetMapping("/client-relations-officer/clients")
-	public String clients(@RequestParam(required = false) String keyword, Model model) {
-		model.addAttribute("users", userService.findByRoleAndKeyword(Role.CLIENT, keyword));
-		model.addAttribute("keyword", keyword);
-		model.addAttribute("title", "Clients");
-		model.addAttribute("active", "clients");
-		
-		return "client-relations-officer/client-list";
-	}
-	
-	@GetMapping("/client-relations-officer/clients/{id}")
-	public String clientDetails(@PathVariable("id") Long userId, Model model) {
-		Client client = userService.findClientById(userId);
-		model.addAttribute("user", client);
-		model.addAttribute("genders", Gender.values());
-		populateClientDetailModel(client, model);
-		
-		return "client-relations-officer/client-details";
-	}
-	
-	private void populateClientDetailModel(Client client, Model model) {
-		model.addAttribute("relatedConsultations", consultationService.findAllForClient(client));
-		model.addAttribute("relatedCases", caseService.findAllForClient(client));
-		model.addAttribute("relatedEvents", eventService.findAllForClient(client));
-		model.addAttribute("relatedTransactions", transactionService.findAllForClient(client));
-	}
-	
-	@PostMapping("/client-relations-officer/clients/{id}/edit")
-	public String editClient(@PathVariable("id") Long userId, @Valid @ModelAttribute EditProfileRequest form, BindingResult bindingResult, Model model) {
-		Client client = userService.findClientById(userId);
-		
-		if (bindingResult.hasErrors()) {
-			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
-			model.addAttribute("user", client);
-			model.addAttribute("genders", Gender.values());
-			populateClientDetailModel(client, model);
-			
-			return "client-relations-officer/client-details";
-		}
-		
-		try {
-			client = (Client) userService.updateDetails(client, form.getName(), form.getDateOfBirth(), form.getGender(), form.getAddresses(), form.getPhoneNumbers(), form.getNicFile(), null);
-			model.addAttribute("success", "Client updated successfully.");
-		} catch (NonPdfDocumentException e) {
-			model.addAttribute("error", e.getMessage());
-		}
-		
-		model.addAttribute("user", client);
-		model.addAttribute("genders", Gender.values());
-		populateClientDetailModel(client, model);
-		
-		return "client-relations-officer/client-details";
-	}
-	
-	@PostMapping("/client-relations-officer/clients/{id}/reset-password")
-	public String resetClientPassword(@PathVariable("id") Long userId, @Valid @ModelAttribute ResetPasswordRequest form, BindingResult bindingResult, Model model) {
-		Client client = userService.findClientById(userId);
-		
-		if (bindingResult.hasErrors()) {
-			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
-			model.addAttribute("user", client);
-			model.addAttribute("genders", Gender.values());
-			populateClientDetailModel(client, model);
-			
-			return "client-relations-officer/client-details";
-		}
-		
-		client = (Client) userService.changePassword(client, form.getTemporaryPassword());
-		
-		model.addAttribute("user", client);
-		model.addAttribute("genders", Gender.values());
-		populateClientDetailModel(client, model);
-		model.addAttribute("success", "Password reset successfully.");
-		
-		return "client-relations-officer/client-details";
-	}
-	
-	@PostMapping("/client-relations-officer/clients/{id}/delete")
-	public String deleteClient(@PathVariable("id") Long userId, Model model, RedirectAttributes redirectAttributes) {
-		Client client = userService.findClientById(userId);
-		
-		try {
-			userService.delete(client);
-		} catch (BusinessRuleViolationException e) {
-			model.addAttribute("user", client);
-			model.addAttribute("genders", Gender.values());
-			populateClientDetailModel(client, model);
-			model.addAttribute("error", e.getMessage());
-			
-			return "client-relations-officer/client-details";
-		}
-		
-		redirectAttributes.addFlashAttribute("success", "Client deleted successfully.");
-		
-		return "redirect:/client-relations-officer/clients";
-	}
-	
-	@PostMapping("/client-relations-officer/clients/{id}/reactivate")
-	public String reactivateClient(@PathVariable("id") Long userId, @Valid @ModelAttribute ReactivateAccountRequest form, BindingResult bindingResult, Model model) {
-		Client client = userService.findClientById(userId);
-		
-		if (bindingResult.hasErrors()) {
-			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
-			model.addAttribute("user", client);
-			model.addAttribute("genders", Gender.values());
-			populateClientDetailModel(client, model);
-			
-			return "client-relations-officer/client-details";
-		}
-		
-		try {
-			client = (Client) userService.reactivate(client, form.getTemporaryPassword());
-			model.addAttribute("success", "Client account reactivated. Give the client the temporary password so they can log in and change it.");
-		} catch (InvalidStateException | BusinessRuleViolationException e) {
-			model.addAttribute("error", e.getMessage());
-		}
-		
-		model.addAttribute("user", client);
-		model.addAttribute("genders", Gender.values());
-		populateClientDetailModel(client, model);
-		
-		return "client-relations-officer/client-details";
-	}
-	
 	@GetMapping("/client-relations-officer/consultations/{id}")
 	public String consultationDetails(@PathVariable("id") Long consultationId, Model model) {
 		populateConsultationDetailModel(consultationService.findById(consultationId), model);
@@ -316,12 +298,20 @@ public class ClientRelationsOfficerController {
 		return "client-relations-officer/consultation-details";
 	}
 	
-	// Private Helpers
-	
-	private void populateConsultationDetailModel(Consultation consultation, Model model) {
-		model.addAttribute("consultation", consultation);
-		model.addAttribute("consultationDocuments", documentService.findByConsultation(consultation));
-		model.addAttribute("caseTypes", CaseType.values());
+	@PostMapping("/client-relations-officer/consultations/{id}/delete")
+	public String deleteConsultation(@PathVariable("id") Long consultationId, RedirectAttributes redirectAttributes) {
+		
+		try {
+			consultationService.delete(consultationService.findById(consultationId));
+		} catch (InvalidConsultationStateException e) {
+			redirectAttributes.addFlashAttribute("error", e.getMessage());
+			
+			return "redirect:/client-relations-officer/consultations/" + consultationId;
+		}
+		
+		redirectAttributes.addFlashAttribute("success", "Consultation request deleted.");
+		
+		return "redirect:/client-relations-officer/consultations";
 	}
 	
 	@PostMapping("/client-relations-officer/consultations/{id}/edit")
@@ -349,30 +339,7 @@ public class ClientRelationsOfficerController {
 		return "client-relations-officer/consultation-details";
 	}
 	
-	@PostMapping("/client-relations-officer/consultations/{id}/delete")
-	public String deleteConsultation(@PathVariable("id") Long consultationId, RedirectAttributes redirectAttributes) {
-		
-		try {
-			consultationService.delete(consultationService.findById(consultationId));
-		} catch (InvalidConsultationStateException e) {
-			redirectAttributes.addFlashAttribute("error", e.getMessage());
-			
-			return "redirect:/client-relations-officer/consultations/" + consultationId;
-		}
-		
-		redirectAttributes.addFlashAttribute("success", "Consultation request deleted.");
-		
-		return "redirect:/client-relations-officer/consultations";
-	}
-	
-	// Documents
-	
-	@GetMapping("/client-relations-officer/documents/consultation/{id}")
-	public ResponseEntity<Resource> viewConsultationDocument(@PathVariable("id") Long documentId, Authentication authentication) {
-		return documentService.streamConsultationDocument(documentService.findById(documentId), currentClientRelationsOfficer(authentication));
-	}
-	
-	// Schedule (Consultation Events)
+	// Schedule
 	
 	@GetMapping("/client-relations-officer/events")
 	public String events(Model model) {
@@ -386,6 +353,39 @@ public class ClientRelationsOfficerController {
 		model.addAttribute("event", eventService.findById(eventId));
 		
 		return "client-relations-officer/event-details";
+	}
+	
+	// Documents
+	
+	@GetMapping("/client-relations-officer/documents/user/{id}")
+	public ResponseEntity<Resource> viewUserDocument(@PathVariable("id") Long documentId, Authentication authentication) {
+		return documentService.streamUserDocument(documentService.findById(documentId), currentClientRelationsOfficer(authentication));
+	}
+	
+	@GetMapping("/client-relations-officer/documents/consultation/{id}")
+	public ResponseEntity<Resource> viewConsultationDocument(@PathVariable("id") Long documentId, Authentication authentication) {
+		return documentService.streamConsultationDocument(documentService.findById(documentId), currentClientRelationsOfficer(authentication));
+	}
+	
+	// Private Helpers
+	
+	private ClientRelationsOfficer currentClientRelationsOfficer(Authentication authentication) {
+		CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
+		
+		return (ClientRelationsOfficer) principal.user();
+	}
+	
+	private void populateClientDetailModel(Client client, Model model) {
+		model.addAttribute("relatedConsultations", consultationService.findAllForClient(client));
+		model.addAttribute("relatedCases", caseService.findAllForClient(client));
+		model.addAttribute("relatedEvents", eventService.findAllForClient(client));
+		model.addAttribute("relatedTransactions", transactionService.findAllForClient(client));
+	}
+	
+	private void populateConsultationDetailModel(Consultation consultation, Model model) {
+		model.addAttribute("consultation", consultation);
+		model.addAttribute("consultationDocuments", documentService.findByConsultation(consultation));
+		model.addAttribute("caseTypes", CaseType.values());
 	}
 	
 }

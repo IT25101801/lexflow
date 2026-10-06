@@ -67,7 +67,7 @@ public class PartnerController {
 	private final TransactionService transactionService;
 	private final UserService userService;
 	
-	// Overview (Dashboard, Profile)
+	// Overview
 	
 	@GetMapping("/partner/dashboard")
 	public String dashboard(Authentication authentication, Model model) {
@@ -76,43 +76,38 @@ public class PartnerController {
 		return "partner/dashboard";
 	}
 	
-	// Private Helpers
-	
-	private Partner currentPartner(Authentication authentication) {
-		CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
+	@GetMapping("/partner/analytics")
+	public String analytics(Authentication authentication, Model model) {
+		model.addAttribute("user", currentPartner(authentication));
 		
-		return (Partner) principal.user();
+		Map<CaseResolutionStatus, Integer> caseResolutionBreakdown = analyticsService.caseResolutionBreakdown();
+		model.addAttribute("caseResolutionBreakdownLabels", buildLabels(caseResolutionBreakdown));
+		model.addAttribute("caseResolutionBreakdownValues", buildIntValues(caseResolutionBreakdown));
+		
+		model.addAttribute("averageCaseDurationDays", analyticsService.averageCaseDurationDays());
+		
+		Map<Integer, BigDecimal> revenueByMonth = analyticsService.revenueByMonth(LocalDate.now().getYear());
+		model.addAttribute("revenueByMonthLabels", monthLabels());
+		model.addAttribute("revenueByMonthValues", revenueByMonth.values());
+		
+		Map<CaseType, BigDecimal> revenueByCaseType = analyticsService.revenueByCaseType();
+		model.addAttribute("revenueByCaseTypeLabels", buildLabels(revenueByCaseType));
+		model.addAttribute("revenueByCaseTypeValues", buildDecimalValues(revenueByCaseType));
+		
+		Map<User, Integer> closedCaseCountByAssociate = analyticsService.closedCaseCountByAssociate();
+		model.addAttribute("closedCaseCountByAssociateLabels", buildStaffLabels(closedCaseCountByAssociate));
+		model.addAttribute("closedCaseCountByAssociateValues", buildIntValues(closedCaseCountByAssociate));
+		
+		Map<User, Integer> closedCaseCountByParalegal = analyticsService.closedCaseCountByParalegal();
+		model.addAttribute("closedCaseCountByParalegalLabels", buildStaffLabels(closedCaseCountByParalegal));
+		model.addAttribute("closedCaseCountByParalegalValues", buildIntValues(closedCaseCountByParalegal));
+		
+		return "partner/analytics";
 	}
 	
 	@GetMapping("/partner/profile")
 	public String profile(Authentication authentication, Model model) {
 		model.addAttribute("user", currentPartner(authentication));
-		model.addAttribute("genders", Gender.values());
-		
-		return "partner/profile";
-	}
-	
-	@PostMapping("/partner/profile/edit")
-	public String editProfile(@Valid @ModelAttribute EditProfileRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
-		Partner partner = currentPartner(authentication);
-		
-		if (bindingResult.hasErrors()) {
-			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
-			model.addAttribute("user", partner);
-			model.addAttribute("genders", Gender.values());
-			
-			return "partner/profile";
-		}
-		
-		try {
-			User user = userService.updateDetails(partner, form.getName(), form.getDateOfBirth(), form.getGender(), form.getAddresses(), form.getPhoneNumbers(), form.getNicFile(), form.getBarFile());
-			model.addAttribute("user", user);
-			model.addAttribute("success", "Profile updated successfully.");
-		} catch (NonPdfDocumentException e) {
-			model.addAttribute("user", partner);
-			model.addAttribute("error", e.getMessage());
-		}
-		
 		model.addAttribute("genders", Gender.values());
 		
 		return "partner/profile";
@@ -145,145 +140,33 @@ public class PartnerController {
 		return "partner/profile";
 	}
 	
-	@GetMapping("/partner/documents/user/{id}")
-	public ResponseEntity<Resource> viewUserDocument(@PathVariable("id") Long documentId, Authentication authentication) {
-		return documentService.streamUserDocument(documentService.findById(documentId), currentPartner(authentication));
-	}
-	
-	// Users (Register Staff, Role Lists, User Detail)
-	
-	@GetMapping("/partner/register-staff")
-	public String showRegisterStaffForm(Model model) {
-		model.addAttribute("genders", Gender.values());
-		model.addAttribute("roles", List.of(Role.PARTNER, Role.ASSOCIATE, Role.PARALEGAL, Role.CLIENT_RELATIONS_OFFICER, Role.FINANCE_OFFICER));
-		
-		return "partner/register-staff";
-	}
-	
-	@PostMapping("/partner/register-staff")
-	public String registerStaff(@Valid @ModelAttribute RegisterStaffRequest form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
+	@PostMapping("/partner/profile/edit")
+	public String editProfile(@Valid @ModelAttribute EditProfileRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
+		Partner partner = currentPartner(authentication);
 		
 		if (bindingResult.hasErrors()) {
-			List<String> validationErrors = new ArrayList<>();
-			
-			for (ObjectError objectError : bindingResult.getAllErrors()) {
-				validationErrors.add(objectError.getDefaultMessage());
-			}
-			
-			model.addAttribute("validationErrors", validationErrors);
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			model.addAttribute("user", partner);
 			model.addAttribute("genders", Gender.values());
-			model.addAttribute("roles", List.of(Role.PARTNER, Role.ASSOCIATE, Role.PARALEGAL, Role.CLIENT_RELATIONS_OFFICER, Role.FINANCE_OFFICER));
 			
-			return "partner/register-staff";
+			return "partner/profile";
 		}
 		
 		try {
-			userService.register(form.getRole(), form.getEmail(), form.getPassword(), form.getName(), form.getDateOfBirth(), form.getGender(), form.getAddresses(), form.getPhoneNumbers(), form.getNicNumber(), form.getBarNumber(), form.getNicFile(), form.getBarFile());
-		} catch (EntityAlreadyExistsException | BusinessRuleViolationException e) {
-			model.addAttribute("genders", Gender.values());
-			model.addAttribute("roles", List.of(Role.PARTNER, Role.ASSOCIATE, Role.PARALEGAL, Role.CLIENT_RELATIONS_OFFICER, Role.FINANCE_OFFICER));
+			User user = userService.updateDetails(partner, form.getName(), form.getDateOfBirth(), form.getGender(), form.getAddresses(), form.getPhoneNumbers(), form.getNicFile(), form.getBarFile());
+			model.addAttribute("user", user);
+			model.addAttribute("success", "Profile updated successfully.");
+		} catch (NonPdfDocumentException e) {
+			model.addAttribute("user", partner);
 			model.addAttribute("error", e.getMessage());
-			
-			return "partner/register-staff";
-		} catch (PersistenceException e) {
-			model.addAttribute("genders", Gender.values());
-			model.addAttribute("roles", List.of(Role.PARTNER, Role.ASSOCIATE, Role.PARALEGAL, Role.CLIENT_RELATIONS_OFFICER, Role.FINANCE_OFFICER));
-			model.addAttribute("error", "Could not register the staff member. Please try again.");
-			
-			return "partner/register-staff";
 		}
 		
-		String listUrl = switch (form.getRole()) {
-			case PARTNER -> "/partner/users/partners";
-			case ASSOCIATE -> "/partner/users/associates";
-			case PARALEGAL -> "/partner/users/paralegals";
-			case CLIENT_RELATIONS_OFFICER -> "/partner/users/client-relations-officers";
-			case FINANCE_OFFICER -> "/partner/users/finance-officers";
-			default -> "/partner/dashboard";
-		};
+		model.addAttribute("genders", Gender.values());
 		
-		redirectAttributes.addFlashAttribute("success", "Staff member registered successfully.");
-		
-		return "redirect:" + listUrl;
+		return "partner/profile";
 	}
 	
-	@GetMapping("/partner/users/associates")
-	public String associates(@RequestParam(required = false) String keyword, Model model) {
-		model.addAttribute("users", userService.findByRoleAndKeyword(Role.ASSOCIATE, keyword));
-		model.addAttribute("keyword", keyword);
-		model.addAttribute("title", "Associates");
-		model.addAttribute("active", "users-associates");
-		model.addAttribute("listUrl", "/partner/users/associates");
-		
-		return "partner/user-list";
-	}
-	
-	@GetMapping("/partner/users/paralegals")
-	public String paralegals(@RequestParam(required = false) String keyword, Model model) {
-		model.addAttribute("users", userService.findByRoleAndKeyword(Role.PARALEGAL, keyword));
-		model.addAttribute("keyword", keyword);
-		model.addAttribute("title", "Paralegals");
-		model.addAttribute("active", "users-paralegals");
-		model.addAttribute("listUrl", "/partner/users/paralegals");
-		
-		return "partner/user-list";
-	}
-	
-	@GetMapping("/partner/users/client-relations-officers")
-	public String clientRelationsOfficers(@RequestParam(required = false) String keyword, Model model) {
-		model.addAttribute("users", userService.findByRoleAndKeyword(Role.CLIENT_RELATIONS_OFFICER, keyword));
-		model.addAttribute("keyword", keyword);
-		model.addAttribute("title", "Client Relations Officers");
-		model.addAttribute("active", "users-client-relations-officers");
-		model.addAttribute("listUrl", "/partner/users/client-relations-officers");
-		
-		return "partner/user-list";
-	}
-	
-	@GetMapping("/partner/users/finance-officers")
-	public String financeOfficers(@RequestParam(required = false) String keyword, Model model) {
-		model.addAttribute("users", userService.findByRoleAndKeyword(Role.FINANCE_OFFICER, keyword));
-		model.addAttribute("keyword", keyword);
-		model.addAttribute("title", "Finance Officers");
-		model.addAttribute("active", "users-finance-officers");
-		model.addAttribute("listUrl", "/partner/users/finance-officers");
-		
-		return "partner/user-list";
-	}
-	
-	@GetMapping("/partner/users/clients")
-	public String clients(@RequestParam(required = false) String keyword, Model model) {
-		model.addAttribute("users", userService.findByRoleAndKeyword(Role.CLIENT, keyword));
-		model.addAttribute("keyword", keyword);
-		model.addAttribute("title", "Clients");
-		model.addAttribute("active", "users-clients");
-		model.addAttribute("listUrl", "/partner/users/clients");
-		
-		return "partner/user-list";
-	}
-	
-	@GetMapping("/partner/users/partners")
-	public String partners(@RequestParam(required = false) String keyword, Authentication authentication, Model model) {
-		model.addAttribute("users", userService.findByRoleAndKeyword(Role.PARTNER, keyword));
-		model.addAttribute("keyword", keyword);
-		model.addAttribute("title", "Partners");
-		model.addAttribute("currentUserEmail", authentication.getName());
-		
-		return "partner/partner-list";
-	}
-	
-	@GetMapping("/partner/conflict-check")
-	public String conflictCheck(@RequestParam(required = false) String keyword, Model model) {
-		
-		if (keyword != null && !keyword.isBlank()) {
-			model.addAttribute("conflictCheckResults", conflictCheckService.check(keyword));
-			model.addAttribute("keyword", keyword);
-		}
-		
-		return "partner/conflict-check";
-	}
-	
-	// Consultations (Pending, All, Conflict Check)
+	// Consultations
 	
 	@GetMapping("/partner/consultations/pending")
 	public String pendingConsultations(Model model) {
@@ -304,18 +187,6 @@ public class PartnerController {
 		populateConsultationDetailModel(consultationService.findById(consultationId), model);
 		
 		return "partner/consultation-details";
-	}
-	
-	private void populateConsultationDetailModel(Consultation consultation, Model model) {
-		model.addAttribute("consultation", consultation);
-		model.addAttribute("consultationDocuments", documentService.findByConsultation(consultation));
-		model.addAttribute("associates", userService.findActiveAssociates());
-		model.addAttribute("paralegals", userService.findActiveParalegals());
-		model.addAttribute("consultationEvents", eventService.findByConsultation(consultation));
-		
-		Case existingCase = caseService.findByConsultation(consultation);
-		model.addAttribute("existingCase", existingCase);
-		model.addAttribute("hasCase", existingCase != null);
 	}
 	
 	@PostMapping("/partner/consultations/{id}/accept")
@@ -445,14 +316,18 @@ public class PartnerController {
 		return "partner/consultation-details";
 	}
 	
-	// Documents
-	
-	@GetMapping("/partner/documents/consultation/{id}")
-	public ResponseEntity<Resource> viewConsultationDocument(@PathVariable("id") Long documentId, Authentication authentication) {
-		return documentService.streamConsultationDocument(documentService.findById(documentId), currentPartner(authentication));
+	@GetMapping("/partner/conflict-check")
+	public String conflictCheck(@RequestParam(required = false) String keyword, Model model) {
+		
+		if (keyword != null && !keyword.isBlank()) {
+			model.addAttribute("conflictCheckResults", conflictCheckService.check(keyword));
+			model.addAttribute("keyword", keyword);
+		}
+		
+		return "partner/conflict-check";
 	}
 	
-	// Cases (Open, Closed)
+	// Cases
 	
 	@GetMapping("/partner/cases/open")
 	public String openCases(Model model) {
@@ -479,146 +354,6 @@ public class PartnerController {
 		
 		model.addAttribute("caseDocuments", documentService.findByCaseAndKeyword(case_, documentKeyword));
 		model.addAttribute("documentKeyword", documentKeyword);
-		
-		return "partner/case-details";
-	}
-	
-	private void populateCaseDetailModel(Case case_, Model model) {
-		model.addAttribute("case", case_);
-		model.addAttribute("associates", userService.findActiveAssociates());
-		model.addAttribute("paralegals", userService.findActiveParalegals());
-		model.addAttribute("stagedDocuments", documentService.findStagedByCase(case_));
-		model.addAttribute("caseDocuments", documentService.findByCase(case_));
-		model.addAttribute("contacts", contactService.findByCase(case_));
-		
-		List<Task> tasks = taskService.findByCase(case_);
-		model.addAttribute("tasks", tasks);
-		model.addAttribute("taskDocuments", documentService.findByTasks(tasks));
-		model.addAttribute("unbilledTasks", taskService.findUnbilledByCase(case_));
-		model.addAttribute("unpaidInvoices", invoiceService.findByCaseAndStatus(case_, InvoiceStatus.UNPAID));
-		model.addAttribute("paidInvoices", invoiceService.findByCaseAndStatus(case_, InvoiceStatus.PAID));
-		model.addAttribute("voidedInvoices", invoiceService.findByCaseAndStatus(case_, InvoiceStatus.VOIDED));
-	}
-	
-	@PostMapping("/partner/cases/{id}/close")
-	public String closeCase(@PathVariable("id") Long caseId, @Valid @ModelAttribute CloseCaseRequest form, BindingResult bindingResult, Model model) {
-		Case case_ = caseService.findById(caseId);
-		
-		if (bindingResult.hasErrors()) {
-			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
-			populateCaseDetailModel(case_, model);
-			
-			return "partner/case-details";
-		}
-		
-		try {
-			case_ = caseService.close(case_, form.getCaseResolutionStatus());
-			populateCaseDetailModel(case_, model);
-			model.addAttribute("success", "Case closed successfully.");
-		} catch (InvalidStateException e) {
-			populateCaseDetailModel(case_, model);
-			model.addAttribute("error", e.getMessage());
-		}
-		
-		return "partner/case-details";
-	}
-	
-	@PostMapping("/partner/cases/{id}/documents/{documentId}/accept")
-	public String acceptStagedDocument(@PathVariable("id") Long caseId, @PathVariable Long documentId, Model model) {
-		Case case_ = caseService.findById(caseId);
-		documentService.addStagedToCase(case_, List.of(documentId));
-		
-		populateCaseDetailModel(case_, model);
-		model.addAttribute("success", "Document added to case.");
-		
-		return "partner/case-details";
-	}
-	
-	@PostMapping("/partner/cases/{id}/documents/{documentId}/reject")
-	public String rejectStagedDocument(@PathVariable("id") Long caseId, @PathVariable Long documentId, Model model) {
-		Case case_ = caseService.findById(caseId);
-		documentService.deleteStaged(case_, List.of(documentId));
-		
-		populateCaseDetailModel(case_, model);
-		model.addAttribute("success", "Document deleted.");
-		
-		return "partner/case-details";
-	}
-	
-	@PostMapping("/partner/cases/{id}/documents/{documentId}/rename")
-	public String renameCaseDocument(@PathVariable("id") Long caseId, @PathVariable Long documentId, @Valid @ModelAttribute RenameDocumentRequest form, BindingResult bindingResult, Model model) {
-		Case case_ = caseService.findById(caseId);
-		
-		if (bindingResult.hasErrors()) {
-			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
-			populateCaseDetailModel(case_, model);
-			
-			return "partner/case-details";
-		}
-		
-		documentService.rename(case_, documentId, form.getOriginalFilename());
-		
-		populateCaseDetailModel(case_, model);
-		model.addAttribute("success", "Document renamed.");
-		
-		return "partner/case-details";
-	}
-	
-	@PostMapping("/partner/cases/{id}/documents/{documentId}/delete")
-	public String deleteCaseDocument(@PathVariable("id") Long caseId, @PathVariable Long documentId, Model model) {
-		Case case_ = caseService.findById(caseId);
-		documentService.deleteStaged(case_, List.of(documentId));
-		
-		populateCaseDetailModel(case_, model);
-		model.addAttribute("success", "Document deleted.");
-		
-		return "partner/case-details";
-	}
-	
-	@PostMapping("/partner/cases/{id}/contacts")
-	public String addContact(@PathVariable("id") Long caseId, @Valid @ModelAttribute SaveContactRequest form, BindingResult bindingResult, Model model) {
-		Case case_ = caseService.findById(caseId);
-		
-		if (bindingResult.hasErrors()) {
-			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
-			populateCaseDetailModel(case_, model);
-			
-			return "partner/case-details";
-		}
-		
-		try {
-			contactService.add(case_, form.getName(), form.getPhoneNumbers(), form.getEmails(), form.getAddresses(), form.getNotes());
-			populateCaseDetailModel(case_, model);
-			model.addAttribute("success", "Contact added.");
-		} catch (InvalidStateException e) {
-			populateCaseDetailModel(case_, model);
-			model.addAttribute("error", e.getMessage());
-		}
-		
-		return "partner/case-details";
-	}
-	
-	@PostMapping("/partner/cases/{id}/contacts/{contactId}/edit")
-	public String editContact(@PathVariable("id") Long caseId, @PathVariable Long contactId, @Valid @ModelAttribute SaveContactRequest form, BindingResult bindingResult, Model model) {
-		Case case_ = caseService.findById(caseId);
-		
-		if (bindingResult.hasErrors()) {
-			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
-			populateCaseDetailModel(case_, model);
-			
-			return "partner/case-details";
-		}
-		
-		Contact contact = contactService.findById(contactId);
-		
-		try {
-			contactService.update(case_, contact, form.getName(), form.getPhoneNumbers(), form.getEmails(), form.getAddresses(), form.getNotes());
-			populateCaseDetailModel(case_, model);
-			model.addAttribute("success", "Contact updated.");
-		} catch (InvalidStateException e) {
-			populateCaseDetailModel(case_, model);
-			model.addAttribute("error", e.getMessage());
-		}
 		
 		return "partner/case-details";
 	}
@@ -688,8 +423,8 @@ public class PartnerController {
 		return "partner/case-details";
 	}
 	
-	@PostMapping("/partner/cases/{id}/reassign")
-	public String reassignCase(@PathVariable("id") Long caseId, @Valid @ModelAttribute AssignStaffRequest form, BindingResult bindingResult, Model model) {
+	@PostMapping("/partner/cases/{id}/tasks/{taskId}/edit-billable-amount")
+	public String editBillableAmount(@PathVariable("id") Long caseId, @PathVariable Long taskId, @Valid @ModelAttribute EditBillableAmountRequest form, BindingResult bindingResult, Model model) {
 		Case case_ = caseService.findById(caseId);
 		
 		if (bindingResult.hasErrors()) {
@@ -699,14 +434,11 @@ public class PartnerController {
 			return "partner/case-details";
 		}
 		
-		Associate associate = (Associate) userService.findById(form.getAssociateId());
-		Paralegal paralegal = (Paralegal) userService.findById(form.getParalegalId());
-		
 		try {
-			case_ = caseService.reassignStaff(case_, associate, paralegal);
+			taskService.updateBillableAmount(taskService.findById(taskId), form.getAmount());
 			populateCaseDetailModel(case_, model);
-			model.addAttribute("success", "Case reassigned successfully.");
-		} catch (InvalidStateException e) {
+			model.addAttribute("success", "Charge amount updated.");
+		} catch (BusinessRuleViolationException e) {
 			populateCaseDetailModel(case_, model);
 			model.addAttribute("error", e.getMessage());
 		}
@@ -746,29 +478,6 @@ public class PartnerController {
 		return "partner/case-details";
 	}
 	
-	@PostMapping("/partner/cases/{id}/tasks/{taskId}/edit-billable-amount")
-	public String editBillableAmount(@PathVariable("id") Long caseId, @PathVariable Long taskId, @Valid @ModelAttribute EditBillableAmountRequest form, BindingResult bindingResult, Model model) {
-		Case case_ = caseService.findById(caseId);
-		
-		if (bindingResult.hasErrors()) {
-			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
-			populateCaseDetailModel(case_, model);
-			
-			return "partner/case-details";
-		}
-		
-		try {
-			taskService.updateBillableAmount(taskService.findById(taskId), form.getAmount());
-			populateCaseDetailModel(case_, model);
-			model.addAttribute("success", "Charge amount updated.");
-		} catch (BusinessRuleViolationException e) {
-			populateCaseDetailModel(case_, model);
-			model.addAttribute("error", e.getMessage());
-		}
-		
-		return "partner/case-details";
-	}
-	
 	@PostMapping("/partner/cases/{id}/invoices/{invoiceId}/void")
 	public String voidInvoice(@PathVariable("id") Long caseId, @PathVariable Long invoiceId, Model model) {
 		Case case_ = caseService.findById(caseId);
@@ -801,17 +510,198 @@ public class PartnerController {
 		return "partner/case-details";
 	}
 	
-	@GetMapping("/partner/documents/case/{id}")
-	public ResponseEntity<Resource> viewCaseDocument(@PathVariable("id") Long documentId, Authentication authentication) {
-		return documentService.streamCaseDocument(documentService.findById(documentId), currentPartner(authentication));
+	@PostMapping("/partner/cases/{id}/documents/{documentId}/rename")
+	public String renameCaseDocument(@PathVariable("id") Long caseId, @PathVariable Long documentId, @Valid @ModelAttribute RenameDocumentRequest form, BindingResult bindingResult, Model model) {
+		Case case_ = caseService.findById(caseId);
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			populateCaseDetailModel(case_, model);
+			
+			return "partner/case-details";
+		}
+		
+		documentService.rename(case_, documentId, form.getOriginalFilename());
+		
+		populateCaseDetailModel(case_, model);
+		model.addAttribute("success", "Document renamed.");
+		
+		return "partner/case-details";
 	}
 	
-	@GetMapping("/partner/documents/invoice/{id}")
-	public ResponseEntity<Resource> viewInvoiceDocument(@PathVariable("id") Long documentId, Authentication authentication) {
-		return documentService.streamInvoiceDocument(documentService.findById(documentId), currentPartner(authentication));
+	@PostMapping("/partner/cases/{id}/documents/{documentId}/delete")
+	public String deleteCaseDocument(@PathVariable("id") Long caseId, @PathVariable Long documentId, Model model) {
+		Case case_ = caseService.findById(caseId);
+		documentService.deleteStaged(case_, List.of(documentId));
+		
+		populateCaseDetailModel(case_, model);
+		model.addAttribute("success", "Document deleted.");
+		
+		return "partner/case-details";
 	}
 	
-	// Finance (Firm Transactions)
+	@PostMapping("/partner/cases/{id}/documents/{documentId}/accept")
+	public String acceptStagedDocument(@PathVariable("id") Long caseId, @PathVariable Long documentId, Model model) {
+		Case case_ = caseService.findById(caseId);
+		documentService.addStagedToCase(case_, List.of(documentId));
+		
+		populateCaseDetailModel(case_, model);
+		model.addAttribute("success", "Document added to case.");
+		
+		return "partner/case-details";
+	}
+	
+	@PostMapping("/partner/cases/{id}/documents/{documentId}/reject")
+	public String rejectStagedDocument(@PathVariable("id") Long caseId, @PathVariable Long documentId, Model model) {
+		Case case_ = caseService.findById(caseId);
+		documentService.deleteStaged(case_, List.of(documentId));
+		
+		populateCaseDetailModel(case_, model);
+		model.addAttribute("success", "Document deleted.");
+		
+		return "partner/case-details";
+	}
+	
+	@PostMapping("/partner/cases/{id}/contacts")
+	public String addContact(@PathVariable("id") Long caseId, @Valid @ModelAttribute SaveContactRequest form, BindingResult bindingResult, Model model) {
+		Case case_ = caseService.findById(caseId);
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			populateCaseDetailModel(case_, model);
+			
+			return "partner/case-details";
+		}
+		
+		try {
+			contactService.add(case_, form.getName(), form.getPhoneNumbers(), form.getEmails(), form.getAddresses(), form.getNotes());
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("success", "Contact added.");
+		} catch (InvalidStateException e) {
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "partner/case-details";
+	}
+	
+	@PostMapping("/partner/cases/{id}/contacts/{contactId}/edit")
+	public String editContact(@PathVariable("id") Long caseId, @PathVariable Long contactId, @Valid @ModelAttribute SaveContactRequest form, BindingResult bindingResult, Model model) {
+		Case case_ = caseService.findById(caseId);
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			populateCaseDetailModel(case_, model);
+			
+			return "partner/case-details";
+		}
+		
+		Contact contact = contactService.findById(contactId);
+		
+		try {
+			contactService.update(case_, contact, form.getName(), form.getPhoneNumbers(), form.getEmails(), form.getAddresses(), form.getNotes());
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("success", "Contact updated.");
+		} catch (InvalidStateException e) {
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "partner/case-details";
+	}
+	
+	@PostMapping("/partner/cases/{id}/reassign")
+	public String reassignCase(@PathVariable("id") Long caseId, @Valid @ModelAttribute AssignStaffRequest form, BindingResult bindingResult, Model model) {
+		Case case_ = caseService.findById(caseId);
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			populateCaseDetailModel(case_, model);
+			
+			return "partner/case-details";
+		}
+		
+		Associate associate = (Associate) userService.findById(form.getAssociateId());
+		Paralegal paralegal = (Paralegal) userService.findById(form.getParalegalId());
+		
+		try {
+			case_ = caseService.reassignStaff(case_, associate, paralegal);
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("success", "Case reassigned successfully.");
+		} catch (InvalidStateException e) {
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "partner/case-details";
+	}
+	
+	@PostMapping("/partner/cases/{id}/close")
+	public String closeCase(@PathVariable("id") Long caseId, @Valid @ModelAttribute CloseCaseRequest form, BindingResult bindingResult, Model model) {
+		Case case_ = caseService.findById(caseId);
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			populateCaseDetailModel(case_, model);
+			
+			return "partner/case-details";
+		}
+		
+		try {
+			case_ = caseService.close(case_, form.getCaseResolutionStatus());
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("success", "Case closed successfully.");
+		} catch (InvalidStateException e) {
+			populateCaseDetailModel(case_, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "partner/case-details";
+	}
+	
+	// Schedule
+	
+	@GetMapping("/partner/events")
+	public String events(Model model) {
+		model.addAttribute("events", eventService.findAll());
+		
+		return "partner/event-list";
+	}
+	
+	@GetMapping("/partner/events/{id}")
+	public String eventDetails(@PathVariable("id") Long eventId, Model model) {
+		model.addAttribute("event", eventService.findById(eventId));
+		
+		return "partner/event-details";
+	}
+	
+	@PostMapping("/partner/events/{id}/complete")
+	public String completeEvent(@PathVariable("id") Long eventId, RedirectAttributes redirectAttributes) {
+		
+		try {
+			eventService.complete(eventService.findById(eventId));
+			redirectAttributes.addFlashAttribute("success", "Event marked as completed.");
+		} catch (InvalidStateException | BusinessRuleViolationException e) {
+			redirectAttributes.addFlashAttribute("error", e.getMessage());
+		}
+		
+		return "redirect:/partner/events/{id}";
+	}
+	
+	@PostMapping("/partner/events/{id}/cancel")
+	public String cancelEvent(@PathVariable("id") Long eventId, RedirectAttributes redirectAttributes) {
+		
+		try {
+			eventService.cancel(eventService.findById(eventId));
+			redirectAttributes.addFlashAttribute("success", "Event canceled.");
+		} catch (InvalidStateException e) {
+			redirectAttributes.addFlashAttribute("error", e.getMessage());
+		}
+		
+		return "redirect:/partner/events/{id}";
+	}
+	
+	// Finance
 	
 	@GetMapping("/partner/transactions")
 	public String transactions(Model model) {
@@ -823,107 +713,132 @@ public class PartnerController {
 		return "partner/transactions";
 	}
 	
+	// Users
+	
+	@GetMapping("/partner/register-staff")
+	public String showRegisterStaffForm(Model model) {
+		model.addAttribute("genders", Gender.values());
+		model.addAttribute("roles", List.of(Role.PARTNER, Role.ASSOCIATE, Role.PARALEGAL, Role.CLIENT_RELATIONS_OFFICER, Role.FINANCE_OFFICER));
+		
+		return "partner/register-staff";
+	}
+	
+	@PostMapping("/partner/register-staff")
+	public String registerStaff(@Valid @ModelAttribute RegisterStaffRequest form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
+		
+		if (bindingResult.hasErrors()) {
+			List<String> validationErrors = new ArrayList<>();
+			
+			for (ObjectError objectError : bindingResult.getAllErrors()) {
+				validationErrors.add(objectError.getDefaultMessage());
+			}
+			
+			model.addAttribute("validationErrors", validationErrors);
+			model.addAttribute("genders", Gender.values());
+			model.addAttribute("roles", List.of(Role.PARTNER, Role.ASSOCIATE, Role.PARALEGAL, Role.CLIENT_RELATIONS_OFFICER, Role.FINANCE_OFFICER));
+			
+			return "partner/register-staff";
+		}
+		
+		try {
+			userService.register(form.getRole(), form.getEmail(), form.getPassword(), form.getName(), form.getDateOfBirth(), form.getGender(), form.getAddresses(), form.getPhoneNumbers(), form.getNicNumber(), form.getBarNumber(), form.getNicFile(), form.getBarFile());
+		} catch (EntityAlreadyExistsException | BusinessRuleViolationException e) {
+			model.addAttribute("genders", Gender.values());
+			model.addAttribute("roles", List.of(Role.PARTNER, Role.ASSOCIATE, Role.PARALEGAL, Role.CLIENT_RELATIONS_OFFICER, Role.FINANCE_OFFICER));
+			model.addAttribute("error", e.getMessage());
+			
+			return "partner/register-staff";
+		} catch (PersistenceException e) {
+			model.addAttribute("genders", Gender.values());
+			model.addAttribute("roles", List.of(Role.PARTNER, Role.ASSOCIATE, Role.PARALEGAL, Role.CLIENT_RELATIONS_OFFICER, Role.FINANCE_OFFICER));
+			model.addAttribute("error", "Could not register the staff member. Please try again.");
+			
+			return "partner/register-staff";
+		}
+		
+		String listUrl = switch (form.getRole()) {
+			case PARTNER -> "/partner/users/partners";
+			case ASSOCIATE -> "/partner/users/associates";
+			case PARALEGAL -> "/partner/users/paralegals";
+			case CLIENT_RELATIONS_OFFICER -> "/partner/users/client-relations-officers";
+			case FINANCE_OFFICER -> "/partner/users/finance-officers";
+			default -> "/partner/dashboard";
+		};
+		
+		redirectAttributes.addFlashAttribute("success", "Staff member registered successfully.");
+		
+		return "redirect:" + listUrl;
+	}
+	
+	@GetMapping("/partner/users/partners")
+	public String partners(@RequestParam(required = false) String keyword, Authentication authentication, Model model) {
+		model.addAttribute("users", userService.findByRoleAndKeyword(Role.PARTNER, keyword));
+		model.addAttribute("keyword", keyword);
+		model.addAttribute("title", "Partners");
+		model.addAttribute("currentUserEmail", authentication.getName());
+		
+		return "partner/partner-list";
+	}
+	
+	@GetMapping("/partner/users/associates")
+	public String associates(@RequestParam(required = false) String keyword, Model model) {
+		model.addAttribute("users", userService.findByRoleAndKeyword(Role.ASSOCIATE, keyword));
+		model.addAttribute("keyword", keyword);
+		model.addAttribute("title", "Associates");
+		model.addAttribute("active", "users-associates");
+		model.addAttribute("listUrl", "/partner/users/associates");
+		
+		return "partner/user-list";
+	}
+	
+	@GetMapping("/partner/users/paralegals")
+	public String paralegals(@RequestParam(required = false) String keyword, Model model) {
+		model.addAttribute("users", userService.findByRoleAndKeyword(Role.PARALEGAL, keyword));
+		model.addAttribute("keyword", keyword);
+		model.addAttribute("title", "Paralegals");
+		model.addAttribute("active", "users-paralegals");
+		model.addAttribute("listUrl", "/partner/users/paralegals");
+		
+		return "partner/user-list";
+	}
+	
+	@GetMapping("/partner/users/client-relations-officers")
+	public String clientRelationsOfficers(@RequestParam(required = false) String keyword, Model model) {
+		model.addAttribute("users", userService.findByRoleAndKeyword(Role.CLIENT_RELATIONS_OFFICER, keyword));
+		model.addAttribute("keyword", keyword);
+		model.addAttribute("title", "Client Relations Officers");
+		model.addAttribute("active", "users-client-relations-officers");
+		model.addAttribute("listUrl", "/partner/users/client-relations-officers");
+		
+		return "partner/user-list";
+	}
+	
+	@GetMapping("/partner/users/finance-officers")
+	public String financeOfficers(@RequestParam(required = false) String keyword, Model model) {
+		model.addAttribute("users", userService.findByRoleAndKeyword(Role.FINANCE_OFFICER, keyword));
+		model.addAttribute("keyword", keyword);
+		model.addAttribute("title", "Finance Officers");
+		model.addAttribute("active", "users-finance-officers");
+		model.addAttribute("listUrl", "/partner/users/finance-officers");
+		
+		return "partner/user-list";
+	}
+	
+	@GetMapping("/partner/users/clients")
+	public String clients(@RequestParam(required = false) String keyword, Model model) {
+		model.addAttribute("users", userService.findByRoleAndKeyword(Role.CLIENT, keyword));
+		model.addAttribute("keyword", keyword);
+		model.addAttribute("title", "Clients");
+		model.addAttribute("active", "users-clients");
+		model.addAttribute("listUrl", "/partner/users/clients");
+		
+		return "partner/user-list";
+	}
+	
 	@GetMapping("/partner/users/{id}")
 	public String userDetails(@PathVariable("id") Long userId, Authentication authentication, Model model) {
 		User user = userService.findById(userId);
 		populateUserDetailModel(user, authentication, model);
-		
-		return userDetailsView(user);
-	}
-	
-	private void populateUserDetailModel(User user, Authentication authentication, Model model) {
-		model.addAttribute("user", user);
-		model.addAttribute("isSelf", user.getEmail().equals(authentication.getName()));
-		model.addAttribute("isAssociate", user instanceof Associate);
-		model.addAttribute("isClient", user instanceof Client);
-		model.addAttribute("genders", Gender.values());
-		
-		switch (user) {
-			
-			case Client client -> {
-				model.addAttribute("relatedConsultations", consultationService.findAllForClient(client));
-				model.addAttribute("relatedCases", caseService.findAllForClient(client));
-				model.addAttribute("relatedEvents", eventService.findAllForClient(client));
-				model.addAttribute("relatedTransactions", transactionService.findAllForClient(client));
-			}
-			
-			case Associate associate -> {
-				model.addAttribute("relatedConsultations", consultationService.findAllForAssociate(associate));
-				model.addAttribute("relatedCases", caseService.findAllForAssociate(associate));
-				model.addAttribute("relatedEvents", eventService.findAllForAssociate(associate));
-			}
-			
-			case Paralegal paralegal -> {
-				model.addAttribute("relatedConsultations", consultationService.findAllForParalegal(paralegal));
-				model.addAttribute("relatedCases", caseService.findAllForParalegal(paralegal));
-				model.addAttribute("relatedEvents", eventService.findAllForParalegal(paralegal));
-			}
-			
-			default -> {
-			}
-			
-		}
-		
-		model.addAttribute("active", switch (user) {
-			case Partner ignored -> "users-partners";
-			case Associate ignored -> "users-associates";
-			case Paralegal ignored -> "users-paralegals";
-			case Client ignored -> "users-clients";
-			case ClientRelationsOfficer ignored -> "users-client-relations-officers";
-			case FinanceOfficer ignored -> "users-finance-officers";
-			default -> "";
-		});
-	}
-	
-	private String userDetailsView(User user) {
-		return user instanceof Partner ? "partner/partner-details" : "partner/user-details";
-	}
-	
-	@PostMapping("/partner/users/{id}/edit")
-	public String editUser(@PathVariable("id") Long userId, @Valid @ModelAttribute EditProfileRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
-		User user = userService.findById(userId);
-		
-		if (bindingResult.hasErrors()) {
-			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
-			populateUserDetailModel(user, authentication, model);
-			
-			return userDetailsView(user);
-		}
-		
-		try {
-			user = userService.updateDetails(user, form.getName(), form.getDateOfBirth(), form.getGender(), form.getAddresses(), form.getPhoneNumbers(), form.getNicFile(), form.getBarFile());
-			model.addAttribute("success", "User updated successfully.");
-		} catch (NonPdfDocumentException e) {
-			model.addAttribute("error", e.getMessage());
-		}
-		
-		populateUserDetailModel(user, authentication, model);
-		
-		return userDetailsView(user);
-	}
-	
-	@PostMapping("/partner/users/{id}/reset-password")
-	public String resetUserPassword(@PathVariable("id") Long userId, @Valid @ModelAttribute ResetPasswordRequest form, BindingResult bindingResult, Authentication authentication, HttpServletRequest request, HttpServletResponse response, Model model, RedirectAttributes redirectAttributes) {
-		User user = userService.findById(userId);
-		
-		if (bindingResult.hasErrors()) {
-			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
-			populateUserDetailModel(user, authentication, model);
-			
-			return userDetailsView(user);
-		}
-		
-		user = userService.changePassword(user, form.getTemporaryPassword());
-		
-		if (user.getEmail().equals(authentication.getName())) {
-			new SecurityContextLogoutHandler().logout(request, response, authentication);
-			redirectAttributes.addFlashAttribute("success", "Password reset successfully. Please log in again.");
-			
-			return "redirect:/auth/login";
-		}
-		
-		populateUserDetailModel(user, authentication, model);
-		model.addAttribute("success", "Password reset successfully.");
 		
 		return userDetailsView(user);
 	}
@@ -986,75 +901,83 @@ public class PartnerController {
 		return userDetailsView(user);
 	}
 	
-	// Schedule (Firm Events)
-	
-	@GetMapping("/partner/events")
-	public String events(Model model) {
-		model.addAttribute("events", eventService.findAll());
+	@PostMapping("/partner/users/{id}/reset-password")
+	public String resetUserPassword(@PathVariable("id") Long userId, @Valid @ModelAttribute ResetPasswordRequest form, BindingResult bindingResult, Authentication authentication, HttpServletRequest request, HttpServletResponse response, Model model, RedirectAttributes redirectAttributes) {
+		User user = userService.findById(userId);
 		
-		return "partner/event-list";
-	}
-	
-	@GetMapping("/partner/events/{id}")
-	public String eventDetails(@PathVariable("id") Long eventId, Model model) {
-		model.addAttribute("event", eventService.findById(eventId));
-		
-		return "partner/event-details";
-	}
-	
-	@PostMapping("/partner/events/{id}/complete")
-	public String completeEvent(@PathVariable("id") Long eventId, RedirectAttributes redirectAttributes) {
-		
-		try {
-			eventService.complete(eventService.findById(eventId));
-			redirectAttributes.addFlashAttribute("success", "Event marked as completed.");
-		} catch (InvalidStateException | BusinessRuleViolationException e) {
-			redirectAttributes.addFlashAttribute("error", e.getMessage());
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			populateUserDetailModel(user, authentication, model);
+			
+			return userDetailsView(user);
 		}
 		
-		return "redirect:/partner/events/{id}";
-	}
-	
-	@PostMapping("/partner/events/{id}/cancel")
-	public String cancelEvent(@PathVariable("id") Long eventId, RedirectAttributes redirectAttributes) {
+		user = userService.changePassword(user, form.getTemporaryPassword());
 		
-		try {
-			eventService.cancel(eventService.findById(eventId));
-			redirectAttributes.addFlashAttribute("success", "Event canceled.");
-		} catch (InvalidStateException e) {
-			redirectAttributes.addFlashAttribute("error", e.getMessage());
+		if (user.getEmail().equals(authentication.getName())) {
+			new SecurityContextLogoutHandler().logout(request, response, authentication);
+			redirectAttributes.addFlashAttribute("success", "Password reset successfully. Please log in again.");
+			
+			return "redirect:/auth/login";
 		}
 		
-		return "redirect:/partner/events/{id}";
+		populateUserDetailModel(user, authentication, model);
+		model.addAttribute("success", "Password reset successfully.");
+		
+		return userDetailsView(user);
 	}
 	
-	@GetMapping("/partner/analytics")
-	public String analytics(Authentication authentication, Model model) {
-		model.addAttribute("user", currentPartner(authentication));
+	@PostMapping("/partner/users/{id}/edit")
+	public String editUser(@PathVariable("id") Long userId, @Valid @ModelAttribute EditProfileRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
+		User user = userService.findById(userId);
 		
-		Map<CaseResolutionStatus, Integer> caseResolutionBreakdown = analyticsService.caseResolutionBreakdown();
-		model.addAttribute("caseResolutionBreakdownLabels", buildLabels(caseResolutionBreakdown));
-		model.addAttribute("caseResolutionBreakdownValues", buildIntValues(caseResolutionBreakdown));
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
+			populateUserDetailModel(user, authentication, model);
+			
+			return userDetailsView(user);
+		}
 		
-		model.addAttribute("averageCaseDurationDays", analyticsService.averageCaseDurationDays());
+		try {
+			user = userService.updateDetails(user, form.getName(), form.getDateOfBirth(), form.getGender(), form.getAddresses(), form.getPhoneNumbers(), form.getNicFile(), form.getBarFile());
+			model.addAttribute("success", "User updated successfully.");
+		} catch (NonPdfDocumentException e) {
+			model.addAttribute("error", e.getMessage());
+		}
 		
-		Map<Integer, BigDecimal> revenueByMonth = analyticsService.revenueByMonth(LocalDate.now().getYear());
-		model.addAttribute("revenueByMonthLabels", monthLabels());
-		model.addAttribute("revenueByMonthValues", revenueByMonth.values());
+		populateUserDetailModel(user, authentication, model);
 		
-		Map<CaseType, BigDecimal> revenueByCaseType = analyticsService.revenueByCaseType();
-		model.addAttribute("revenueByCaseTypeLabels", buildLabels(revenueByCaseType));
-		model.addAttribute("revenueByCaseTypeValues", buildDecimalValues(revenueByCaseType));
+		return userDetailsView(user);
+	}
+	
+	// Documents
+	
+	@GetMapping("/partner/documents/user/{id}")
+	public ResponseEntity<Resource> viewUserDocument(@PathVariable("id") Long documentId, Authentication authentication) {
+		return documentService.streamUserDocument(documentService.findById(documentId), currentPartner(authentication));
+	}
+	
+	@GetMapping("/partner/documents/consultation/{id}")
+	public ResponseEntity<Resource> viewConsultationDocument(@PathVariable("id") Long documentId, Authentication authentication) {
+		return documentService.streamConsultationDocument(documentService.findById(documentId), currentPartner(authentication));
+	}
+	
+	@GetMapping("/partner/documents/case/{id}")
+	public ResponseEntity<Resource> viewCaseDocument(@PathVariable("id") Long documentId, Authentication authentication) {
+		return documentService.streamCaseDocument(documentService.findById(documentId), currentPartner(authentication));
+	}
+	
+	@GetMapping("/partner/documents/invoice/{id}")
+	public ResponseEntity<Resource> viewInvoiceDocument(@PathVariable("id") Long documentId, Authentication authentication) {
+		return documentService.streamInvoiceDocument(documentService.findById(documentId), currentPartner(authentication));
+	}
+	
+	// Private Helpers
+	
+	private Partner currentPartner(Authentication authentication) {
+		CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
 		
-		Map<User, Integer> closedCaseCountByAssociate = analyticsService.closedCaseCountByAssociate();
-		model.addAttribute("closedCaseCountByAssociateLabels", buildStaffLabels(closedCaseCountByAssociate));
-		model.addAttribute("closedCaseCountByAssociateValues", buildIntValues(closedCaseCountByAssociate));
-		
-		Map<User, Integer> closedCaseCountByParalegal = analyticsService.closedCaseCountByParalegal();
-		model.addAttribute("closedCaseCountByParalegalLabels", buildStaffLabels(closedCaseCountByParalegal));
-		model.addAttribute("closedCaseCountByParalegalValues", buildIntValues(closedCaseCountByParalegal));
-		
-		return "partner/analytics";
+		return (Partner) principal.user();
 	}
 	
 	private List<String> buildLabels(Map<?, ?> counts) {
@@ -1062,16 +985,6 @@ public class PartnerController {
 		
 		for (Object key : counts.keySet()) {
 			labels.add(key.toString());
-		}
-		
-		return labels;
-	}
-	
-	private List<String> buildStaffLabels(Map<User, Integer> workload) {
-		List<String> labels = new ArrayList<>();
-		
-		for (User user : workload.keySet()) {
-			labels.add(user.getName());
 		}
 		
 		return labels;
@@ -1087,6 +1000,10 @@ public class PartnerController {
 		return values;
 	}
 	
+	private List<String> monthLabels() {
+		return List.of("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+	}
+	
 	private List<BigDecimal> buildDecimalValues(Map<?, BigDecimal> sums) {
 		List<BigDecimal> values = new ArrayList<>();
 		
@@ -1097,8 +1014,91 @@ public class PartnerController {
 		return values;
 	}
 	
-	private List<String> monthLabels() {
-		return List.of("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+	private List<String> buildStaffLabels(Map<User, Integer> workload) {
+		List<String> labels = new ArrayList<>();
+		
+		for (User user : workload.keySet()) {
+			labels.add(user.getName());
+		}
+		
+		return labels;
+	}
+	
+	private void populateConsultationDetailModel(Consultation consultation, Model model) {
+		model.addAttribute("consultation", consultation);
+		model.addAttribute("consultationDocuments", documentService.findByConsultation(consultation));
+		model.addAttribute("associates", userService.findActiveAssociates());
+		model.addAttribute("paralegals", userService.findActiveParalegals());
+		model.addAttribute("consultationEvents", eventService.findByConsultation(consultation));
+		
+		Case existingCase = caseService.findByConsultation(consultation);
+		model.addAttribute("existingCase", existingCase);
+		model.addAttribute("hasCase", existingCase != null);
+	}
+	
+	private void populateCaseDetailModel(Case case_, Model model) {
+		model.addAttribute("case", case_);
+		model.addAttribute("associates", userService.findActiveAssociates());
+		model.addAttribute("paralegals", userService.findActiveParalegals());
+		model.addAttribute("stagedDocuments", documentService.findStagedByCase(case_));
+		model.addAttribute("caseDocuments", documentService.findByCase(case_));
+		model.addAttribute("contacts", contactService.findByCase(case_));
+		
+		List<Task> tasks = taskService.findByCase(case_);
+		model.addAttribute("tasks", tasks);
+		model.addAttribute("taskDocuments", documentService.findByTasks(tasks));
+		model.addAttribute("unbilledTasks", taskService.findUnbilledByCase(case_));
+		model.addAttribute("unpaidInvoices", invoiceService.findByCaseAndStatus(case_, InvoiceStatus.UNPAID));
+		model.addAttribute("paidInvoices", invoiceService.findByCaseAndStatus(case_, InvoiceStatus.PAID));
+		model.addAttribute("voidedInvoices", invoiceService.findByCaseAndStatus(case_, InvoiceStatus.VOIDED));
+	}
+	
+	private void populateUserDetailModel(User user, Authentication authentication, Model model) {
+		model.addAttribute("user", user);
+		model.addAttribute("isSelf", user.getEmail().equals(authentication.getName()));
+		model.addAttribute("isAssociate", user instanceof Associate);
+		model.addAttribute("isClient", user instanceof Client);
+		model.addAttribute("genders", Gender.values());
+		
+		switch (user) {
+			
+			case Client client -> {
+				model.addAttribute("relatedConsultations", consultationService.findAllForClient(client));
+				model.addAttribute("relatedCases", caseService.findAllForClient(client));
+				model.addAttribute("relatedEvents", eventService.findAllForClient(client));
+				model.addAttribute("relatedTransactions", transactionService.findAllForClient(client));
+			}
+			
+			case Associate associate -> {
+				model.addAttribute("relatedConsultations", consultationService.findAllForAssociate(associate));
+				model.addAttribute("relatedCases", caseService.findAllForAssociate(associate));
+				model.addAttribute("relatedEvents", eventService.findAllForAssociate(associate));
+			}
+			
+			case Paralegal paralegal -> {
+				model.addAttribute("relatedConsultations", consultationService.findAllForParalegal(paralegal));
+				model.addAttribute("relatedCases", caseService.findAllForParalegal(paralegal));
+				model.addAttribute("relatedEvents", eventService.findAllForParalegal(paralegal));
+			}
+			
+			default -> {
+			}
+			
+		}
+		
+		model.addAttribute("active", switch (user) {
+			case Partner ignored -> "users-partners";
+			case Associate ignored -> "users-associates";
+			case Paralegal ignored -> "users-paralegals";
+			case Client ignored -> "users-clients";
+			case ClientRelationsOfficer ignored -> "users-client-relations-officers";
+			case FinanceOfficer ignored -> "users-finance-officers";
+			default -> "";
+		});
+	}
+	
+	private String userDetailsView(User user) {
+		return user instanceof Partner ? "partner/partner-details" : "partner/user-details";
 	}
 	
 }

@@ -210,7 +210,7 @@ public class EventDao {
 					 ORDER BY scheduled_at DESC
 					 """.formatted(SELECT_COLUMNS);
 		
-		List<ConsultationEvent> events = new ArrayList<>();
+		List<ConsultationEvent> consultationEvents = new ArrayList<>();
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -219,7 +219,7 @@ public class EventDao {
 			try (ResultSet resultSet = statement.executeQuery()) {
 				
 				while (resultSet.next()) {
-					events.add((ConsultationEvent) mapRow(resultSet));
+					consultationEvents.add((ConsultationEvent) mapRow(resultSet));
 				}
 				
 			}
@@ -230,7 +230,7 @@ public class EventDao {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
 		
-		return events;
+		return consultationEvents;
 	}
 	
 	public List<CaseEvent> findByCaseId(Long caseId) {
@@ -241,7 +241,7 @@ public class EventDao {
 					 ORDER BY scheduled_at DESC
 					 """.formatted(SELECT_COLUMNS);
 		
-		List<CaseEvent> events = new ArrayList<>();
+		List<CaseEvent> caseEvents = new ArrayList<>();
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -250,7 +250,7 @@ public class EventDao {
 			try (ResultSet resultSet = statement.executeQuery()) {
 				
 				while (resultSet.next()) {
-					events.add((CaseEvent) mapRow(resultSet));
+					caseEvents.add((CaseEvent) mapRow(resultSet));
 				}
 				
 			}
@@ -261,7 +261,7 @@ public class EventDao {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
 		
-		return events;
+		return caseEvents;
 	}
 	
 	// Update

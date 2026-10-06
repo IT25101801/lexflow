@@ -49,18 +49,18 @@ public class EventService {
 		checkAllAvailability(consultation.getAssociate(), consultation.getParalegal(), consultation.getClient(), date, startTime, endTime, null);
 		
 		consultationService.markScheduled(consultation);
-		ConsultationEvent event = new ConsultationEvent(subject, date, startTime, endTime, location, notes, LocalDateTime.now(), consultation);
+		ConsultationEvent consultationEvent = new ConsultationEvent(subject, date, startTime, endTime, location, notes, LocalDateTime.now(), consultation);
 		
-		return (ConsultationEvent) eventDao.insert(event);
+		return (ConsultationEvent) eventDao.insert(consultationEvent);
 	}
 	
 	public CaseEvent schedule(Case case_, Task task, String subject, LocalDate date, LocalTime startTime, LocalTime endTime, String location, String notes) {
 		validateSchedule(date, startTime, endTime);
 		checkAllAvailability(case_.getAssociate(), case_.getParalegal(), case_.getClient(), date, startTime, endTime, null);
 		
-		CaseEvent event = new CaseEvent(subject, date, startTime, endTime, location, notes, LocalDateTime.now(), case_, task.getTaskId());
+		CaseEvent caseEvent = new CaseEvent(subject, date, startTime, endTime, location, notes, LocalDateTime.now(), case_, task.getTaskId());
 		
-		return (CaseEvent) eventDao.insert(event);
+		return (CaseEvent) eventDao.insert(caseEvent);
 	}
 	
 	// Read
@@ -182,68 +182,68 @@ public class EventService {
 	}
 	
 	public List<ConsultationEvent> findAllForConsultations() {
-		List<ConsultationEvent> events = new ArrayList<>();
+		List<ConsultationEvent> consultationEvents = new ArrayList<>();
 		List<Event> allEvents = eventDao.findAll();
 		
 		for (Event event : allEvents) {
 			
 			if (event instanceof ConsultationEvent consultationEvent) {
-				events.add(consultationEvent);
+				consultationEvents.add(consultationEvent);
 			}
 			
 		}
 		
-		return events;
+		return consultationEvents;
 	}
 	
 	// Update
 	
-	public ConsultationEvent reschedule(ConsultationEvent event, String subject, LocalDate date, LocalTime startTime, LocalTime endTime, String location, String notes) {
-		stateFor(event.getEventStatus()).guardReschedule(event);
-		Consultation consultation = event.getConsultation();
+	public ConsultationEvent reschedule(ConsultationEvent consultationEvent, String subject, LocalDate date, LocalTime startTime, LocalTime endTime, String location, String notes) {
+		stateFor(consultationEvent.getEventStatus()).guardReschedule(consultationEvent);
+		Consultation consultation = consultationEvent.getConsultation();
 		
 		validateSchedule(date, startTime, endTime);
-		checkAllAvailability(consultation.getAssociate(), consultation.getParalegal(), consultation.getClient(), date, startTime, endTime, event.getEventId());
+		checkAllAvailability(consultation.getAssociate(), consultation.getParalegal(), consultation.getClient(), date, startTime, endTime, consultationEvent.getEventId());
 		
-		event.setSubject(subject);
-		event.setDate(date);
-		event.setStartTime(startTime);
-		event.setEndTime(endTime);
-		event.setLocation(location);
-		event.setNotes(notes);
+		consultationEvent.setSubject(subject);
+		consultationEvent.setDate(date);
+		consultationEvent.setStartTime(startTime);
+		consultationEvent.setEndTime(endTime);
+		consultationEvent.setLocation(location);
+		consultationEvent.setNotes(notes);
 		
-		return (ConsultationEvent) eventDao.update(event);
+		return (ConsultationEvent) eventDao.update(consultationEvent);
 	}
 	
-	public CaseEvent reschedule(CaseEvent event, String subject, LocalDate date, LocalTime startTime, LocalTime endTime, String location, String notes) {
-		stateFor(event.getEventStatus()).guardReschedule(event);
-		Case case_ = event.getCase_();
+	public CaseEvent reschedule(CaseEvent caseEvent, String subject, LocalDate date, LocalTime startTime, LocalTime endTime, String location, String notes) {
+		stateFor(caseEvent.getEventStatus()).guardReschedule(caseEvent);
+		Case case_ = caseEvent.getCase_();
 		
 		validateSchedule(date, startTime, endTime);
-		checkAllAvailability(case_.getAssociate(), case_.getParalegal(), case_.getClient(), date, startTime, endTime, event.getEventId());
+		checkAllAvailability(case_.getAssociate(), case_.getParalegal(), case_.getClient(), date, startTime, endTime, caseEvent.getEventId());
 		
-		event.setSubject(subject);
-		event.setDate(date);
-		event.setStartTime(startTime);
-		event.setEndTime(endTime);
-		event.setLocation(location);
-		event.setNotes(notes);
+		caseEvent.setSubject(subject);
+		caseEvent.setDate(date);
+		caseEvent.setStartTime(startTime);
+		caseEvent.setEndTime(endTime);
+		caseEvent.setLocation(location);
+		caseEvent.setNotes(notes);
 		
-		return (CaseEvent) eventDao.update(event);
+		return (CaseEvent) eventDao.update(caseEvent);
 	}
 	
 	public Event complete(Event event) {
 		stateFor(event.getEventStatus()).guardComplete(event);
 		
 		LocalDateTime startsAt = LocalDateTime.of(event.getDate(), event.getStartTime());
-		LocalDateTime now = LocalDateTime.now();
+		LocalDateTime completedAt = LocalDateTime.now();
 		
-		if (startsAt.isAfter(now)) {
+		if (startsAt.isAfter(completedAt)) {
 			throw new EventNotYetStartedException(event.getEventId(), startsAt);
 		}
 		
 		event.setEventStatus(EventStatus.COMPLETED);
-		event.setCompletedAt(now);
+		event.setCompletedAt(completedAt);
 		
 		return eventDao.update(event);
 	}

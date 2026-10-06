@@ -35,7 +35,7 @@ async function fillFileInput(inputId, url, filename) {
 	input.dispatchEvent(new Event("change", {bubbles: true}));
 }
 
-function fillClientRegisterForm() {
+function fillClientRegisterFormB() {
 	// Nimali Karunatilake — a new client, not yet in the system. Two phone numbers.
 	document.getElementById("email").value = "nimali.karunatilake@gmail.com";
 	document.getElementById("password").value = "nimali.karunatilake@gmail.com";
@@ -49,7 +49,20 @@ function fillClientRegisterForm() {
 	fillFileInput("nicFile", "/demo-files/nic-document.pdf", "NIC Document.pdf");
 }
 
-function fillWalkinClientRegisterForm() {
+function fillClientRegisterFormD() {
+	// Dinusha Rathnayake — a second new client, so two people can register without resetting the database.
+	document.getElementById("email").value = "dinusha.rathnayake@gmail.com";
+	document.getElementById("password").value = "dinusha.rathnayake@gmail.com";
+	document.getElementById("name").value = "Dinusha Rathnayake";
+	document.getElementById("dateOfBirth").value = "1996-11-02";
+	document.getElementById("gender").value = "FEMALE";
+	fillMultiInputRow("addressRows", "addresses", "No. 14, Kandy Road, Kurunegala");
+	fillMultiInputRow("phoneNumberRows", "phoneNumbers", "0761000008");
+	document.getElementById("nicNumber").value = "968071234V";
+	fillFileInput("nicFile", "/demo-files/nic-document.pdf", "NIC Document.pdf");
+}
+
+function fillWalkinClientRegisterFormB() {
 	// Kasun Athukorala — a different new client, for the Client Relations Officer's walk-in registration form. Two addresses.
 	document.getElementById("email").value = "kasun.athukorala@gmail.com";
 	document.getElementById("password").value = "kasun.athukorala@gmail.com";
@@ -60,6 +73,19 @@ function fillWalkinClientRegisterForm() {
 	addAndFillMultiInputRow("addressRows", "addresses", "No. 123, Anywhere Street, Anywhere City", "No. 22, Havelock Road, Colombo");
 	fillMultiInputRow("phoneNumberRows", "phoneNumbers", "0761000007");
 	document.getElementById("nicNumber").value = "911957890V";
+	fillFileInput("nicFile", "/demo-files/nic-document.pdf", "NIC Document.pdf");
+}
+
+function fillWalkinClientRegisterFormD() {
+	// Dilan Jayasekara — a second walk-in client, so two people can register without resetting the database.
+	document.getElementById("email").value = "dilan.jayasekara@gmail.com";
+	document.getElementById("password").value = "dilan.jayasekara@gmail.com";
+	document.getElementById("name").value = "Dilan Jayasekara";
+	document.getElementById("dateOfBirth").value = "1989-05-19";
+	document.getElementById("gender").value = "MALE";
+	fillMultiInputRow("addressRows", "addresses", "No. 7, Galle Road, Mount Lavinia");
+	fillMultiInputRow("phoneNumberRows", "phoneNumbers", "0761000009");
+	document.getElementById("nicNumber").value = "891392345V";
 	fillFileInput("nicFile", "/demo-files/nic-document.pdf", "NIC Document.pdf");
 }
 
@@ -134,7 +160,7 @@ function fillPaymentForm() {
 	document.getElementById("cvv").value = "123";
 }
 
-function fillConsultationForm() {
+function fillConsultationFormR() {
 	document.getElementById("caseType").value = "CONTRACT_COMMERCIAL";
 	fillMultiInputRow("opposingPartyRows", "opposingParties", "Meridian Textiles (Pvt) Ltd");
 	document.getElementById("description").value =
@@ -151,10 +177,23 @@ function fillConsultationForm() {
 		"quality failures amounts to a material breach entitling us to terminate the agreement, recover the " +
 		"additional procurement costs we have incurred, and pursue damages for the losses passed on to us by our " +
 		"own client.";
+}
+
+function fillConsultationFormD() {
+	document.getElementById("caseType").value = "EMPLOYMENT";
+	fillMultiInputRow("opposingPartyRows", "opposingParties", "Brightline Logistics (Pvt) Ltd");
+	document.getElementById("description").value =
+		"I worked as a warehouse supervisor at Brightline Logistics (Pvt) Ltd for six years. On 1 August 2026 I was " +
+		"dismissed with immediate effect after raising a written complaint about unpaid overtime for the previous " +
+		"eight months. I received no warning letter, no disciplinary inquiry and no termination letter stating a " +
+		"reason. My final salary has not been paid and my EPF and ETF contributions for the last three months have " +
+		"not been remitted. I would like advice on challenging the termination before the Labour Tribunal, " +
+		"recovering the unpaid overtime and salary, and compelling the company to settle the outstanding EPF and " +
+		"ETF contributions. My appointment letter and the overtime complaint are attached.";
 	fillFileInput("consultationFiles", "/demo-files/consultation-document.pdf", "Consultation Document.pdf");
 }
 
-function fillCroConsultationForm() {
+function fillCroConsultationFormR() {
 	// Lal Yapa — default seeded client, walked in to submit a new request.
 	document.getElementById("clientCode").value = "CLT-31-70617268";
 	document.getElementById("caseType").value = "PROPERTY";
@@ -170,6 +209,19 @@ function fillCroConsultationForm() {
 		"advice on obtaining an urgent injunction to halt further construction, the process for commissioning an " +
 		"independent boundary resurvey admissible in court, and his options for recovering costs if the encroachment " +
 		"is confirmed.";
+}
+
+function fillCroConsultationFormD() {
+	// Lal Yapa — default seeded client, walked in with a second request and supporting documents.
+	document.getElementById("clientCode").value = "CLT-31-70617268";
+	document.getElementById("caseType").value = "CIVIL";
+	fillMultiInputRow("opposingPartyRows", "opposingParties", "Ceylon Auto Traders");
+	document.getElementById("description").value =
+		"In June 2026 Mr. Yapa paid an advance of 1,200,000 to Ceylon Auto Traders for a reconditioned car that was to " +
+		"be delivered within six weeks. The vehicle was never delivered, the showroom has since stopped answering " +
+		"calls, and a written demand for a refund sent on 20 August 2026 has gone unanswered. Mr. Yapa would like " +
+		"advice on recovering the advance through a civil action and on whether the matter should also be reported " +
+		"to the police as cheating. The receipt for the advance and the demand letter are attached.";
 	fillFileInput("consultationFiles", "/demo-files/consultation-document.pdf", "Consultation Document.pdf");
 }
 

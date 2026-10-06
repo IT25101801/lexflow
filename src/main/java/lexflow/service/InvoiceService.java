@@ -90,8 +90,8 @@ public class InvoiceService {
 	}
 	
 	@Transactional
-	public Invoice voidInvoice(Invoice invoice) {
-		return stateFor(invoice.getInvoiceStatus()).voidInvoice(invoice, this);
+	public Invoice void_(Invoice invoice) {
+		return stateFor(invoice.getInvoiceStatus()).void_(invoice, this);
 	}
 	
 	@Transactional

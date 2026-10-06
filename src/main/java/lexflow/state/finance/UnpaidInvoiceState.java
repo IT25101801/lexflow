@@ -14,7 +14,7 @@ public class UnpaidInvoiceState implements InvoiceState {
 	}
 	
 	@Override
-	public Invoice voidInvoice(Invoice invoice, InvoiceService invoiceService) {
+	public Invoice void_(Invoice invoice, InvoiceService invoiceService) {
 		return invoiceService.applyVoid(invoice);
 	}
 	

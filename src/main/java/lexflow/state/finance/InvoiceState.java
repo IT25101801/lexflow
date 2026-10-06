@@ -8,7 +8,7 @@ public interface InvoiceState {
 	
 	Invoice charge(Invoice invoice, InvoiceService invoiceService, Client client);
 	
-	Invoice voidInvoice(Invoice invoice, InvoiceService invoiceService);
+	Invoice void_(Invoice invoice, InvoiceService invoiceService);
 	
 	Invoice voidAndRefund(Invoice invoice, InvoiceService invoiceService, Client client);
 	

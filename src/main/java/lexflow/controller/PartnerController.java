@@ -482,7 +482,7 @@ public class PartnerController {
 		Case case_ = caseService.findById(caseId);
 		
 		try {
-			invoiceService.voidInvoice(invoiceService.findById(invoiceId));
+			invoiceService.void_(invoiceService.findById(invoiceId));
 			populateCaseDetailModel(case_, model);
 			model.addAttribute("success", "Invoice voided. Its charges are unbilled again.");
 		} catch (InvalidInvoiceStateException e) {

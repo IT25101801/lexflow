@@ -44,7 +44,6 @@ public class EventService {
 	private final ConsultationService consultationService;
 	
 	// Create
-	
 	@Transactional
 	public ConsultationEvent schedule(Consultation consultation, String subject, LocalDate date, LocalTime startTime, LocalTime endTime, String location, String notes) {
 		validateSchedule(date, startTime, endTime);
@@ -67,7 +66,6 @@ public class EventService {
 	}
 	
 	// Read
-	
 	public Event findById(Long eventId) {
 		return eventDao.findById(eventId);
 	}
@@ -84,7 +82,9 @@ public class EventService {
 	
 	public Event findOwnedByAssociate(Long eventId, Associate associate) {
 		
-		for (Event event : findAllForAssociate(associate)) {
+		List<Event> events = findAllForAssociate(associate);
+		
+		for (Event event : events) {
 			
 			if (event.getEventId().equals(eventId)) {
 				return event;
@@ -92,12 +92,14 @@ public class EventService {
 			
 		}
 		
-		throw new AccessDeniedException("Not authorized to view this event.");
+		throw new AccessDeniedException("Not assigned to you.");
 	}
 	
 	public Event findOwnedByParalegal(Long eventId, Paralegal paralegal) {
 		
-		for (Event event : findAllForParalegal(paralegal)) {
+		List<Event> events = findAllForParalegal(paralegal);
+		
+		for (Event event : events) {
 			
 			if (event.getEventId().equals(eventId)) {
 				return event;
@@ -105,12 +107,14 @@ public class EventService {
 			
 		}
 		
-		throw new AccessDeniedException("Not authorized to view this event.");
+		throw new AccessDeniedException("Not assigned to you.");
 	}
 	
 	public Event findOwnedByClient(Long eventId, Client client) {
 		
-		for (Event event : findAllForClient(client)) {
+		List<Event> events = findAllForClient(client);
+		
+		for (Event event : events) {
 			
 			if (event.getEventId().equals(eventId)) {
 				return event;
@@ -118,7 +122,7 @@ public class EventService {
 			
 		}
 		
-		throw new AccessDeniedException("Not authorized to view this event.");
+		throw new AccessDeniedException("Not your event.");
 	}
 	
 	public List<Event> findAll() {
@@ -135,8 +139,9 @@ public class EventService {
 	
 	public List<Event> findAllForAssociate(Associate associate) {
 		List<Event> events = new ArrayList<>();
+		List<Event> allEvents = eventDao.findAll();
 		
-		for (Event event : eventDao.findAll()) {
+		for (Event event : allEvents) {
 			Associate eventAssociate = getAssociate(event);
 			
 			if (eventAssociate != null && eventAssociate.getUserId().equals(associate.getUserId())) {
@@ -150,8 +155,9 @@ public class EventService {
 	
 	public List<Event> findAllForParalegal(Paralegal paralegal) {
 		List<Event> events = new ArrayList<>();
+		List<Event> allEvents = eventDao.findAll();
 		
-		for (Event event : eventDao.findAll()) {
+		for (Event event : allEvents) {
 			Paralegal eventParalegal = getParalegal(event);
 			
 			if (eventParalegal != null && eventParalegal.getUserId().equals(paralegal.getUserId())) {
@@ -165,8 +171,9 @@ public class EventService {
 	
 	public List<Event> findAllForClient(Client client) {
 		List<Event> events = new ArrayList<>();
+		List<Event> allEvents = eventDao.findAll();
 		
-		for (Event event : eventDao.findAll()) {
+		for (Event event : allEvents) {
 			Client eventClient = getClient(event);
 			
 			if (eventClient != null && eventClient.getUserId().equals(client.getUserId())) {
@@ -180,8 +187,9 @@ public class EventService {
 	
 	public List<ConsultationEvent> findAllForConsultations() {
 		List<ConsultationEvent> events = new ArrayList<>();
+		List<Event> allEvents = eventDao.findAll();
 		
-		for (Event event : eventDao.findAll()) {
+		for (Event event : allEvents) {
 			
 			if (event instanceof ConsultationEvent consultationEvent) {
 				events.add(consultationEvent);
@@ -193,7 +201,6 @@ public class EventService {
 	}
 	
 	// Update
-	
 	public ConsultationEvent reschedule(ConsultationEvent event, String subject, LocalDate date, LocalTime startTime, LocalTime endTime, String location, String notes) {
 		stateFor(event.getEventStatus()).guardReschedule(event);
 		
@@ -234,13 +241,14 @@ public class EventService {
 		stateFor(event.getEventStatus()).guardComplete(event);
 		
 		LocalDateTime startsAt = LocalDateTime.of(event.getDate(), event.getStartTime());
+		LocalDateTime now = LocalDateTime.now();
 		
-		if (startsAt.isAfter(LocalDateTime.now())) {
+		if (startsAt.isAfter(now)) {
 			throw new EventNotYetStartedException(event.getEventId(), startsAt);
 		}
 		
 		event.setEventStatus(EventStatus.COMPLETED);
-		event.setCompletedAt(LocalDateTime.now());
+		event.setCompletedAt(now);
 		
 		return eventDao.update(event);
 	}
@@ -264,7 +272,6 @@ public class EventService {
 	}
 	
 	// State Pattern
-	
 	private EventState stateFor(EventStatus eventStatus) {
 		
 		if (eventStatus == EventStatus.SCHEDULED) {
@@ -278,7 +285,6 @@ public class EventService {
 	}
 	
 	// Private Helpers
-	
 	private void validateSchedule(LocalDate date, LocalTime startTime, LocalTime endTime) {
 		
 		if (!startTime.isBefore(endTime)) {

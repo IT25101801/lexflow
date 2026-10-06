@@ -31,7 +31,7 @@ public class ScheduledConsultationState implements ConsultationState {
 		
 		consultation.setConsultationStatus(ConsultationStatus.ACCEPTED_BY_ASSOCIATE);
 		
-		return consultationService.persist(consultation);
+		return consultationService.applyStatusChange(consultation);
 	}
 	
 	@Override
@@ -44,7 +44,7 @@ public class ScheduledConsultationState implements ConsultationState {
 		consultation.setRejectionReason(rejectionReason);
 		consultation.setConsultationStatus(ConsultationStatus.REJECTED_BY_ASSOCIATE);
 		
-		return consultationService.persist(consultation);
+		return consultationService.applyStatusChange(consultation);
 	}
 	
 }

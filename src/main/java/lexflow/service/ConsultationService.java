@@ -134,13 +134,13 @@ public class ConsultationService {
 		return consultationDao.findByParalegalIdAndStatus(paralegal.getUserId(), ConsultationStatus.ACCEPTED_BY_PARTNER);
 	}
 	
-	public List<Consultation> search(String keyword) {
+	public List<Consultation> findByKeyword(String keyword) {
 		
 		if (keyword == null || keyword.isBlank()) {
 			return findAll();
 		}
 		
-		return consultationDao.searchByClientKeyword(keyword);
+		return consultationDao.findByClientKeyword(keyword);
 	}
 	
 	// ---- Update ----
@@ -226,11 +226,11 @@ public class ConsultationService {
 		return consultationDao.update(consultation);
 	}
 	
-	public Consultation persist(Consultation consultation) {
+	public Consultation applyStatusChange(Consultation consultation) {
 		return consultationDao.update(consultation);
 	}
 	
-	public void purge(Consultation consultation) {
+	public void applyDelete(Consultation consultation) {
 		documentService.deleteAllConsultationDocuments(consultation);
 		consultationDao.deleteById(consultation.getConsultationId());
 	}

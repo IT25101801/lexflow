@@ -169,7 +169,7 @@ public class ClientRelationsOfficerController {
 	
 	@GetMapping("/client-relations-officer/consultations")
 	public String consultations(@RequestParam(required = false) String keyword, Model model) {
-		model.addAttribute("consultations", consultationService.search(keyword));
+		model.addAttribute("consultations", consultationService.findByKeyword(keyword));
 		model.addAttribute("keyword", keyword);
 		return "client-relations-officer/consultation-list";
 	}

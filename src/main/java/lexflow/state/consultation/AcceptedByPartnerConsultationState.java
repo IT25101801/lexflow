@@ -17,7 +17,7 @@ public class AcceptedByPartnerConsultationState implements ConsultationState {
 	public Consultation markScheduled(Consultation consultation, ConsultationService consultationService) {
 		consultation.setConsultationStatus(ConsultationStatus.SCHEDULED);
 		
-		return consultationService.persist(consultation);
+		return consultationService.applyStatusChange(consultation);
 	}
 	
 }

@@ -231,7 +231,7 @@ public class ConsultationDao {
 		return findByForeignKeyAndStatus("paralegal_id", paralegalId, consultationStatus);
 	}
 	
-	public List<Consultation> searchByClientKeyword(String keyword) {
+	public List<Consultation> findByClientKeyword(String keyword) {
 		String sql = """
 					 SELECT cn.consultation_id,
 					        cn.consultation_code,

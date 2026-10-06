@@ -28,7 +28,7 @@ public class PendingConsultationState implements ConsultationState {
 		consultation.setParalegal(paralegal);
 		consultation.setConsultationStatus(ConsultationStatus.ACCEPTED_BY_PARTNER);
 		
-		return consultationService.persist(consultation);
+		return consultationService.applyStatusChange(consultation);
 	}
 	
 	@Override
@@ -36,12 +36,12 @@ public class PendingConsultationState implements ConsultationState {
 		consultation.setRejectionReason(rejectionReason);
 		consultation.setConsultationStatus(ConsultationStatus.REJECTED_BY_PARTNER);
 		
-		return consultationService.persist(consultation);
+		return consultationService.applyStatusChange(consultation);
 	}
 	
 	@Override
 	public void delete(Consultation consultation, ConsultationService consultationService) {
-		consultationService.purge(consultation);
+		consultationService.applyDelete(consultation);
 	}
 	
 }

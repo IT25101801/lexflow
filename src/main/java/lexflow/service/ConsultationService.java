@@ -29,29 +29,26 @@ import java.util.List;
 public class ConsultationService {
 	
 	private final ConsultationDao consultationDao;
-	
 	private final CaseDao caseDao;
-	
 	private final EventDao eventDao;
-	
 	private final ApplicationEventPublisher eventPublisher;
-	
 	private final DocumentService documentService;
 	
 	// Create
+	
 	@Transactional
 	public Consultation submit(Client client, CaseType caseType, List<String> opposingParties, String description, List<MultipartFile> consultationFiles) {
 		LocalDateTime submittedAt = LocalDateTime.now();
 		Consultation consultation = new Consultation(client, caseType, opposingParties, description, submittedAt);
 		
 		consultationDao.insert(consultation);
-		
 		documentService.attach(consultation, consultationFiles, submittedAt);
 		
 		return consultation;
 	}
 	
 	// Read
+	
 	public Consultation findById(Long consultationId) {
 		return consultationDao.findById(consultationId);
 	}
@@ -130,7 +127,6 @@ public class ConsultationService {
 	}
 	
 	public boolean hasCompletedMeeting(Consultation consultation) {
-		
 		List<ConsultationEvent> meetings = eventDao.findByConsultationId(consultation.getConsultationId());
 		
 		for (ConsultationEvent meeting : meetings) {
@@ -145,6 +141,7 @@ public class ConsultationService {
 	}
 	
 	// Update
+	
 	@Transactional
 	public Consultation updateDetails(Consultation consultation, CaseType caseType, List<String> opposingParties, String description, List<MultipartFile> consultationFiles, List<Long> documentIdsToDelete, List<Long> documentIds, List<String> originalFilenames) {
 		return stateFor(consultation.getConsultationStatus()).updateDetails(consultation, this, caseType, opposingParties, description, consultationFiles, documentIdsToDelete, documentIds, originalFilenames);
@@ -181,12 +178,14 @@ public class ConsultationService {
 	}
 	
 	// Delete
+	
 	@Transactional
 	public void delete(Consultation consultation) {
 		stateFor(consultation.getConsultationStatus()).delete(consultation, this);
 	}
 	
 	// State Pattern
+	
 	public Consultation applyDetails(Consultation consultation, CaseType caseType, List<String> opposingParties, String description, List<MultipartFile> consultationFiles, List<Long> documentIdsToDelete, List<Long> documentIds, List<String> originalFilenames) {
 		consultation.setCaseType(caseType);
 		consultation.setOpposingParties(opposingParties);

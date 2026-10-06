@@ -22,6 +22,7 @@ public class ConflictCheckDao {
 	private final DataSource dataSource;
 	
 	// Read
+	
 	public List<ConflictCheckResult> findByKeyword(String keyword) {
 		String sql = """
 					 SELECT u.name      AS matched_name,
@@ -50,6 +51,7 @@ public class ConflictCheckDao {
 					 WHERE LOWER(ct.name) LIKE ?
 					 ORDER BY source_order
 					 """;
+		
 		String pattern = "%" + keyword.toLowerCase() + "%";
 		List<ConflictCheckResult> results = new ArrayList<>();
 		Connection connection = DataSourceUtils.getConnection(dataSource);

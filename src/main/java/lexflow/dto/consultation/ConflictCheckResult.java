@@ -8,7 +8,9 @@ import lombok.Setter;
 public class ConflictCheckResult {
 	
 	private String matchedName;
+	
 	private ConflictSourceType sourceType;
+	
 	private String detail;
 	
 }

@@ -42,15 +42,12 @@ public class ConsultationDao {
 	private final UserDao userDao;
 	
 	// Create
-	
 	public Consultation insert(Consultation consultation) {
 		String sql = """
 					 INSERT INTO consultations (client_id, case_type, description, consultation_status, submitted_at, associate_id, paralegal_id, rejection_reason)
 					 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 					 """;
-		
 		String consultationCode;
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -120,14 +117,12 @@ public class ConsultationDao {
 	}
 	
 	// Read
-	
 	public Consultation findById(Long consultationId) {
 		String sql = """
 					 SELECT %s
 					 FROM consultations
 					 WHERE consultation_id = ?
 					 """.formatted(SELECT_COLUMNS);
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -156,9 +151,7 @@ public class ConsultationDao {
 					 FROM consultations
 					 ORDER BY submitted_at DESC
 					 """.formatted(SELECT_COLUMNS);
-		
 		List<Consultation> consultations = new ArrayList<>();
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -199,9 +192,7 @@ public class ConsultationDao {
 					 WHERE consultation_status = ?
 					 ORDER BY submitted_at DESC
 					 """.formatted(SELECT_COLUMNS);
-		
 		List<Consultation> consultations = new ArrayList<>();
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -216,7 +207,7 @@ public class ConsultationDao {
 			}
 			
 		} catch (SQLException e) {
-			throw new PersistenceException("finding consultations", e);
+			throw new PersistenceException("finding consultations by status", e);
 		} finally {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
@@ -249,15 +240,11 @@ public class ConsultationDao {
 					     ON u.user_id = cn.client_id
 					 WHERE LOWER(u.name) LIKE ?
 					 """;
-		
-		String pattern = "%" + keyword.toLowerCase() + "%";
-		
 		List<Consultation> consultations = new ArrayList<>();
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
-			statement.setString(1, pattern);
+			statement.setString(1, "%" + keyword.toLowerCase() + "%");
 			
 			try (ResultSet resultSet = statement.executeQuery()) {
 				
@@ -268,7 +255,7 @@ public class ConsultationDao {
 			}
 			
 		} catch (SQLException e) {
-			throw new PersistenceException("searching consultations", e);
+			throw new PersistenceException("finding consultations by client keyword", e);
 		} finally {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
@@ -277,7 +264,6 @@ public class ConsultationDao {
 	}
 	
 	// Update
-	
 	public Consultation update(Consultation consultation) {
 		String sql = """
 					 UPDATE consultations
@@ -289,7 +275,6 @@ public class ConsultationDao {
 					     rejection_reason    = ?
 					 WHERE consultation_id = ?
 					 """;
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -326,14 +311,12 @@ public class ConsultationDao {
 	}
 	
 	// Delete
-	
 	public void deleteById(Long consultationId) {
 		String sql = """
 					 DELETE
 					 FROM consultation_opposing_parties
 					 WHERE consultation_id = ?
 					 """;
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -367,7 +350,6 @@ public class ConsultationDao {
 	}
 	
 	// Private Helpers
-	
 	private void insertOpposingParties(Long consultationId, List<String> opposingParties) {
 		
 		if (opposingParties == null) {
@@ -378,7 +360,6 @@ public class ConsultationDao {
 					 INSERT INTO consultation_opposing_parties (consultation_id, opposing_party)
 					 VALUES (?, ?)
 					 """;
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -396,7 +377,7 @@ public class ConsultationDao {
 			}
 			
 		} catch (SQLException e) {
-			throw new PersistenceException("inserting opposing parties", e);
+			throw new PersistenceException("inserting consultation opposing parties", e);
 		} finally {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
@@ -412,7 +393,6 @@ public class ConsultationDao {
 		String description = resultSet.getString("description");
 		ConsultationStatus consultationStatus = ConsultationStatus.valueOf(resultSet.getString("consultation_status"));
 		LocalDateTime submittedAt = resultSet.getTimestamp("submitted_at").toLocalDateTime();
-		
 		Associate associate = null;
 		long associateId = resultSet.getLong("associate_id");
 		
@@ -438,9 +418,7 @@ public class ConsultationDao {
 					 FROM consultation_opposing_parties
 					 WHERE consultation_id = ?
 					 """;
-		
 		List<String> opposingParties = new ArrayList<>();
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -455,7 +433,7 @@ public class ConsultationDao {
 			}
 			
 		} catch (SQLException e) {
-			throw new PersistenceException("finding opposing parties", e);
+			throw new PersistenceException("finding consultation opposing parties", e);
 		} finally {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
@@ -470,9 +448,7 @@ public class ConsultationDao {
 					 WHERE %s = ?
 					 ORDER BY submitted_at DESC
 					 """.formatted(SELECT_COLUMNS, column);
-		
 		List<Consultation> consultations = new ArrayList<>();
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -487,7 +463,7 @@ public class ConsultationDao {
 			}
 			
 		} catch (SQLException e) {
-			throw new PersistenceException("finding consultations", e);
+			throw new PersistenceException("finding consultations by " + column, e);
 		} finally {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
@@ -503,9 +479,7 @@ public class ConsultationDao {
 					   AND consultation_status = ?
 					 ORDER BY submitted_at DESC
 					 """.formatted(SELECT_COLUMNS, column);
-		
 		List<Consultation> consultations = new ArrayList<>();
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -521,7 +495,7 @@ public class ConsultationDao {
 			}
 			
 		} catch (SQLException e) {
-			throw new PersistenceException("finding consultations", e);
+			throw new PersistenceException("finding consultations by " + column + " and status", e);
 		} finally {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
@@ -535,7 +509,6 @@ public class ConsultationDao {
 					 FROM consultation_opposing_parties
 					 WHERE consultation_id = ?
 					 """;
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -543,7 +516,7 @@ public class ConsultationDao {
 			
 			statement.executeUpdate();
 		} catch (SQLException e) {
-			throw new PersistenceException("clearing opposing parties", e);
+			throw new PersistenceException("replacing consultation opposing parties", e);
 		} finally {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}

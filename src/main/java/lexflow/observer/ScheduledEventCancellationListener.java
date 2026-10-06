@@ -18,23 +18,6 @@ public class ScheduledEventCancellationListener {
 	private final EventDao eventDao;
 	
 	@EventListener
-	public void onCaseEventsCancellationRequested(CaseEventsCancellationRequested requested) {
-		List<CaseEvent> caseEvents = eventDao.findByCaseId(requested.caseId());
-		
-		for (CaseEvent caseEvent : caseEvents) {
-			
-			if (caseEvent.getEventStatus() != EventStatus.SCHEDULED) {
-				continue;
-			}
-			
-			caseEvent.setEventStatus(EventStatus.CANCELED);
-			caseEvent.setCanceledAt(LocalDateTime.now());
-			eventDao.update(caseEvent);
-		}
-		
-	}
-	
-	@EventListener
 	public void onConsultationEventsCancellationRequested(ConsultationEventsCancellationRequested requested) {
 		List<ConsultationEvent> consultationEvents = eventDao.findByConsultationId(requested.consultationId());
 		
@@ -47,6 +30,23 @@ public class ScheduledEventCancellationListener {
 			consultationEvent.setEventStatus(EventStatus.CANCELED);
 			consultationEvent.setCanceledAt(LocalDateTime.now());
 			eventDao.update(consultationEvent);
+		}
+		
+	}
+	
+	@EventListener
+	public void onCaseEventsCancellationRequested(CaseEventsCancellationRequested requested) {
+		List<CaseEvent> caseEvents = eventDao.findByCaseId(requested.caseId());
+		
+		for (CaseEvent caseEvent : caseEvents) {
+			
+			if (caseEvent.getEventStatus() != EventStatus.SCHEDULED) {
+				continue;
+			}
+			
+			caseEvent.setEventStatus(EventStatus.CANCELED);
+			caseEvent.setCanceledAt(LocalDateTime.now());
+			eventDao.update(caseEvent);
 		}
 		
 	}

@@ -52,7 +52,7 @@ public class FinanceOfficerController {
 	
 	private final AnalyticsService analyticsService;
 	
-	// ==================== Overview (Dashboard, Profile) ====================
+	// Overview (Dashboard, Profile)
 	
 	@GetMapping("/finance-officer/dashboard")
 	public String dashboard(Authentication authentication, Model model) {
@@ -101,7 +101,7 @@ public class FinanceOfficerController {
 		return documentService.streamUserDocument(documentService.findById(documentId), currentFinanceOfficer(authentication));
 	}
 	
-	// ==================== Cases (Open, Closed, Details) ====================
+	// Cases (Open, Closed, Details)
 	
 	@GetMapping("/finance-officer/cases/open")
 	public String openCases(Model model) {
@@ -121,12 +121,11 @@ public class FinanceOfficerController {
 	
 	@GetMapping("/finance-officer/cases/{id}")
 	public String caseDetails(@PathVariable("id") Long caseId, Model model) {
-		Case case_ = caseService.findById(caseId);
-		populateCaseDetailModel(case_, model);
+		populateCaseDetailModel(caseService.findById(caseId), model);
 		return "finance-officer/case-details";
 	}
 	
-	// ==================== Helpers ====================
+	// Private Helpers
 	
 	private void populateCaseDetailModel(Case case_, Model model) {
 		model.addAttribute("case", case_);
@@ -137,7 +136,7 @@ public class FinanceOfficerController {
 		model.addAttribute("voidedInvoices", invoiceService.findByCaseAndStatus(case_, InvoiceStatus.VOIDED));
 	}
 	
-	// ==================== Invoices & Documents (case-details sub-actions) ====================
+	// Invoices & Documents
 	
 	@PostMapping("/finance-officer/cases/{id}/invoices/compile")
 	public String compileInvoice(@PathVariable("id") Long caseId, @Valid @ModelAttribute CompileInvoiceRequest form, Model model) {
@@ -239,7 +238,7 @@ public class FinanceOfficerController {
 		return "finance-officer/transactions";
 	}
 	
-	// ==================== Clients (view and search only) ====================
+	// Clients
 	
 	@GetMapping("/finance-officer/clients")
 	public String clients(@RequestParam(required = false) String keyword, Model model) {
@@ -295,7 +294,7 @@ public class FinanceOfficerController {
 		return "finance-officer/withdrawal";
 	}
 	
-	// ==================== Payments (Cash Top-Up, Transactions) ====================
+	// Payments (Cash Top-Up, Transactions)
 	
 	@GetMapping("/finance-officer/cash-top-up")
 	public String showCashTopUpForm(Model model) {

@@ -48,7 +48,7 @@ public class ClientController {
 	
 	private final TaskService taskService;
 	
-	// ==================== Overview (Dashboard, Profile) ====================
+	// Overview (Dashboard, Profile)
 	
 	@GetMapping("/client/dashboard")
 	public String dashboard(Authentication authentication, Model model) {
@@ -97,7 +97,7 @@ public class ClientController {
 		return documentService.streamUserDocument(documentService.findById(documentId), currentClient(authentication));
 	}
 	
-	// ==================== Consultations (Submit, Requests) ====================
+	// Consultations (Submit, Requests)
 	
 	@GetMapping("/client/consultations/new")
 	public String showConsultationForm(Model model) {
@@ -140,7 +140,7 @@ public class ClientController {
 		return "client/consultation-details";
 	}
 	
-	// ==================== Helpers ====================
+	// Private Helpers
 	
 	private void populateConsultationDetailModel(Consultation consultation, Model model) {
 		model.addAttribute("consultation", consultation);
@@ -190,14 +190,14 @@ public class ClientController {
 		return "redirect:/client/consultations";
 	}
 	
-	// ==================== Documents (cross-cutting, embedded in the pages above) ====================
+	// Documents
 	
 	@GetMapping("/client/documents/consultation/{id}")
 	public ResponseEntity<Resource> viewConsultationDocument(@PathVariable("id") Long documentId, Authentication authentication) {
 		return documentService.streamConsultationDocument(documentService.findById(documentId), currentClient(authentication));
 	}
 	
-	// ==================== Cases (Open, Closed) ====================
+	// Cases (Open, Closed)
 	
 	@GetMapping("/client/cases/open")
 	public String openCases(Authentication authentication, Model model) {
@@ -238,7 +238,6 @@ public class ClientController {
 	public String stageCaseDocument(@PathVariable("id") Long caseId, @Valid @ModelAttribute UploadCaseDocumentsRequest form,
 									Authentication authentication, Model model) {
 		Case case_ = caseService.findOwnedByClient(caseId, currentClient(authentication));
-		
 		List<MultipartFile> caseFiles = form.getCaseFiles() != null ? form.getCaseFiles() : List.of();
 		
 		try {
@@ -258,7 +257,7 @@ public class ClientController {
 		return documentService.streamCaseDocument(documentService.findById(documentId), currentClient(authentication));
 	}
 	
-	// ==================== Payments (Transactions) ====================
+	// Payments (Transactions)
 	
 	@GetMapping("/client/transactions")
 	public String transactions(Authentication authentication, Model model) {
@@ -281,7 +280,7 @@ public class ClientController {
 		return "redirect:/payment/portal?amount=" + form.getAmount();
 	}
 	
-	// ==================== Schedule (My Events) ====================
+	// Schedule (My Events)
 	
 	@GetMapping("/client/events")
 	public String events(Authentication authentication, Model model) {

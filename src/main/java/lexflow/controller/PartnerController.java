@@ -77,7 +77,7 @@ public class PartnerController {
 	
 	private final UserService userService;
 	
-	// ==================== Overview (Dashboard, Profile) ====================
+	// Overview (Dashboard, Profile)
 	
 	@GetMapping("/partner/dashboard")
 	public String dashboard(Authentication authentication, Model model) {
@@ -85,7 +85,7 @@ public class PartnerController {
 		return "partner/dashboard";
 	}
 	
-	// ==================== Helpers (shared across sections) ====================
+	// Private Helpers
 	
 	private Partner currentPartner(Authentication authentication) {
 		CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
@@ -155,7 +155,7 @@ public class PartnerController {
 		return documentService.streamUserDocument(documentService.findById(documentId), currentPartner(authentication));
 	}
 	
-	// ==================== Users (Register Staff, Role Lists, User Detail) ====================
+	// Users (Register Staff, Role Lists, User Detail)
 	
 	@GetMapping("/partner/register-staff")
 	public String showRegisterStaffForm(Model model) {
@@ -280,7 +280,7 @@ public class PartnerController {
 		return "partner/conflict-check";
 	}
 	
-	// ==================== Consultations (Pending, All, Conflict Check) ====================
+	// Consultations (Pending, All, Conflict Check)
 	
 	@GetMapping("/partner/consultations/pending")
 	public String pendingConsultations(Model model) {
@@ -442,14 +442,14 @@ public class PartnerController {
 		return "partner/consultation-details";
 	}
 	
-	// ==================== Documents (file downloads, no nav item of their own) ====================
+	// Documents
 	
 	@GetMapping("/partner/documents/consultation/{id}")
 	public ResponseEntity<Resource> viewConsultationDocument(@PathVariable("id") Long documentId, Authentication authentication) {
 		return documentService.streamConsultationDocument(documentService.findById(documentId), currentPartner(authentication));
 	}
 	
-	// ==================== Cases (Open, Closed) ====================
+	// Cases (Open, Closed)
 	
 	@GetMapping("/partner/cases/open")
 	public String openCases(Model model) {
@@ -815,7 +815,7 @@ public class PartnerController {
 		return documentService.streamInvoiceDocument(documentService.findById(documentId), currentPartner(authentication));
 	}
 	
-	// ==================== Finance (Firm Transactions) ====================
+	// Finance (Firm Transactions)
 	
 	@GetMapping("/partner/transactions")
 	public String transactions(Model model) {
@@ -984,7 +984,7 @@ public class PartnerController {
 		return userDetailsView(target);
 	}
 	
-	// ==================== Schedule (Firm Events) ====================
+	// Schedule (Firm Events)
 	
 	@GetMapping("/partner/events")
 	public String events(Model model) {

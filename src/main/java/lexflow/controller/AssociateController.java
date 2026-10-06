@@ -51,7 +51,7 @@ public class AssociateController {
 	
 	private final UserService userService;
 	
-	// ==================== Overview (Dashboard, Profile) ====================
+	// Overview (Dashboard, Profile)
 	
 	@GetMapping("/associate/dashboard")
 	public String dashboard(Authentication authentication, Model model) {
@@ -59,7 +59,7 @@ public class AssociateController {
 		return "associate/dashboard";
 	}
 	
-	// ==================== Helpers (shared across sections) ====================
+	// Private Helpers
 	
 	private Associate currentAssociate(Authentication authentication) {
 		CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
@@ -100,7 +100,7 @@ public class AssociateController {
 		return documentService.streamUserDocument(documentService.findById(documentId), currentAssociate(authentication));
 	}
 	
-	// ==================== Consultations (Pending, All) ====================
+	// Consultations (Pending, All)
 	
 	@GetMapping("/associate/consultations/pending")
 	public String pendingConsultations(Authentication authentication, Model model) {
@@ -254,14 +254,14 @@ public class AssociateController {
 		return "redirect:/associate/cases/" + case_.getCaseId();
 	}
 	
-	// ==================== Documents (file downloads, no nav item of their own) ====================
+	// Documents
 	
 	@GetMapping("/associate/documents/consultation/{id}")
 	public ResponseEntity<Resource> viewConsultationDocument(@PathVariable("id") Long documentId, Authentication authentication) {
 		return documentService.streamConsultationDocument(documentService.findById(documentId), currentAssociate(authentication));
 	}
 	
-	// ==================== Cases (Open, Closed) ====================
+	// Cases (Open, Closed)
 	
 	@GetMapping("/associate/cases/open")
 	public String openCases(Authentication authentication, Model model) {
@@ -448,7 +448,7 @@ public class AssociateController {
 		return documentService.streamCaseDocument(documentService.findById(documentId), currentAssociate(authentication));
 	}
 	
-	// ==================== Schedule (My Events) ====================
+	// Schedule (My Events)
 	
 	@GetMapping("/associate/events")
 	public String events(Authentication authentication, Model model) {

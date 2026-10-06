@@ -47,7 +47,7 @@ public class ParalegalController {
 	
 	private final AnalyticsService analyticsService;
 	
-	// ==================== Overview (Dashboard, Profile) ====================
+	// Overview (Dashboard, Profile)
 	
 	@GetMapping("/paralegal/dashboard")
 	public String dashboard(Authentication authentication, Model model) {
@@ -96,7 +96,7 @@ public class ParalegalController {
 		return documentService.streamUserDocument(documentService.findById(documentId), currentParalegal(authentication));
 	}
 	
-	// ==================== Consultations (Unscheduled, All) ====================
+	// Consultations (Unscheduled, All)
 	
 	@GetMapping("/paralegal/consultations/pending")
 	public String pendingConsultations(Authentication authentication, Model model) {
@@ -119,14 +119,14 @@ public class ParalegalController {
 		return "paralegal/consultation-details";
 	}
 	
-	// ==================== Documents (cross-page file streaming, no dedicated nav entry) ====================
+	// Documents
 	
 	@GetMapping("/paralegal/documents/consultation/{id}")
 	public ResponseEntity<Resource> viewConsultationDocument(@PathVariable("id") Long documentId, Authentication authentication) {
 		return documentService.streamConsultationDocument(documentService.findById(documentId), currentParalegal(authentication));
 	}
 	
-	// ==================== Cases (Open, Closed, Details & Actions) ====================
+	// Cases (Open, Closed, Details & Actions)
 	
 	@GetMapping("/paralegal/cases/open")
 	public String openCases(Authentication authentication, Model model) {
@@ -156,7 +156,7 @@ public class ParalegalController {
 		return "paralegal/case-details";
 	}
 	
-	// ==================== Helpers ====================
+	// Private Helpers
 	
 	private void populateCaseDetailModel(Case case_, Model model) {
 		model.addAttribute("case", case_);
@@ -300,7 +300,7 @@ public class ParalegalController {
 		return documentService.streamCaseDocument(documentService.findById(documentId), currentParalegal(authentication));
 	}
 	
-	// ==================== Schedule (My Events) ====================
+	// Schedule (My Events)
 	
 	@GetMapping("/paralegal/events")
 	public String events(Authentication authentication, Model model) {

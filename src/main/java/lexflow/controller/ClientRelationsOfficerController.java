@@ -45,7 +45,7 @@ public class ClientRelationsOfficerController {
 	
 	private final EventService eventService;
 	
-	// ==================== Overview (Dashboard, Profile) ====================
+	// Overview (Dashboard, Profile)
 	
 	@GetMapping("/client-relations-officer/dashboard")
 	public String dashboard(Authentication authentication, Model model) {
@@ -94,7 +94,7 @@ public class ClientRelationsOfficerController {
 		return documentService.streamUserDocument(documentService.findById(documentId), currentClientRelationsOfficer(authentication));
 	}
 	
-	// ==================== Clients (Register Client) ====================
+	// Clients (Register Client)
 	
 	@GetMapping("/client-relations-officer/register-client")
 	public String showRegisterClientForm(Model model) {
@@ -128,7 +128,7 @@ public class ClientRelationsOfficerController {
 		return "redirect:/client-relations-officer/register-client";
 	}
 	
-	// ==================== Consultations (Submit Consultation, Consultation Requests) ====================
+	// Consultations (Submit Consultation, Consultation Requests)
 	
 	@GetMapping("/client-relations-officer/consultations/new")
 	public String showConsultationForm(Model model) {
@@ -301,7 +301,7 @@ public class ClientRelationsOfficerController {
 		return "client-relations-officer/consultation-details";
 	}
 	
-	// ==================== Helpers ====================
+	// Private Helpers
 	
 	private void populateConsultationDetailModel(Consultation consultation, Model model) {
 		model.addAttribute("consultation", consultation);
@@ -336,10 +336,8 @@ public class ClientRelationsOfficerController {
 	
 	@PostMapping("/client-relations-officer/consultations/{id}/delete")
 	public String deleteConsultation(@PathVariable("id") Long consultationId, RedirectAttributes redirectAttributes) {
-		Consultation consultation = consultationService.findById(consultationId);
-		
 		try {
-			consultationService.delete(consultation);
+			consultationService.delete(consultationService.findById(consultationId));
 		} catch (InvalidConsultationStateException e) {
 			redirectAttributes.addFlashAttribute("error", e.getMessage());
 			return "redirect:/client-relations-officer/consultations/" + consultationId;
@@ -349,14 +347,14 @@ public class ClientRelationsOfficerController {
 		return "redirect:/client-relations-officer/consultations";
 	}
 	
-	// ==================== Documents ====================
+	// Documents
 	
 	@GetMapping("/client-relations-officer/documents/consultation/{id}")
 	public ResponseEntity<Resource> viewConsultationDocument(@PathVariable("id") Long documentId, Authentication authentication) {
 		return documentService.streamConsultationDocument(documentService.findById(documentId), currentClientRelationsOfficer(authentication));
 	}
 	
-	// ==================== Schedule (Consultation Events) ====================
+	// Schedule (Consultation Events)
 	
 	@GetMapping("/client-relations-officer/events")
 	public String events(Model model) {

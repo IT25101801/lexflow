@@ -19,7 +19,6 @@ public class EditConsultationRequest {
 	private CaseType caseType;
 	
 	@NotEmpty(message = "At least one opposing party is required")
-	@NotEmpty(message = "At least one opposing party is required")
 	private List<@NotBlank(message = "Each opposing party is required") @Size(max = 800, message = "Each opposing party must be at most 800 characters") String> opposingParties;
 	
 	@NotBlank(message = "Description is required")

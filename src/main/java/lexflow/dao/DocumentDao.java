@@ -34,13 +34,11 @@ public class DocumentDao {
 	private final DataSource dataSource;
 	
 	// Create
-	
 	public Document insert(Document document) {
 		String sql = """
 					 INSERT INTO documents (document_type, file_path, original_filename, uploaded_at, user_id, consultation_id, case_id, in_staging, task_id, invoice_id)
 					 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 					 """;
-		
 		Long userId = null;
 		Long consultationId = null;
 		Long caseId = null;
@@ -125,14 +123,12 @@ public class DocumentDao {
 	}
 	
 	// Read
-	
 	public Document findById(Long documentId) {
 		String sql = """
 					 SELECT %s
 					 FROM documents
 					 WHERE document_id = ?
 					 """.formatted(SELECT_COLUMNS);
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -162,7 +158,6 @@ public class DocumentDao {
 					 WHERE user_id = ?
 					   AND document_type = 'NIC_DOCUMENT'
 					 """.formatted(SELECT_COLUMNS);
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -178,7 +173,7 @@ public class DocumentDao {
 			}
 			
 		} catch (SQLException e) {
-			throw new PersistenceException("finding NIC document", e);
+			throw new PersistenceException("finding NIC document by user", e);
 		} finally {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
@@ -192,7 +187,6 @@ public class DocumentDao {
 					 WHERE user_id = ?
 					   AND document_type = 'BAR_DOCUMENT'
 					 """.formatted(SELECT_COLUMNS);
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -208,7 +202,7 @@ public class DocumentDao {
 			}
 			
 		} catch (SQLException e) {
-			throw new PersistenceException("finding BAR document", e);
+			throw new PersistenceException("finding bar document by user", e);
 		} finally {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
@@ -222,7 +216,6 @@ public class DocumentDao {
 					 WHERE document_id = ?
 					   AND document_type = 'CONSULTATION_DOCUMENT'
 					 """.formatted(SELECT_COLUMNS);
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -252,7 +245,6 @@ public class DocumentDao {
 					 WHERE document_id = ?
 					   AND document_type = 'CASE_DOCUMENT'
 					 """.formatted(SELECT_COLUMNS);
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -282,7 +274,6 @@ public class DocumentDao {
 					 WHERE invoice_id = ?
 					   AND document_type = 'INVOICE_DOCUMENT'
 					 """.formatted(SELECT_COLUMNS);
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -298,7 +289,7 @@ public class DocumentDao {
 			}
 			
 		} catch (SQLException e) {
-			throw new PersistenceException("finding invoice document", e);
+			throw new PersistenceException("finding document by invoice", e);
 		} finally {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
@@ -312,9 +303,7 @@ public class DocumentDao {
 					 WHERE consultation_id = ?
 					   AND document_type = 'CONSULTATION_DOCUMENT'
 					 """.formatted(SELECT_COLUMNS);
-		
 		List<ConsultationDocument> documents = new ArrayList<>();
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -329,7 +318,7 @@ public class DocumentDao {
 			}
 			
 		} catch (SQLException e) {
-			throw new PersistenceException("finding consultation documents", e);
+			throw new PersistenceException("finding documents by consultation", e);
 		} finally {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
@@ -345,9 +334,7 @@ public class DocumentDao {
 					   AND in_staging = ?
 					   AND document_type = 'CASE_DOCUMENT'
 					 """.formatted(SELECT_COLUMNS);
-		
 		List<CaseDocument> documents = new ArrayList<>();
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -363,7 +350,7 @@ public class DocumentDao {
 			}
 			
 		} catch (SQLException e) {
-			throw new PersistenceException("finding case documents", e);
+			throw new PersistenceException("finding documents by case and staging", e);
 		} finally {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
@@ -378,9 +365,7 @@ public class DocumentDao {
 					 WHERE task_id = ?
 					   AND document_type = 'CASE_DOCUMENT'
 					 """.formatted(SELECT_COLUMNS);
-		
 		List<CaseDocument> documents = new ArrayList<>();
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -395,7 +380,7 @@ public class DocumentDao {
 			}
 			
 		} catch (SQLException e) {
-			throw new PersistenceException("finding task documents", e);
+			throw new PersistenceException("finding documents by task", e);
 		} finally {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
@@ -412,16 +397,12 @@ public class DocumentDao {
 					   AND document_type = 'CASE_DOCUMENT'
 					   AND LOWER(original_filename) LIKE ?
 					 """.formatted(SELECT_COLUMNS);
-		
-		String pattern = "%" + keyword.toLowerCase() + "%";
-		
 		List<CaseDocument> documents = new ArrayList<>();
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
 			statement.setLong(1, caseId);
-			statement.setString(2, pattern);
+			statement.setString(2, "%" + keyword.toLowerCase() + "%");
 			
 			try (ResultSet resultSet = statement.executeQuery()) {
 				
@@ -432,7 +413,7 @@ public class DocumentDao {
 			}
 			
 		} catch (SQLException e) {
-			throw new PersistenceException("searching case documents", e);
+			throw new PersistenceException("finding documents by case and filename keyword", e);
 		} finally {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
@@ -441,14 +422,12 @@ public class DocumentDao {
 	}
 	
 	// Update
-	
 	public void updateOriginalFilename(Long documentId, String originalFilename) {
 		String sql = """
 					 UPDATE documents
 					 SET original_filename = ?
 					 WHERE document_id = ?
 					 """;
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -457,7 +436,7 @@ public class DocumentDao {
 			
 			statement.executeUpdate();
 		} catch (SQLException e) {
-			throw new PersistenceException("renaming document", e);
+			throw new PersistenceException("updating document original filename", e);
 		} finally {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
@@ -470,7 +449,6 @@ public class DocumentDao {
 					 SET in_staging = ?
 					 WHERE document_id = ?
 					 """;
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -479,7 +457,7 @@ public class DocumentDao {
 			
 			statement.executeUpdate();
 		} catch (SQLException e) {
-			throw new PersistenceException("updating document", e);
+			throw new PersistenceException("updating document staging", e);
 		} finally {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
@@ -494,7 +472,6 @@ public class DocumentDao {
 					     uploaded_at       = ?
 					 WHERE document_id = ?
 					 """;
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -505,7 +482,7 @@ public class DocumentDao {
 			
 			statement.executeUpdate();
 		} catch (SQLException e) {
-			throw new PersistenceException("updating document file", e);
+			throw new PersistenceException("replacing document", e);
 		} finally {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
@@ -513,7 +490,6 @@ public class DocumentDao {
 	}
 	
 	// Delete
-	
 	public void deleteAllById(List<Long> documentIds) {
 		
 		if (documentIds == null || documentIds.isEmpty()) {
@@ -525,7 +501,6 @@ public class DocumentDao {
 					 FROM documents
 					 WHERE document_id = ?
 					 """;
-		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -545,7 +520,6 @@ public class DocumentDao {
 	}
 	
 	// Private Helpers
-	
 	private Document mapRow(ResultSet resultSet) throws SQLException {
 		Long documentId = resultSet.getLong("document_id");
 		DocumentType documentType = DocumentType.valueOf(resultSet.getString("document_type"));
@@ -568,10 +542,13 @@ public class DocumentDao {
 		if (documentType == DocumentType.CASE_DOCUMENT) {
 			long caseId = resultSet.getLong("case_id");
 			boolean inStaging = resultSet.getBoolean("in_staging");
-			long taskId = resultSet.getLong("task_id");
-			Long nullableTaskId = resultSet.wasNull() ? null : taskId;
+			Long taskId = resultSet.getLong("task_id");
 			
-			return new CaseDocument(documentId, filePath, originalFilename, uploadedAt, caseId, inStaging, nullableTaskId);
+			if (resultSet.wasNull()) {
+				taskId = null;
+			}
+			
+			return new CaseDocument(documentId, filePath, originalFilename, uploadedAt, caseId, inStaging, taskId);
 		}
 		
 		return new InvoiceDocument(documentId, filePath, originalFilename, uploadedAt, resultSet.getLong("invoice_id"));

@@ -20,7 +20,6 @@ public class FileUtil {
 	private static final String DEFAULT_FILENAME = "file";
 	
 	// Create
-	
 	public static String store(MultipartFile file, Long ownerId, DocumentType documentType) {
 		
 		if (file == null || file.isEmpty()) {
@@ -58,12 +57,10 @@ public class FileUtil {
 	}
 	
 	// Read
-	
 	public static Resource loadAsResource(String filePath) {
 		
 		try {
 			Path path = Paths.get(filePath);
-			
 			Resource resource = new UrlResource(path.toUri());
 			
 			if (!resource.exists() || !resource.isReadable()) {
@@ -78,7 +75,6 @@ public class FileUtil {
 	}
 	
 	// Delete
-	
 	public static void delete(String filePath) {
 		
 		if (filePath == null) {
@@ -94,12 +90,9 @@ public class FileUtil {
 	}
 	
 	// Private Helpers
-	
 	private static Path resolveTarget(Long ownerId, DocumentType documentType, String originalFilename) {
 		String randomSuffix = UUID.randomUUID().toString().substring(0, 6);
-		
 		String filename = ownerId + "-" + documentType.name() + "-" + randomSuffix + "-" + cleanFilename(originalFilename);
-		
 		Path target = UPLOAD_DIRECTORY.resolve(filename);
 		Path uploadDirectory = UPLOAD_DIRECTORY.toAbsolutePath().normalize();
 		

@@ -50,7 +50,6 @@ public class DocumentService {
 	private final InvoiceDao invoiceDao;
 	
 	// Create
-	
 	public void attachNic(User user, MultipartFile nicFile, LocalDateTime uploadedAt) {
 		
 		if (nicFile == null || nicFile.isEmpty()) {
@@ -60,7 +59,6 @@ public class DocumentService {
 		requirePdf(nicFile, "NIC");
 		
 		String filePath = FileUtil.store(nicFile, user.getUserId(), DocumentType.NIC_DOCUMENT);
-		
 		NicDocument nicDocument = new NicDocument(filePath, nicDocumentLabel(user), uploadedAt, user.getUserId());
 		
 		documentDao.insert(nicDocument);
@@ -77,7 +75,6 @@ public class DocumentService {
 		requirePdf(barFile, "Bar");
 		
 		String filePath = FileUtil.store(barFile, user.getUserId(), DocumentType.BAR_DOCUMENT);
-		
 		BarDocument barDocument = new BarDocument(filePath, barDocumentLabel(user), uploadedAt, user.getUserId());
 		
 		documentDao.insert(barDocument);
@@ -124,9 +121,7 @@ public class DocumentService {
 	
 	public InvoiceDocument attach(Case case_, Invoice invoice, byte[] pdfBytes, LocalDateTime uploadedAt) {
 		String originalFilename = invoice.getInvoiceCode() + ".pdf";
-		
 		String filePath = FileUtil.store(pdfBytes, case_.getCaseId(), DocumentType.INVOICE_DOCUMENT, originalFilename);
-		
 		InvoiceDocument invoiceDocument = new InvoiceDocument(filePath, originalFilename, uploadedAt, invoice.getInvoiceId());
 		
 		return (InvoiceDocument) documentDao.insert(invoiceDocument);
@@ -154,7 +149,6 @@ public class DocumentService {
 	}
 	
 	// Read
-	
 	public Document findById(Long documentId) {
 		return documentDao.findById(documentId);
 	}
@@ -272,7 +266,6 @@ public class DocumentService {
 	}
 	
 	// Update
-	
 	public void replaceNic(User user, MultipartFile nicFile) {
 		
 		if (nicFile == null || nicFile.isEmpty()) {
@@ -282,7 +275,6 @@ public class DocumentService {
 		requirePdf(nicFile, "NIC");
 		
 		String filePath = FileUtil.store(nicFile, user.getUserId(), DocumentType.NIC_DOCUMENT);
-		
 		NicDocument currentNicDocument = user.getNicDocument();
 		LocalDateTime uploadedAt = LocalDateTime.now();
 		
@@ -312,7 +304,6 @@ public class DocumentService {
 		requirePdf(barFile, "Bar");
 		
 		String filePath = FileUtil.store(barFile, user.getUserId(), DocumentType.BAR_DOCUMENT);
-		
 		BarDocument currentBarDocument = getBarDocument(user);
 		LocalDateTime uploadedAt = LocalDateTime.now();
 		
@@ -373,7 +364,6 @@ public class DocumentService {
 	}
 	
 	// Delete
-	
 	public void delete(Consultation consultation, List<Long> documentIds) {
 		
 		if (documentIds == null) {
@@ -438,14 +428,12 @@ public class DocumentService {
 	}
 	
 	// Strategy Pattern
-	
 	private boolean canAccessUserDocument(UserDocument userDocument, User requester) {
 		return requester instanceof Partner || requester instanceof ClientRelationsOfficer || userDocument.getUserId().equals(requester.getUserId());
 	}
 	
 	private boolean canAccessConsultationDocument(Consultation consultation, User requester) {
 		Case case_ = caseDao.findByConsultationId(consultation.getConsultationId());
-		
 		Client effectiveClient = case_ != null ? case_.getClient() : consultation.getClient();
 		Associate effectiveAssociate = case_ != null ? case_.getAssociate() : consultation.getAssociate();
 		Paralegal effectiveParalegal = case_ != null ? case_.getParalegal() : consultation.getParalegal();
@@ -491,7 +479,6 @@ public class DocumentService {
 	}
 	
 	// Private Helpers
-	
 	private String nicDocumentLabel(User user) {
 		return user.getUserId() + "-" + DocumentType.NIC_DOCUMENT.name();
 	}

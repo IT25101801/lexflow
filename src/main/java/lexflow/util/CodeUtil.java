@@ -39,7 +39,6 @@ public class CodeUtil {
 	}
 	
 	// Private Helpers
-	
 	private static long generate(long id) {
 		return MIN_CODE + ((id % CODE_RANGE) * MULTIPLIER + OFFSET) % CODE_RANGE;
 	}

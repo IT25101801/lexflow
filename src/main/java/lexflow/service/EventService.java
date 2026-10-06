@@ -38,10 +38,12 @@ import java.util.List;
 public class EventService {
 	
 	private final EventDao eventDao;
+	
 	private final ConsultationDao consultationDao;
+	
 	private final ConsultationService consultationService;
 	
-	// ---- Create ----
+	// Create
 	
 	@Transactional
 	public ConsultationEvent schedule(Consultation consultation, String subject, LocalDate date, LocalTime startTime, LocalTime endTime, String location, String notes) {
@@ -64,7 +66,7 @@ public class EventService {
 		return (CaseEvent) eventDao.insert(event);
 	}
 	
-	// ---- Read ----
+	// Read
 	
 	public Event findById(Long eventId) {
 		return eventDao.findById(eventId);
@@ -190,7 +192,7 @@ public class EventService {
 		return events;
 	}
 	
-	// ---- Update ----
+	// Update
 	
 	public ConsultationEvent reschedule(ConsultationEvent event, String subject, LocalDate date, LocalTime startTime, LocalTime endTime, String location, String notes) {
 		stateFor(event.getEventStatus()).guardReschedule(event);
@@ -261,7 +263,7 @@ public class EventService {
 		return canceledEvent;
 	}
 	
-	// ---- Private Helpers ----
+	// State Pattern
 	
 	private EventState stateFor(EventStatus eventStatus) {
 		
@@ -274,6 +276,8 @@ public class EventService {
 		}
 		
 	}
+	
+	// Private Helpers
 	
 	private void validateSchedule(LocalDate date, LocalTime startTime, LocalTime endTime) {
 		

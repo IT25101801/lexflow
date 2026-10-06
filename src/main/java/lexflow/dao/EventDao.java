@@ -38,10 +38,12 @@ public class EventDao {
 												 """;
 	
 	private final DataSource dataSource;
+	
 	private final ConsultationDao consultationDao;
+	
 	private final CaseDao caseDao;
 	
-	// ---- Create ----
+	// Create
 	
 	public Event insert(Event event) {
 		String sql = """
@@ -112,7 +114,7 @@ public class EventDao {
 		
 	}
 	
-	// ---- Read ----
+	// Read
 	
 	public Event findById(Long eventId) {
 		String sql = """
@@ -137,6 +139,35 @@ public class EventDao {
 			
 		} catch (SQLException e) {
 			throw new PersistenceException("finding event by ID", e);
+		} finally {
+			DataSourceUtils.releaseConnection(connection, dataSource);
+		}
+		
+	}
+	
+	public CaseEvent findByTaskId(Long taskId) {
+		String sql = """
+					 SELECT %s
+					 FROM events
+					 WHERE task_id = ?
+					 """.formatted(SELECT_COLUMNS);
+		
+		Connection connection = DataSourceUtils.getConnection(dataSource);
+		
+		try (PreparedStatement statement = connection.prepareStatement(sql)) {
+			statement.setLong(1, taskId);
+			
+			try (ResultSet resultSet = statement.executeQuery()) {
+				
+				if (resultSet.next()) {
+					return (CaseEvent) mapRow(resultSet);
+				}
+				
+				throw new EntityNotFoundException("Event for task", taskId.toString());
+			}
+			
+		} catch (SQLException e) {
+			throw new PersistenceException("finding event by task", e);
 		} finally {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
@@ -238,36 +269,7 @@ public class EventDao {
 		return events;
 	}
 	
-	public CaseEvent findByTaskId(Long taskId) {
-		String sql = """
-					 SELECT %s
-					 FROM events
-					 WHERE task_id = ?
-					 """.formatted(SELECT_COLUMNS);
-		
-		Connection connection = DataSourceUtils.getConnection(dataSource);
-		
-		try (PreparedStatement statement = connection.prepareStatement(sql)) {
-			statement.setLong(1, taskId);
-			
-			try (ResultSet resultSet = statement.executeQuery()) {
-				
-				if (resultSet.next()) {
-					return (CaseEvent) mapRow(resultSet);
-				}
-				
-				throw new EntityNotFoundException("Event for task", taskId.toString());
-			}
-			
-		} catch (SQLException e) {
-			throw new PersistenceException("finding event by task", e);
-		} finally {
-			DataSourceUtils.releaseConnection(connection, dataSource);
-		}
-		
-	}
-	
-	// ---- Update ----
+	// Update
 	
 	public Event update(Event event) {
 		String sql = """
@@ -320,7 +322,7 @@ public class EventDao {
 		
 	}
 	
-	// ---- Private Helpers ----
+	// Private Helpers
 	
 	private Event mapRow(ResultSet resultSet) throws SQLException {
 		Long eventId = resultSet.getLong("event_id");

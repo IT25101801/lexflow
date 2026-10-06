@@ -1,6 +1,5 @@
 package lexflow.dto.user;
 
-import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.*;
 import lexflow.entity.user.Gender;
 import lombok.Getter;

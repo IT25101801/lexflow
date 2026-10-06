@@ -4,11 +4,7 @@ import lexflow.entity.document.NicDocument;
 import lexflow.entity.user.*;
 import lexflow.exception.EntityNotFoundException;
 import lexflow.exception.PersistenceException;
-import lexflow.exception.user.ActiveConsultationAssignmentException;
-import lexflow.exception.user.DuplicateActiveAccountException;
-import lexflow.exception.user.OpenCaseAssignmentException;
-import lexflow.exception.user.OutstandingWalletBalanceException;
-import lexflow.exception.user.UnpaidInvoiceException;
+import lexflow.exception.user.*;
 import lexflow.util.CodeUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.datasource.DataSourceUtils;
@@ -729,7 +725,7 @@ public class UserDao {
 					   AND cs.client_id = ?
 					 ORDER BY i.invoice_id
 					 """;
-
+		
 		return findCodesForUser(sql, userId, "finding unpaid invoices blocking a client deletion");
 	}
 	

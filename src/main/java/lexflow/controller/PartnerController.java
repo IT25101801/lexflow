@@ -22,6 +22,7 @@ import lexflow.entity.consultation.CaseType;
 import lexflow.entity.consultation.Consultation;
 import lexflow.entity.finance.InvoiceStatus;
 import lexflow.entity.scheduling.ConsultationEvent;
+import lexflow.entity.scheduling.Event;
 import lexflow.entity.user.*;
 import lexflow.exception.BusinessRuleViolationException;
 import lexflow.exception.EntityAlreadyExistsException;
@@ -47,7 +48,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import lexflow.entity.scheduling.Event;
 import java.util.List;
 import java.util.Map;
 
@@ -586,11 +586,11 @@ public class PartnerController {
 		
 		return "partner/case-details";
 	}
-
+	
 	@PostMapping("/partner/cases/{id}/contacts/{contactId}/delete")
 	public String deleteContact(@PathVariable("id") Long caseId, @PathVariable Long contactId, Model model) {
 		Case case_ = caseService.findById(caseId);
-
+		
 		try {
 			contactService.delete(case_, contactService.findOwnedByCase(contactId, case_));
 			populateCaseDetailModel(case_, model);
@@ -599,7 +599,7 @@ public class PartnerController {
 			populateCaseDetailModel(case_, model);
 			model.addAttribute("error", e.getMessage());
 		}
-
+		
 		return "partner/case-details";
 	}
 	
@@ -659,16 +659,16 @@ public class PartnerController {
 		model.addAttribute("events", eventService.upcoming(eventService.findAll()));
 		model.addAttribute("title", "Upcoming Events");
 		model.addAttribute("active", "events-upcoming");
-
+		
 		return "partner/event-list";
 	}
-
+	
 	@GetMapping("/partner/events/past")
 	public String pastEvents(Model model) {
 		model.addAttribute("events", eventService.past(eventService.findAll()));
 		model.addAttribute("title", "Past Events");
 		model.addAttribute("active", "events-past");
-
+		
 		return "partner/event-list";
 	}
 	
@@ -704,24 +704,24 @@ public class PartnerController {
 		
 		return "redirect:/partner/events/{id}";
 	}
-
+	
 	@PostMapping("/partner/events/{id}/reschedule")
 	public String rescheduleEvent(@PathVariable("id") Long eventId, @Valid @ModelAttribute ScheduleMeetingRequest form, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
 		Event event = eventService.findById(eventId);
-
+		
 		if (bindingResult.hasErrors()) {
 			redirectAttributes.addFlashAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
-
+			
 			return "redirect:/partner/events/{id}";
 		}
-
+		
 		try {
 			eventService.reschedule(event, form.getSubject(), form.getDate(), form.getStartTime(), form.getEndTime(), form.getLocation(), form.getNotes());
 			redirectAttributes.addFlashAttribute("success", "Event rescheduled successfully.");
 		} catch (InvalidStateException | BusinessRuleViolationException e) {
 			redirectAttributes.addFlashAttribute("error", e.getMessage());
 		}
-
+		
 		return "redirect:/partner/events/{id}";
 	}
 	

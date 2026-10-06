@@ -236,16 +236,16 @@ public class ClientController {
 		model.addAttribute("events", eventService.upcoming(eventService.findAllForClient(currentClient(authentication))));
 		model.addAttribute("title", "Upcoming Events");
 		model.addAttribute("active", "events-upcoming");
-
+		
 		return "client/event-list";
 	}
-
+	
 	@GetMapping("/client/events/past")
 	public String pastEvents(Authentication authentication, Model model) {
 		model.addAttribute("events", eventService.past(eventService.findAllForClient(currentClient(authentication))));
 		model.addAttribute("title", "Past Events");
 		model.addAttribute("active", "events-past");
-
+		
 		return "client/event-list";
 	}
 	

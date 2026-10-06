@@ -1,10 +1,10 @@
 package lexflow.service;
 
-import org.springframework.security.access.AccessDeniedException;
 import lexflow.dao.ContactDao;
 import lexflow.entity.case_.Case;
 import lexflow.entity.case_.Contact;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,14 +37,14 @@ public class ContactService {
 	
 	public Contact findOwnedByCase(Long contactId, Case case_) {
 		Contact contact = findById(contactId);
-
+		
 		if (!contact.getCaseId().equals(case_.getCaseId())) {
 			throw new AccessDeniedException("Not a contact for this case.");
 		}
-
+		
 		return contact;
 	}
-
+	
 	public List<Contact> findByCase(Case case_) {
 		return contactDao.findByCaseId(case_.getCaseId());
 	}
@@ -63,12 +63,12 @@ public class ContactService {
 		
 		return contactDao.update(contact);
 	}
-
+	
 	// Delete
-
+	
 	public void delete(Case case_, Contact contact) {
 		caseService.requireOpen(case_);
 		contactDao.deleteById(contact.getContactId());
 	}
-
+	
 }

@@ -166,7 +166,7 @@ public class ConsultationService {
 	public Consultation markScheduled(Consultation consultation) {
 		return stateFor(consultation.getConsultationStatus()).markScheduled(consultation, this);
 	}
-
+	
 	@Transactional
 	public Consultation markUnscheduled(Consultation consultation) {
 		return stateFor(consultation.getConsultationStatus()).markUnscheduled(consultation, this);

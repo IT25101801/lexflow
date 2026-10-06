@@ -232,7 +232,7 @@ function fillPaymentFormT2() {
 function demoDate(daysAhead) {
 	const date = new Date();
 	date.setDate(date.getDate() + daysAhead);
-
+	
 	return date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0") + "-" + String(date.getDate()).padStart(2, "0");
 }
 
@@ -285,13 +285,13 @@ function fillContactFormP2(prefix) {
 
 function setTaskType(documenting, scheduling, billing) {
 	const types = [["documentingTask", documenting], ["schedulingTask", scheduling], ["billingTask", billing]];
-
+	
 	for (let i = 0; i < types.length; i++) {
 		const checkbox = document.querySelector("#taskAddModal input[name='" + types[i][0] + "']");
 		checkbox.checked = types[i][1];
 		checkbox.dispatchEvent(new Event("change", {bubbles: true}));
 	}
-
+	
 }
 
 function fillTaskForm(title, documenting, scheduling, billing) {

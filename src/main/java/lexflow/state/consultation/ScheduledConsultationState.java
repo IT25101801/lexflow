@@ -25,10 +25,10 @@ public class ScheduledConsultationState implements ConsultationState {
 	@Override
 	public Consultation markUnscheduled(Consultation consultation, ConsultationService consultationService) {
 		consultation.setConsultationStatus(ConsultationStatus.ACCEPTED_BY_PARTNER);
-
+		
 		return consultationService.applyStatusChange(consultation);
 	}
-
+	
 	@Override
 	public Consultation associateAccept(Consultation consultation, ConsultationService consultationService) {
 		

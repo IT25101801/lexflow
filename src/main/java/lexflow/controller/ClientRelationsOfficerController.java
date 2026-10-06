@@ -347,16 +347,16 @@ public class ClientRelationsOfficerController {
 		model.addAttribute("events", eventService.upcoming(eventService.findAllForConsultations()));
 		model.addAttribute("title", "Upcoming Events");
 		model.addAttribute("active", "events-upcoming");
-
+		
 		return "client-relations-officer/event-list";
 	}
-
+	
 	@GetMapping("/client-relations-officer/events/past")
 	public String pastEvents(Model model) {
 		model.addAttribute("events", eventService.past(eventService.findAllForConsultations()));
 		model.addAttribute("title", "Past Events");
 		model.addAttribute("active", "events-past");
-
+		
 		return "client-relations-officer/event-list";
 	}
 	

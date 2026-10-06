@@ -411,18 +411,18 @@ public class AssociateController {
 		
 		return "associate/case-details";
 	}
-
+	
 	@PostMapping("/associate/cases/{id}/contacts/{contactId}/edit")
 	public String editContact(@PathVariable("id") Long caseId, @PathVariable Long contactId, @Valid @ModelAttribute SaveContactRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
 		Case case_ = caseService.findOwnedByAssociate(caseId, currentAssociate(authentication));
-
+		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			populateCaseDetailModel(case_, model);
-
+			
 			return "associate/case-details";
 		}
-
+		
 		try {
 			contactService.update(case_, contactService.findOwnedByCase(contactId, case_), form.getName(), form.getPhoneNumbers(), form.getEmails(), form.getAddresses(), form.getNotes());
 			populateCaseDetailModel(case_, model);
@@ -431,14 +431,14 @@ public class AssociateController {
 			populateCaseDetailModel(case_, model);
 			model.addAttribute("error", e.getMessage());
 		}
-
+		
 		return "associate/case-details";
 	}
-
+	
 	@PostMapping("/associate/cases/{id}/contacts/{contactId}/delete")
 	public String deleteContact(@PathVariable("id") Long caseId, @PathVariable Long contactId, Authentication authentication, Model model) {
 		Case case_ = caseService.findOwnedByAssociate(caseId, currentAssociate(authentication));
-
+		
 		try {
 			contactService.delete(case_, contactService.findOwnedByCase(contactId, case_));
 			populateCaseDetailModel(case_, model);
@@ -447,7 +447,7 @@ public class AssociateController {
 			populateCaseDetailModel(case_, model);
 			model.addAttribute("error", e.getMessage());
 		}
-
+		
 		return "associate/case-details";
 	}
 	
@@ -458,16 +458,16 @@ public class AssociateController {
 		model.addAttribute("events", eventService.upcoming(eventService.findAllForAssociate(currentAssociate(authentication))));
 		model.addAttribute("title", "Upcoming Events");
 		model.addAttribute("active", "events-upcoming");
-
+		
 		return "associate/event-list";
 	}
-
+	
 	@GetMapping("/associate/events/past")
 	public String pastEvents(Authentication authentication, Model model) {
 		model.addAttribute("events", eventService.past(eventService.findAllForAssociate(currentAssociate(authentication))));
 		model.addAttribute("title", "Past Events");
 		model.addAttribute("active", "events-past");
-
+		
 		return "associate/event-list";
 	}
 	
@@ -505,24 +505,24 @@ public class AssociateController {
 		
 		return "redirect:/associate/events/{id}";
 	}
-
+	
 	@PostMapping("/associate/events/{id}/reschedule")
 	public String rescheduleEvent(@PathVariable("id") Long eventId, @Valid @ModelAttribute ScheduleMeetingRequest form, BindingResult bindingResult, Authentication authentication, RedirectAttributes redirectAttributes) {
 		Event event = eventService.findOwnedByAssociate(eventId, currentAssociate(authentication));
-
+		
 		if (bindingResult.hasErrors()) {
 			redirectAttributes.addFlashAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
-
+			
 			return "redirect:/associate/events/{id}";
 		}
-
+		
 		try {
 			eventService.reschedule(event, form.getSubject(), form.getDate(), form.getStartTime(), form.getEndTime(), form.getLocation(), form.getNotes());
 			redirectAttributes.addFlashAttribute("success", "Event rescheduled successfully.");
 		} catch (InvalidStateException | BusinessRuleViolationException e) {
 			redirectAttributes.addFlashAttribute("error", e.getMessage());
 		}
-
+		
 		return "redirect:/associate/events/{id}";
 	}
 	

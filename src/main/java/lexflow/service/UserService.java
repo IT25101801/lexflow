@@ -199,10 +199,10 @@ public class UserService {
 		
 		user.setPassword(hashedPassword);
 		user.setAccountStatus(AccountStatus.ACTIVE);
-
+		
 		return user;
 	}
-
+	
 	public void applyDelete(User user) {
 		userDao.deleteById(user.getUserId());
 		user.setAccountStatus(AccountStatus.DELETED);

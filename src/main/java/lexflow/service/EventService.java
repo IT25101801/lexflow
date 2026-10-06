@@ -229,21 +229,21 @@ public class EventService {
 	public Event reschedule(Event event, String subject, LocalDate date, LocalTime startTime, LocalTime endTime, String location, String notes) {
 		return stateFor(event.getEventStatus()).reschedule(event, this, subject, date, startTime, endTime, location, notes);
 	}
-
+	
 	public Event complete(Event event) {
 		return stateFor(event.getEventStatus()).complete(event, this);
 	}
-
+	
 	@Transactional
 	public Event cancel(Event event) {
 		return stateFor(event.getEventStatus()).cancel(event, this);
 	}
-
+	
 	// State Pattern
-
+	
 	public Event applyReschedule(Event event, String subject, LocalDate date, LocalTime startTime, LocalTime endTime, String location, String notes) {
 		validateSchedule(date, startTime, endTime);
-
+		
 		if (event instanceof ConsultationEvent consultationEvent) {
 			Consultation consultation = consultationEvent.getConsultation();
 			checkAllAvailability(consultation.getAssociate(), consultation.getParalegal(), consultation.getClient(), date, startTime, endTime, event.getEventId());
@@ -251,43 +251,43 @@ public class EventService {
 			Case case_ = ((CaseEvent) event).getCase_();
 			checkAllAvailability(case_.getAssociate(), case_.getParalegal(), case_.getClient(), date, startTime, endTime, event.getEventId());
 		}
-
+		
 		event.setSubject(subject);
 		event.setDate(date);
 		event.setStartTime(startTime);
 		event.setEndTime(endTime);
 		event.setLocation(location);
 		event.setNotes(notes);
-
+		
 		return eventDao.update(event);
 	}
-
+	
 	public Event applyCompletion(Event event) {
 		LocalDateTime startsAt = LocalDateTime.of(event.getDate(), event.getStartTime());
 		LocalDateTime completedAt = LocalDateTime.now();
-
+		
 		if (startsAt.isAfter(completedAt)) {
 			throw new EventNotYetStartedException(event.getEventId(), startsAt);
 		}
-
+		
 		event.setEventStatus(EventStatus.COMPLETED);
 		event.setCompletedAt(completedAt);
-
+		
 		return eventDao.update(event);
 	}
-
+	
 	public Event applyCancellation(Event event) {
 		event.setEventStatus(EventStatus.CANCELED);
 		event.setCanceledAt(LocalDateTime.now());
 		Event canceledEvent = eventDao.update(event);
-
+		
 		if (event instanceof ConsultationEvent consultationEvent) {
 			consultationService.markUnscheduled(consultationEvent.getConsultation());
 		}
-
+		
 		return canceledEvent;
 	}
-
+	
 	private EventState stateFor(EventStatus eventStatus) {
 		
 		if (eventStatus == EventStatus.SCHEDULED) {

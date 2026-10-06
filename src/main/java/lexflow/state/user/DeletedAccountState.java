@@ -11,7 +11,7 @@ public class DeletedAccountState implements AccountState {
 	public User reactivate(User user, UserService userService, String temporaryPassword) {
 		return userService.applyReactivation(user, temporaryPassword);
 	}
-
+	
 	@Override
 	public void delete(User user, UserService userService) {
 		throw new InvalidAccountStateException(user.getUserId(), user.getAccountStatus(), AccountStatus.ACTIVE);

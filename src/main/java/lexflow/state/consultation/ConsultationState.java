@@ -36,7 +36,7 @@ public interface ConsultationState {
 	default Consultation markUnscheduled(Consultation consultation, ConsultationService consultationService) {
 		throw new InvalidConsultationStateException(consultation.getConsultationId(), consultation.getConsultationStatus(), ConsultationStatus.SCHEDULED);
 	}
-
+	
 	default Consultation associateAccept(Consultation consultation, ConsultationService consultationService) {
 		throw new InvalidConsultationStateException(consultation.getConsultationId(), consultation.getConsultationStatus(), ConsultationStatus.SCHEDULED);
 	}

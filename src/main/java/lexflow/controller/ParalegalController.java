@@ -254,18 +254,18 @@ public class ParalegalController {
 		
 		return "paralegal/case-details";
 	}
-
+	
 	@PostMapping("/paralegal/cases/{id}/contacts/{contactId}/edit")
 	public String editContact(@PathVariable("id") Long caseId, @PathVariable Long contactId, @Valid @ModelAttribute SaveContactRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
 		Case case_ = caseService.findOwnedByParalegal(caseId, currentParalegal(authentication));
-
+		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", bindingResult.getAllErrors().getFirst().getDefaultMessage());
 			populateCaseDetailModel(case_, model);
-
+			
 			return "paralegal/case-details";
 		}
-
+		
 		try {
 			contactService.update(case_, contactService.findOwnedByCase(contactId, case_), form.getName(), form.getPhoneNumbers(), form.getEmails(), form.getAddresses(), form.getNotes());
 			populateCaseDetailModel(case_, model);
@@ -274,14 +274,14 @@ public class ParalegalController {
 			populateCaseDetailModel(case_, model);
 			model.addAttribute("error", e.getMessage());
 		}
-
+		
 		return "paralegal/case-details";
 	}
-
+	
 	@PostMapping("/paralegal/cases/{id}/contacts/{contactId}/delete")
 	public String deleteContact(@PathVariable("id") Long caseId, @PathVariable Long contactId, Authentication authentication, Model model) {
 		Case case_ = caseService.findOwnedByParalegal(caseId, currentParalegal(authentication));
-
+		
 		try {
 			contactService.delete(case_, contactService.findOwnedByCase(contactId, case_));
 			populateCaseDetailModel(case_, model);
@@ -290,7 +290,7 @@ public class ParalegalController {
 			populateCaseDetailModel(case_, model);
 			model.addAttribute("error", e.getMessage());
 		}
-
+		
 		return "paralegal/case-details";
 	}
 	
@@ -301,16 +301,16 @@ public class ParalegalController {
 		model.addAttribute("events", eventService.upcoming(eventService.findAllForParalegal(currentParalegal(authentication))));
 		model.addAttribute("title", "Upcoming Events");
 		model.addAttribute("active", "events-upcoming");
-
+		
 		return "paralegal/event-list";
 	}
-
+	
 	@GetMapping("/paralegal/events/past")
 	public String pastEvents(Authentication authentication, Model model) {
 		model.addAttribute("events", eventService.past(eventService.findAllForParalegal(currentParalegal(authentication))));
 		model.addAttribute("title", "Past Events");
 		model.addAttribute("active", "events-past");
-
+		
 		return "paralegal/event-list";
 	}
 	

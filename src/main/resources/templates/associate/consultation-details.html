@@ -22,6 +22,16 @@
 						<div>
 							<div class="avatar-name">Consultation Details</div>
 						</div>
+						<div th:if="${consultation.consultationStatus.name() == 'SCHEDULED'}" style="margin-left:auto;display:flex;gap:0.5rem;">
+							<th:block th:each="consultationEvent : ${consultationEvents}" th:if="${consultationEvent.eventStatus.name() == 'SCHEDULED'}">
+								<form method="post" th:action="@{/associate/consultations/{id}/events/{eventId}/complete(id=${consultation.consultationId},eventId=${consultationEvent.eventId})}">
+									<button class="action-btn action-btn-create" type="submit">Complete Meeting</button>
+								</form>
+								<form method="post" th:action="@{/associate/consultations/{id}/events/{eventId}/cancel(id=${consultation.consultationId},eventId=${consultationEvent.eventId})}">
+									<button class="action-btn action-btn-delete" type="submit">Cancel Meeting</button>
+								</form>
+							</th:block>
+						</div>
 						<a class="action-btn action-btn-view" style="margin-left:auto;" th:if="${existingCase != null}"
 						   th:href="@{/associate/cases/{id}(id=${existingCase.caseId})}">View Case</a>
 					</div>

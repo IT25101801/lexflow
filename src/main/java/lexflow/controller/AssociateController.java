@@ -123,6 +123,38 @@ public class AssociateController {
 		return "associate/consultation-details";
 	}
 	
+	@PostMapping("/associate/consultations/{id}/events/{eventId}/complete")
+	public String completeMeeting(@PathVariable("id") Long consultationId, @PathVariable Long eventId, Authentication authentication, Model model) {
+		Consultation consultation = consultationService.findOwnedByAssociate(consultationId, currentAssociate(authentication));
+		
+		try {
+			eventService.complete(eventService.findOwnedByConsultation(eventId, consultation));
+			populateConsultationDetailModel(consultation, model);
+			model.addAttribute("success", "Meeting marked as completed.");
+		} catch (InvalidStateException | BusinessRuleViolationException e) {
+			populateConsultationDetailModel(consultation, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "associate/consultation-details";
+	}
+	
+	@PostMapping("/associate/consultations/{id}/events/{eventId}/cancel")
+	public String cancelMeeting(@PathVariable("id") Long consultationId, @PathVariable Long eventId, Authentication authentication, Model model) {
+		Consultation consultation = consultationService.findOwnedByAssociate(consultationId, currentAssociate(authentication));
+		
+		try {
+			eventService.cancel(eventService.findOwnedByConsultation(eventId, consultation));
+			populateConsultationDetailModel(consultation, model);
+			model.addAttribute("success", "Meeting canceled.");
+		} catch (InvalidStateException e) {
+			populateConsultationDetailModel(consultation, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "associate/consultation-details";
+	}
+	
 	@PostMapping("/associate/consultations/{id}/schedule")
 	public String scheduleMeeting(@PathVariable("id") Long consultationId, @Valid @ModelAttribute ScheduleMeetingRequest form, BindingResult bindingResult, Authentication authentication, Model model) {
 		Consultation consultation = consultationService.findOwnedByAssociate(consultationId, currentAssociate(authentication));
@@ -218,38 +250,6 @@ public class AssociateController {
 		redirectAttributes.addFlashAttribute("success", "Case opened successfully.");
 		
 		return "redirect:/associate/cases/" + case_.getCaseId();
-	}
-	
-	@PostMapping("/associate/consultations/{id}/events/{eventId}/complete")
-	public String completeMeeting(@PathVariable("id") Long consultationId, @PathVariable Long eventId, Authentication authentication, Model model) {
-		Consultation consultation = consultationService.findOwnedByAssociate(consultationId, currentAssociate(authentication));
-		
-		try {
-			eventService.complete(eventService.findOwnedByConsultation(eventId, consultation));
-			populateConsultationDetailModel(consultation, model);
-			model.addAttribute("success", "Meeting marked as completed.");
-		} catch (InvalidStateException | BusinessRuleViolationException e) {
-			populateConsultationDetailModel(consultation, model);
-			model.addAttribute("error", e.getMessage());
-		}
-		
-		return "associate/consultation-details";
-	}
-	
-	@PostMapping("/associate/consultations/{id}/events/{eventId}/cancel")
-	public String cancelMeeting(@PathVariable("id") Long consultationId, @PathVariable Long eventId, Authentication authentication, Model model) {
-		Consultation consultation = consultationService.findOwnedByAssociate(consultationId, currentAssociate(authentication));
-		
-		try {
-			eventService.cancel(eventService.findOwnedByConsultation(eventId, consultation));
-			populateConsultationDetailModel(consultation, model);
-			model.addAttribute("success", "Meeting canceled.");
-		} catch (InvalidStateException e) {
-			populateConsultationDetailModel(consultation, model);
-			model.addAttribute("error", e.getMessage());
-		}
-		
-		return "associate/consultation-details";
 	}
 	
 	// Cases

@@ -189,6 +189,38 @@ public class PartnerController {
 		return "partner/consultation-details";
 	}
 	
+	@PostMapping("/partner/consultations/{id}/events/{eventId}/complete")
+	public String completeMeeting(@PathVariable("id") Long consultationId, @PathVariable Long eventId, Model model) {
+		Consultation consultation = consultationService.findById(consultationId);
+		
+		try {
+			eventService.complete(eventService.findOwnedByConsultation(eventId, consultation));
+			populateConsultationDetailModel(consultation, model);
+			model.addAttribute("success", "Meeting marked as completed.");
+		} catch (InvalidStateException | BusinessRuleViolationException e) {
+			populateConsultationDetailModel(consultation, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "partner/consultation-details";
+	}
+	
+	@PostMapping("/partner/consultations/{id}/events/{eventId}/cancel")
+	public String cancelMeeting(@PathVariable("id") Long consultationId, @PathVariable Long eventId, Model model) {
+		Consultation consultation = consultationService.findById(consultationId);
+		
+		try {
+			eventService.cancel(eventService.findOwnedByConsultation(eventId, consultation));
+			populateConsultationDetailModel(consultation, model);
+			model.addAttribute("success", "Meeting canceled.");
+		} catch (InvalidStateException e) {
+			populateConsultationDetailModel(consultation, model);
+			model.addAttribute("error", e.getMessage());
+		}
+		
+		return "partner/consultation-details";
+	}
+	
 	@PostMapping("/partner/consultations/{id}/accept")
 	public String acceptConsultation(@PathVariable("id") Long consultationId, @Valid @ModelAttribute AssignStaffRequest form, BindingResult bindingResult, Model model) {
 		Consultation consultation = consultationService.findById(consultationId);
@@ -277,38 +309,6 @@ public class PartnerController {
 			populateConsultationDetailModel(consultation, model);
 			model.addAttribute("success", "Meeting rescheduled successfully.");
 		} catch (InvalidStateException | BusinessRuleViolationException e) {
-			populateConsultationDetailModel(consultation, model);
-			model.addAttribute("error", e.getMessage());
-		}
-		
-		return "partner/consultation-details";
-	}
-	
-	@PostMapping("/partner/consultations/{id}/events/{eventId}/complete")
-	public String completeMeeting(@PathVariable("id") Long consultationId, @PathVariable Long eventId, Model model) {
-		Consultation consultation = consultationService.findById(consultationId);
-		
-		try {
-			eventService.complete(eventService.findOwnedByConsultation(eventId, consultation));
-			populateConsultationDetailModel(consultation, model);
-			model.addAttribute("success", "Meeting marked as completed.");
-		} catch (InvalidStateException | BusinessRuleViolationException e) {
-			populateConsultationDetailModel(consultation, model);
-			model.addAttribute("error", e.getMessage());
-		}
-		
-		return "partner/consultation-details";
-	}
-	
-	@PostMapping("/partner/consultations/{id}/events/{eventId}/cancel")
-	public String cancelMeeting(@PathVariable("id") Long consultationId, @PathVariable Long eventId, Model model) {
-		Consultation consultation = consultationService.findById(consultationId);
-		
-		try {
-			eventService.cancel(eventService.findOwnedByConsultation(eventId, consultation));
-			populateConsultationDetailModel(consultation, model);
-			model.addAttribute("success", "Meeting canceled.");
-		} catch (InvalidStateException e) {
 			populateConsultationDetailModel(consultation, model);
 			model.addAttribute("error", e.getMessage());
 		}

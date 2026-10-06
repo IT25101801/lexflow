@@ -69,6 +69,11 @@ function setUpFilePicker(input) {
 	input.addEventListener("change", function () {
 		if (syncing) return;
 		
+		if (input.dataset.replacePicked === "true") {
+			picked = [];
+			delete input.dataset.replacePicked;
+		}
+		
 		Array.prototype.forEach.call(input.files, function (file) {
 			var parts = splitName(file.name);
 			picked.push({file: file, base: parts.base, ext: parts.ext});

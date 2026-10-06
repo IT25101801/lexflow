@@ -16,3 +16,22 @@ function toggleDocDelete(documentId) {
 		button.classList.add("action-btn-delete");
 	}
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+	var forms = document.querySelectorAll("form");
+	
+	for (var i = 0; i < forms.length; i++) {
+		forms[i].addEventListener("submit", confirmDocumentDeletes);
+	}
+	
+});
+
+function confirmDocumentDeletes(event) {
+	var marked = event.target.querySelectorAll("input[id^='doc-del-']:checked").length;
+	
+	if (marked > 0 && !confirm("Delete " + marked + (marked === 1 ? " document" : " documents") + "? This action cannot be undone.")) {
+		event.preventDefault();
+		event.stopImmediatePropagation();
+	}
+	
+}

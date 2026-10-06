@@ -2,6 +2,7 @@ package lexflow.util;
 
 import lexflow.entity.document.DocumentType;
 import lexflow.exception.PersistenceException;
+import lexflow.exception.document.DocumentTooLargeException;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,6 +18,7 @@ public class FileUtil {
 	
 	private static final Path UPLOAD_DIRECTORY = Paths.get("uploads");
 	private static final String DEFAULT_FILENAME = "file";
+	private static final long MAX_FILE_SIZE_MEGABYTES = 50;
 	
 	// Create
 	
@@ -24,6 +26,10 @@ public class FileUtil {
 		
 		if (file == null || file.isEmpty()) {
 			return null;
+		}
+		
+		if (file.getSize() > MAX_FILE_SIZE_MEGABYTES * 1024 * 1024) {
+			throw new DocumentTooLargeException(file.getOriginalFilename(), MAX_FILE_SIZE_MEGABYTES);
 		}
 		
 		try {

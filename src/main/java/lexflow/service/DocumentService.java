@@ -5,14 +5,12 @@ import lexflow.dao.ConsultationDao;
 import lexflow.dao.DocumentDao;
 import lexflow.dao.InvoiceDao;
 import lexflow.entity.case_.Case;
-import lexflow.entity.case_.CaseStatus;
 import lexflow.entity.case_.Task;
 import lexflow.entity.consultation.Consultation;
 import lexflow.entity.document.*;
 import lexflow.entity.finance.Invoice;
 import lexflow.entity.user.*;
 import lexflow.exception.PersistenceException;
-import lexflow.exception.case_.InvalidCaseStateException;
 import lexflow.exception.document.MissingRequiredDocumentException;
 import lexflow.exception.document.NonPdfDocumentException;
 import lexflow.strategy.*;
@@ -42,6 +40,7 @@ import java.util.Map;
 public class DocumentService {
 	
 	private final DocumentDao documentDao;
+	private final CaseService caseService;
 	private final ConsultationDao consultationDao;
 	private final CaseDao caseDao;
 	private final InvoiceDao invoiceDao;
@@ -96,10 +95,7 @@ public class DocumentService {
 	
 	@Transactional
 	public List<CaseDocument> attach(Case case_, Long taskId, List<MultipartFile> caseFiles, LocalDateTime uploadedAt) {
-		
-		if (case_.getCaseStatus() != CaseStatus.OPEN) {
-			throw new InvalidCaseStateException(case_.getCaseId(), case_.getCaseStatus(), CaseStatus.OPEN);
-		}
+		caseService.requireOpen(case_);
 		
 		List<CaseDocument> caseDocuments = new ArrayList<>();
 		
@@ -125,10 +121,7 @@ public class DocumentService {
 	
 	@Transactional
 	public List<CaseDocument> stage(Case case_, List<MultipartFile> caseFiles, LocalDateTime uploadedAt) {
-		
-		if (case_.getCaseStatus() != CaseStatus.OPEN) {
-			throw new InvalidCaseStateException(case_.getCaseId(), case_.getCaseStatus(), CaseStatus.OPEN);
-		}
+		caseService.requireOpen(case_);
 		
 		List<CaseDocument> caseDocuments = new ArrayList<>();
 		
@@ -139,6 +132,10 @@ public class DocumentService {
 				caseDocuments.add(caseDocument);
 			}
 			
+		}
+		
+		if (caseDocuments.isEmpty()) {
+			throw new MissingRequiredDocumentException("Case");
 		}
 		
 		return caseDocuments;
@@ -291,19 +288,6 @@ public class DocumentService {
 		
 	}
 	
-	public void replaceInvoice(Invoice invoice, Case case_, byte[] pdfBytes) {
-		InvoiceDocument currentInvoiceDocument = invoice.getInvoiceDocument();
-		String filePath = FileUtil.store(pdfBytes, case_.getCaseId(), DocumentType.INVOICE_DOCUMENT, currentInvoiceDocument.getOriginalFilename());
-		String oldFilePath = currentInvoiceDocument.getFilePath();
-		LocalDateTime uploadedAt = LocalDateTime.now();
-		documentDao.replace(currentInvoiceDocument.getDocumentId(), filePath, currentInvoiceDocument.getOriginalFilename(), uploadedAt);
-		
-		currentInvoiceDocument.setFilePath(filePath);
-		currentInvoiceDocument.setUploadedAt(uploadedAt);
-		
-		FileUtil.delete(oldFilePath);
-	}
-	
 	public void replaceBar(User user, MultipartFile barFile) {
 		
 		if (barFile == null || barFile.isEmpty()) {
@@ -329,6 +313,19 @@ public class DocumentService {
 			setBarDocument(user, (BarDocument) documentDao.insert(newBarDocument));
 		}
 		
+	}
+	
+	public void replaceInvoice(Invoice invoice, Case case_, byte[] pdfBytes) {
+		InvoiceDocument currentInvoiceDocument = invoice.getInvoiceDocument();
+		String filePath = FileUtil.store(pdfBytes, case_.getCaseId(), DocumentType.INVOICE_DOCUMENT, currentInvoiceDocument.getOriginalFilename());
+		String oldFilePath = currentInvoiceDocument.getFilePath();
+		LocalDateTime uploadedAt = LocalDateTime.now();
+		documentDao.replace(currentInvoiceDocument.getDocumentId(), filePath, currentInvoiceDocument.getOriginalFilename(), uploadedAt);
+		
+		currentInvoiceDocument.setFilePath(filePath);
+		currentInvoiceDocument.setUploadedAt(uploadedAt);
+		
+		FileUtil.delete(oldFilePath);
 	}
 	
 	public void rename(Consultation consultation, Long documentId, String newFilename) {

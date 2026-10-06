@@ -27,8 +27,8 @@ public class AnalyticsService {
 		return analyticsDao.countCasesByResolutionStatus();
 	}
 	
-	public Double avgCaseDurationDays() {
-		return analyticsDao.avgCaseDurationDays();
+	public Double averageCaseDurationDays() {
+		return analyticsDao.averageCaseDurationDays();
 	}
 	
 	public Map<User, Integer> closedCaseCountByAssociate() {
@@ -47,12 +47,12 @@ public class AnalyticsService {
 		return winRate(analyticsDao.countCasesByResolutionStatusForParalegal(paralegalId));
 	}
 	
-	public Double avgCaseDurationDaysForAssociate(Long associateId) {
-		return analyticsDao.avgCaseDurationDaysForAssociate(associateId);
+	public Double averageCaseDurationDaysForAssociate(Long associateId) {
+		return analyticsDao.averageCaseDurationDaysForAssociate(associateId);
 	}
 	
-	public Double avgCaseDurationDaysForParalegal(Long paralegalId) {
-		return analyticsDao.avgCaseDurationDaysForParalegal(paralegalId);
+	public Double averageCaseDurationDaysForParalegal(Long paralegalId) {
+		return analyticsDao.averageCaseDurationDaysForParalegal(paralegalId);
 	}
 	
 	// ---- Invoice ----
@@ -77,8 +77,8 @@ public class AnalyticsService {
 		return analyticsDao.sumUnpaidInvoiceTotal();
 	}
 	
-	public Double avgDaysToPayment() {
-		return analyticsDao.avgDaysToPayment();
+	public Double averageDaysToPayment() {
+		return analyticsDao.averageDaysToPayment();
 	}
 	
 	// ---- Transaction ----

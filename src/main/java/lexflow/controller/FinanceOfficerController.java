@@ -160,7 +160,7 @@ public class FinanceOfficerController {
 		Case case_ = caseService.findById(caseId);
 		
 		try {
-			invoiceService.chargeInvoice(case_, invoiceService.findById(invoiceId));
+			invoiceService.charge(case_, invoiceService.findById(invoiceId));
 			populateCaseDetailModel(case_, model);
 			model.addAttribute("success", "Invoice charged successfully.");
 		} catch (InvalidInvoiceStateException | InsufficientFundsException e) {
@@ -214,7 +214,7 @@ public class FinanceOfficerController {
 		Case case_ = caseService.findById(caseId);
 		
 		try {
-			invoiceService.voidAndRefundInvoice(case_, invoiceService.findById(invoiceId));
+			invoiceService.voidAndRefund(case_, invoiceService.findById(invoiceId));
 			populateCaseDetailModel(case_, model);
 			model.addAttribute("success", "Invoice voided and refunded. Its charges are unbilled again.");
 		} catch (InvalidInvoiceStateException e) {
@@ -337,7 +337,7 @@ public class FinanceOfficerController {
 		model.addAttribute("revenueByMonthValues", revenueByMonth.values());
 		
 		model.addAttribute("outstandingInvoiceTotal", analyticsService.outstandingInvoiceTotal());
-		model.addAttribute("avgDaysToPayment", analyticsService.avgDaysToPayment());
+		model.addAttribute("avgDaysToPayment", analyticsService.averageDaysToPayment());
 		
 		Map<TransactionType, Integer> topUps = analyticsService.topUpCountComparison();
 		model.addAttribute("cardTopUpCount", topUps.getOrDefault(TransactionType.CARD_TOP_UP, 0));

@@ -20,7 +20,7 @@ public class PaidInvoiceState implements InvoiceState {
 	
 	@Override
 	public Invoice voidAndRefund(Invoice invoice, InvoiceService invoiceService, Client client) {
-		return invoiceService.markVoidedWithRefund(invoice, client);
+		return invoiceService.applyVoidAndRefund(invoice, client);
 	}
 	
 }

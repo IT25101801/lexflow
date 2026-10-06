@@ -10,12 +10,12 @@ public class UnpaidInvoiceState implements InvoiceState {
 	
 	@Override
 	public Invoice charge(Invoice invoice, InvoiceService invoiceService, Client client) {
-		return invoiceService.markPaid(invoice, client);
+		return invoiceService.applyPayment(invoice, client);
 	}
 	
 	@Override
 	public Invoice voidInvoice(Invoice invoice, InvoiceService invoiceService) {
-		return invoiceService.markVoided(invoice);
+		return invoiceService.applyVoid(invoice);
 	}
 	
 	@Override

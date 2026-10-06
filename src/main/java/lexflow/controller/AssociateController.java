@@ -496,7 +496,7 @@ public class AssociateController {
 		model.addAttribute("user", associate);
 		
 		model.addAttribute("winRate", analyticsService.winRateForAssociate(associate.getUserId()));
-		model.addAttribute("avgCaseDurationDays", analyticsService.avgCaseDurationDaysForAssociate(associate.getUserId()));
+		model.addAttribute("avgCaseDurationDays", analyticsService.averageCaseDurationDaysForAssociate(associate.getUserId()));
 		model.addAttribute("billableThisMonth", analyticsService.billableAmountThisMonthForAssociate(associate.getUserId()));
 		model.addAttribute("billableLastMonth", analyticsService.billableAmountLastMonthForAssociate(associate.getUserId()));
 		

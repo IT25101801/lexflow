@@ -64,17 +64,17 @@ public class AnalyticsDao {
 		return countByResolutionStatus(sql, paralegalId);
 	}
 	
-	public Double avgCaseDurationDays() {
+	public Double averageCaseDurationDays() {
 		String sql = """
 					 SELECT AVG(CAST(DATEDIFF(DAY, opened_at, closed_at) AS FLOAT)) AS average_days
 					 FROM cases
 					 WHERE case_status = 'CLOSED'
 					 """;
 		
-		return avgDuration(sql, null);
+		return averageDuration(sql, null);
 	}
 	
-	public Double avgCaseDurationDaysForAssociate(Long associateId) {
+	public Double averageCaseDurationDaysForAssociate(Long associateId) {
 		String sql = """
 					 SELECT AVG(CAST(DATEDIFF(DAY, opened_at, closed_at) AS FLOAT)) AS average_days
 					 FROM cases
@@ -82,10 +82,10 @@ public class AnalyticsDao {
 					   AND associate_id = ?
 					 """;
 		
-		return avgDuration(sql, associateId);
+		return averageDuration(sql, associateId);
 	}
 	
-	public Double avgCaseDurationDaysForParalegal(Long paralegalId) {
+	public Double averageCaseDurationDaysForParalegal(Long paralegalId) {
 		String sql = """
 					 SELECT AVG(CAST(DATEDIFF(DAY, opened_at, closed_at) AS FLOAT)) AS average_days
 					 FROM cases
@@ -93,7 +93,7 @@ public class AnalyticsDao {
 					   AND paralegal_id = ?
 					 """;
 		
-		return avgDuration(sql, paralegalId);
+		return averageDuration(sql, paralegalId);
 	}
 	
 	public Map<Long, Integer> countClosedCasesByAssociate() {
@@ -222,14 +222,14 @@ public class AnalyticsDao {
 		
 	}
 	
-	public Double avgDaysToPayment() {
+	public Double averageDaysToPayment() {
 		String sql = """
 					 SELECT AVG(CAST(DATEDIFF(DAY, compiled_at, paid_at) AS FLOAT)) AS average_days
 					 FROM invoices
 					 WHERE invoice_status = 'PAID'
 					 """;
 		
-		return avgDuration(sql, null);
+		return averageDuration(sql, null);
 	}
 	
 	// ---- Transaction ----
@@ -361,7 +361,7 @@ public class AnalyticsDao {
 		return counts;
 	}
 	
-	private Double avgDuration(String sql, Long userId) {
+	private Double averageDuration(String sql, Long userId) {
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {

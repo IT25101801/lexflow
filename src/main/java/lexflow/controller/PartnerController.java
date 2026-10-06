@@ -738,7 +738,7 @@ public class PartnerController {
 		Case case_ = caseService.findById(caseId);
 		
 		try {
-			invoiceService.chargeInvoice(case_, invoiceService.findById(invoiceId));
+			invoiceService.charge(case_, invoiceService.findById(invoiceId));
 			populateCaseDetailModel(case_, model);
 			model.addAttribute("success", "Invoice charged successfully.");
 		} catch (InvalidInvoiceStateException | InsufficientFundsException e) {
@@ -794,7 +794,7 @@ public class PartnerController {
 		Case case_ = caseService.findById(caseId);
 		
 		try {
-			invoiceService.voidAndRefundInvoice(case_, invoiceService.findById(invoiceId));
+			invoiceService.voidAndRefund(case_, invoiceService.findById(invoiceId));
 			populateCaseDetailModel(case_, model);
 			model.addAttribute("success", "Invoice voided and refunded. Its charges are unbilled again.");
 		} catch (InvalidInvoiceStateException e) {
@@ -1032,7 +1032,7 @@ public class PartnerController {
 		model.addAttribute("caseResolutionLabels", buildLabels(caseResolutionBreakdown));
 		model.addAttribute("caseResolutionValues", buildIntValues(caseResolutionBreakdown));
 		
-		model.addAttribute("avgCaseDurationDays", analyticsService.avgCaseDurationDays());
+		model.addAttribute("avgCaseDurationDays", analyticsService.averageCaseDurationDays());
 		
 		Map<Integer, BigDecimal> revenueByMonth = analyticsService.revenueByMonth(LocalDate.now().getYear());
 		model.addAttribute("revenueByMonthLabels", monthLabels());

@@ -90,7 +90,7 @@ public class InvoiceService {
 	// ---- Update ----
 	
 	@Transactional
-	public Invoice chargeInvoice(Case case_, Invoice invoice) {
+	public Invoice charge(Case case_, Invoice invoice) {
 		return stateFor(invoice.getInvoiceStatus()).charge(invoice, this, case_.getClient());
 	}
 	
@@ -100,26 +100,26 @@ public class InvoiceService {
 	}
 	
 	@Transactional
-	public Invoice voidAndRefundInvoice(Case case_, Invoice invoice) {
+	public Invoice voidAndRefund(Case case_, Invoice invoice) {
 		return stateFor(invoice.getInvoiceStatus()).voidAndRefund(invoice, this, case_.getClient());
 	}
 	
 	// ---- State Transitions (called by InvoiceState implementations) ----
 	
-	public Invoice markPaid(Invoice invoice, Client client) {
+	public Invoice applyPayment(Invoice invoice, Client client) {
 		transactionService.record(client, invoice.getTotalAmount(), TransactionType.CHARGE, invoice.getInvoiceId());
 		invoice.setInvoiceStatus(InvoiceStatus.PAID);
 		invoice.setPaidAt(LocalDateTime.now());
 		return invoiceDao.update(invoice);
 	}
 	
-	public Invoice markVoided(Invoice invoice) {
+	public Invoice applyVoid(Invoice invoice) {
 		releaseInvoiceCharges(invoice);
 		invoice.setInvoiceStatus(InvoiceStatus.VOIDED);
 		return invoiceDao.update(invoice);
 	}
 	
-	public Invoice markVoidedWithRefund(Invoice invoice, Client client) {
+	public Invoice applyVoidAndRefund(Invoice invoice, Client client) {
 		transactionService.record(client, invoice.getTotalAmount(), TransactionType.REFUND, invoice.getInvoiceId());
 		releaseInvoiceCharges(invoice);
 		invoice.setInvoiceStatus(InvoiceStatus.VOIDED);

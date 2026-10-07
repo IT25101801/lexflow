@@ -501,7 +501,7 @@ public class DocumentService {
 	
 	// Private Helpers
 	
-private void setBarDocument(User user, BarDocument barDocument) {
+	private void setBarDocument(User user, BarDocument barDocument) {
 		
 		if (user instanceof Partner partner) {
 			partner.setBarDocument(barDocument);

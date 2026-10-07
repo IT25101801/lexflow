@@ -290,5 +290,5 @@ document.addEventListener("change", function (event) {
 	for (var i = 0; i < hints.length; i++) {
 		hints[i].style.display = "none";
 	}
-
+	
 });

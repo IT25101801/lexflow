@@ -8,7 +8,6 @@ import lexflow.dto.finance.WithdrawRequest;
 import lexflow.dto.user.ChangePasswordRequest;
 import lexflow.entity.case_.Case;
 import lexflow.entity.finance.InvoiceStatus;
-import lexflow.entity.finance.TransactionType;
 import lexflow.entity.user.Client;
 import lexflow.entity.user.FinanceOfficer;
 import lexflow.entity.user.Role;
@@ -30,11 +29,6 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
 
 @Controller
 @RequiredArgsConstructor

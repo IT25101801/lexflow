@@ -10,10 +10,10 @@
 
 <div class="main">
 	<div th:replace="~{fragments/common :: topbar('Analytics', null)}"></div>
-
+	
 	<div class="content">
 		<div class="module-grid">
-
+			
 			<section class="module-card">
 				<div class="module-title"><i class="bi bi-people"></i> User Management</div>
 				<div class="module-stat">
@@ -21,9 +21,11 @@
 					<div class="stat-label">Money Held in Client Wallets</div>
 				</div>
 				<div class="chart-label">Active Users by Role</div>
-				<div class="chart-canvas-wrap"><canvas id="activeUserCountByRoleChart"></canvas></div>
+				<div class="chart-canvas-wrap">
+					<canvas id="activeUserCountByRoleChart"></canvas>
+				</div>
 			</section>
-
+			
 			<section class="module-card">
 				<div class="module-title"><i class="bi bi-chat-square-text"></i> Consultation Management</div>
 				<div class="module-stat">
@@ -31,9 +33,11 @@
 					<div class="stat-label">Acceptance Rate</div>
 				</div>
 				<div class="chart-label">Consultation Requests by Status</div>
-				<div class="chart-canvas-wrap"><canvas id="consultationStatusBreakdownChart"></canvas></div>
+				<div class="chart-canvas-wrap">
+					<canvas id="consultationStatusBreakdownChart"></canvas>
+				</div>
 			</section>
-
+			
 			<section class="module-card">
 				<div class="module-title"><i class="bi bi-briefcase"></i> Case Management</div>
 				<div class="module-stat">
@@ -41,9 +45,11 @@
 					<div class="stat-label">Average Case Duration</div>
 				</div>
 				<div class="chart-label">Closed Cases by Resolution</div>
-				<div class="chart-canvas-wrap"><canvas id="caseResolutionBreakdownChart"></canvas></div>
+				<div class="chart-canvas-wrap">
+					<canvas id="caseResolutionBreakdownChart"></canvas>
+				</div>
 			</section>
-
+			
 			<section class="module-card">
 				<div class="module-title"><i class="bi bi-file-earmark-text"></i> Document Management</div>
 				<div class="module-stat">
@@ -51,9 +57,11 @@
 					<div class="stat-label">Documents Pending Review</div>
 				</div>
 				<div class="chart-label">Documents by Type</div>
-				<div class="chart-canvas-wrap"><canvas id="documentCountByTypeChart"></canvas></div>
+				<div class="chart-canvas-wrap">
+					<canvas id="documentCountByTypeChart"></canvas>
+				</div>
 			</section>
-
+			
 			<section class="module-card">
 				<div class="module-title"><i class="bi bi-cash-stack"></i> Finance Management</div>
 				<div class="module-stat">
@@ -61,9 +69,11 @@
 					<div class="stat-label">Outstanding Unpaid Invoices</div>
 				</div>
 				<div class="chart-label">Revenue by Month</div>
-				<div class="chart-canvas-wrap"><canvas id="revenueByMonthChart"></canvas></div>
+				<div class="chart-canvas-wrap">
+					<canvas id="revenueByMonthChart"></canvas>
+				</div>
 			</section>
-
+			
 			<section class="module-card">
 				<div class="module-title"><i class="bi bi-calendar-event"></i> Scheduling Management</div>
 				<div class="module-stat">
@@ -71,9 +81,11 @@
 					<div class="stat-label">Events in the Next 7 Days</div>
 				</div>
 				<div class="chart-label">Events by Status</div>
-				<div class="chart-canvas-wrap"><canvas id="eventStatusBreakdownChart"></canvas></div>
+				<div class="chart-canvas-wrap">
+					<canvas id="eventStatusBreakdownChart"></canvas>
+				</div>
 			</section>
-
+		
 		</div>
 	</div>
 </div>
@@ -93,12 +105,12 @@
 	const eventStatusBreakdownLabels = /*[[${eventStatusBreakdownLabels}]]*/ [];
 	const eventStatusBreakdownValues = /*[[${eventStatusBreakdownValues}]]*/ [];
 	/*]]>*/
-
+	
 	Chart.defaults.color = getComputedStyle(document.body).getPropertyValue("--text").trim();
 	Chart.defaults.borderColor = getComputedStyle(document.body).getPropertyValue("--border").trim();
-
+	
 	const chartColors = ["#3b82c4", "#2f9e5c", "#d69e2e", "#d64545", "#8a5fd6", "#a0a0a0"];
-
+	
 	function barChart(canvasId, labels, values, color) {
 		new Chart(document.getElementById(canvasId), {
 			type: "bar",
@@ -106,7 +118,7 @@
 			options: {responsive: true, maintainAspectRatio: false, plugins: {legend: {display: false}}, scales: {y: {beginAtZero: true, ticks: {precision: 0}}}}
 		});
 	}
-
+	
 	function doughnutChart(canvasId, labels, values) {
 		new Chart(document.getElementById(canvasId), {
 			type: "doughnut",
@@ -114,7 +126,7 @@
 			options: {responsive: true, maintainAspectRatio: false, plugins: {legend: {position: "bottom", labels: {boxWidth: 12, padding: 8}}}}
 		});
 	}
-
+	
 	barChart("activeUserCountByRoleChart", activeUserCountByRoleLabels, activeUserCountByRoleValues, "#3b82c4");
 	doughnutChart("consultationStatusBreakdownChart", consultationStatusBreakdownLabels, consultationStatusBreakdownValues);
 	doughnutChart("caseResolutionBreakdownChart", caseResolutionBreakdownLabels, caseResolutionBreakdownValues);

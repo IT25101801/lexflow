@@ -17,15 +17,14 @@ import lexflow.dto.scheduling.ScheduleMeetingRequest;
 import lexflow.dto.user.*;
 import lexflow.entity.case_.Case;
 import lexflow.entity.case_.CaseResolutionStatus;
-import lexflow.entity.scheduling.EventStatus;
-import lexflow.entity.document.DocumentType;
-import lexflow.entity.consultation.ConsultationStatus;
 import lexflow.entity.case_.Contact;
 import lexflow.entity.case_.Task;
-import lexflow.entity.consultation.CaseType;
 import lexflow.entity.consultation.Consultation;
+import lexflow.entity.consultation.ConsultationStatus;
+import lexflow.entity.document.DocumentType;
 import lexflow.entity.finance.InvoiceStatus;
 import lexflow.entity.scheduling.Event;
+import lexflow.entity.scheduling.EventStatus;
 import lexflow.entity.user.*;
 import lexflow.exception.BusinessRuleViolationException;
 import lexflow.exception.EntityAlreadyExistsException;
@@ -1155,7 +1154,7 @@ public class PartnerController {
 	private String userDetailsView(User user) {
 		return user instanceof Partner ? "partner/partner-details" : "partner/user-details";
 	}
-
+	
 	private String readableLabel(String enumName) {
 		String[] words = enumName.toLowerCase().split("_");
 		StringBuilder label = new StringBuilder();

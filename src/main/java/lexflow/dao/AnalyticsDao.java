@@ -12,11 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.LocalDate;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -36,7 +32,7 @@ public class AnalyticsDao {
 					 FROM users
 					 WHERE role = 'CLIENT'
 					 """;
-					
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -68,7 +64,7 @@ public class AnalyticsDao {
 					 WHERE account_status = 'ACTIVE'
 					 GROUP BY role
 					 """;
-					
+		
 		return countByEnum(sql, "role", Role.class);
 	}
 	
@@ -81,7 +77,7 @@ public class AnalyticsDao {
 					 FROM consultations
 					 GROUP BY consultation_status
 					 """;
-					
+		
 		return countByEnum(sql, "consultation_status", ConsultationStatus.class);
 	}
 	
@@ -95,7 +91,7 @@ public class AnalyticsDao {
 					 WHERE case_resolution_status IS NOT NULL
 					 GROUP BY case_resolution_status
 					 """;
-					
+		
 		return countByEnum(sql, "case_resolution_status", CaseResolutionStatus.class);
 	}
 	
@@ -105,7 +101,7 @@ public class AnalyticsDao {
 					 FROM cases
 					 WHERE case_status = 'CLOSED'
 					 """;
-					
+		
 		return averageDuration(sql, null);
 	}
 	
@@ -118,7 +114,7 @@ public class AnalyticsDao {
 					 FROM documents
 					 GROUP BY document_type
 					 """;
-					
+		
 		return countByEnum(sql, "document_type", DocumentType.class);
 	}
 	
@@ -128,7 +124,7 @@ public class AnalyticsDao {
 					 FROM documents
 					 WHERE in_staging = 1
 					 """;
-					
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -158,7 +154,7 @@ public class AnalyticsDao {
 					   AND YEAR(paid_at) = ?
 					 GROUP BY MONTH(paid_at)
 					 """;
-					
+		
 		Map<Integer, BigDecimal> sums = new HashMap<>();
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
@@ -188,7 +184,7 @@ public class AnalyticsDao {
 					 FROM invoices
 					 WHERE invoice_status = 'UNPAID'
 					 """;
-					
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -221,7 +217,7 @@ public class AnalyticsDao {
 					 FROM events
 					 GROUP BY event_status
 					 """;
-					
+		
 		return countByEnum(sql, "event_status", EventStatus.class);
 	}
 	
@@ -232,7 +228,7 @@ public class AnalyticsDao {
 					 WHERE event_status = 'SCHEDULED'
 					   AND date BETWEEN ? AND ?
 					 """;
-					
+		
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {

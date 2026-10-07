@@ -42,7 +42,6 @@ public class ParalegalController {
 	private final CaseService caseService;
 	private final TaskService taskService;
 	private final ContactService contactService;
-	private final AnalyticsService analyticsService;
 	
 	// Overview
 	
@@ -51,19 +50,6 @@ public class ParalegalController {
 		model.addAttribute("user", currentParalegal(authentication));
 		
 		return "paralegal/dashboard";
-	}
-	
-	@GetMapping("/paralegal/analytics")
-	public String analytics(Authentication authentication, Model model) {
-		Paralegal paralegal = currentParalegal(authentication);
-		model.addAttribute("user", paralegal);
-		
-		model.addAttribute("winRate", analyticsService.winRateForParalegal(paralegal.getUserId()));
-		model.addAttribute("averageCaseDurationDays", analyticsService.averageCaseDurationDaysForParalegal(paralegal.getUserId()));
-		model.addAttribute("billableAmountThisMonth", analyticsService.billableAmountThisMonthForParalegal(paralegal.getUserId()));
-		model.addAttribute("billableAmountLastMonth", analyticsService.billableAmountLastMonthForParalegal(paralegal.getUserId()));
-		
-		return "paralegal/analytics";
 	}
 	
 	@GetMapping("/paralegal/profile")
@@ -317,7 +303,7 @@ public class ParalegalController {
 	}
 	
 	@PostMapping("/paralegal/cases/{id}/contacts")
-	public String addContact(@PathVariable("id") Long caseId, @Valid @ModelAttribute SaveContactRequest form, BindingResult bindingResult, Authentication authentication, Model model, RedirectAttributes redirectAttributes) {
+	public String saveContact(@PathVariable("id") Long caseId, @Valid @ModelAttribute SaveContactRequest form, BindingResult bindingResult, Authentication authentication, Model model, RedirectAttributes redirectAttributes) {
 		Case case_ = caseService.findOwnedByParalegal(caseId, currentParalegal(authentication));
 		
 		if (bindingResult.hasErrors()) {
@@ -328,7 +314,7 @@ public class ParalegalController {
 		}
 		
 		try {
-			contactService.add(case_, form.getName(), form.getPhoneNumbers(), form.getEmails(), form.getAddresses(), form.getNotes());
+			contactService.save(case_, form.getName(), form.getPhoneNumbers(), form.getEmails(), form.getAddresses(), form.getNotes());
 		} catch (InvalidStateException e) {
 			populateCaseDetailModel(case_, model);
 			model.addAttribute("error", e.getMessage());

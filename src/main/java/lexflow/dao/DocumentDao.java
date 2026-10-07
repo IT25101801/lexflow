@@ -436,18 +436,20 @@ public class DocumentDao {
 	
 	// Update
 	
-	public void updateOriginalFilename(Long documentId, String originalFilename) {
+	public void updateFilename(Long documentId, String filePath, String originalFilename) {
 		String sql = """
 					 UPDATE documents
-					 SET original_filename = ?
+					 SET file_path         = ?,
+					     original_filename = ?
 					 WHERE document_id = ?
 					 """;
-		
+					
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
-			statement.setString(1, originalFilename);
-			statement.setLong(2, documentId);
+			statement.setString(1, filePath);
+			statement.setString(2, originalFilename);
+			statement.setLong(3, documentId);
 			
 			statement.executeUpdate();
 		} catch (SQLException e) {

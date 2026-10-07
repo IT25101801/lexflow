@@ -56,7 +56,7 @@ public class DocumentService {
 		requirePdf(nicFile, "NIC");
 		
 		String filePath = FileUtil.store(nicFile, user.getUserId(), DocumentType.NIC_DOCUMENT);
-		NicDocument nicDocument = new NicDocument(filePath, nicDocumentLabel(user), uploadedAt, user.getUserId());
+		NicDocument nicDocument = new NicDocument(filePath, nicFile.getOriginalFilename(), uploadedAt, user.getUserId());
 		
 		documentDao.insert(nicDocument);
 		user.setNicDocument(nicDocument);
@@ -71,7 +71,7 @@ public class DocumentService {
 		requirePdf(barFile, "Bar");
 		
 		String filePath = FileUtil.store(barFile, user.getUserId(), DocumentType.BAR_DOCUMENT);
-		BarDocument barDocument = new BarDocument(filePath, barDocumentLabel(user), uploadedAt, user.getUserId());
+		BarDocument barDocument = new BarDocument(filePath, barFile.getOriginalFilename(), uploadedAt, user.getUserId());
 		
 		documentDao.insert(barDocument);
 		setBarDocument(user, barDocument);
@@ -275,14 +275,15 @@ public class DocumentService {
 		
 		if (currentNicDocument != null) {
 			String oldFilePath = currentNicDocument.getFilePath();
-			documentDao.replace(currentNicDocument.getDocumentId(), filePath, currentNicDocument.getOriginalFilename(), uploadedAt);
+			documentDao.replace(currentNicDocument.getDocumentId(), filePath, nicFile.getOriginalFilename(), uploadedAt);
 			
 			currentNicDocument.setFilePath(filePath);
+			currentNicDocument.setOriginalFilename(nicFile.getOriginalFilename());
 			currentNicDocument.setUploadedAt(uploadedAt);
 			
 			FileUtil.delete(oldFilePath);
 		} else {
-			NicDocument newNicDocument = new NicDocument(filePath, nicDocumentLabel(user), uploadedAt, user.getUserId());
+			NicDocument newNicDocument = new NicDocument(filePath, nicFile.getOriginalFilename(), uploadedAt, user.getUserId());
 			user.setNicDocument((NicDocument) documentDao.insert(newNicDocument));
 		}
 		
@@ -302,14 +303,15 @@ public class DocumentService {
 		
 		if (currentBarDocument != null) {
 			String oldFilePath = currentBarDocument.getFilePath();
-			documentDao.replace(currentBarDocument.getDocumentId(), filePath, currentBarDocument.getOriginalFilename(), uploadedAt);
+			documentDao.replace(currentBarDocument.getDocumentId(), filePath, barFile.getOriginalFilename(), uploadedAt);
 			
 			currentBarDocument.setFilePath(filePath);
+			currentBarDocument.setOriginalFilename(barFile.getOriginalFilename());
 			currentBarDocument.setUploadedAt(uploadedAt);
 			
 			FileUtil.delete(oldFilePath);
 		} else {
-			BarDocument newBarDocument = new BarDocument(filePath, barDocumentLabel(user), uploadedAt, user.getUserId());
+			BarDocument newBarDocument = new BarDocument(filePath, barFile.getOriginalFilename(), uploadedAt, user.getUserId());
 			setBarDocument(user, (BarDocument) documentDao.insert(newBarDocument));
 		}
 		
@@ -335,7 +337,7 @@ public class DocumentService {
 			throw new AccessDeniedException("Document does not belong to this consultation.");
 		}
 		
-		documentDao.updateOriginalFilename(documentId, newFilename);
+		documentDao.updateFilename(documentId, FileUtil.rename(consultationDocument.getFilePath(), newFilename), newFilename);
 	}
 	
 	public void rename(Case case_, Long documentId, String newFilename) {
@@ -354,7 +356,7 @@ public class DocumentService {
 			renamedFilename = renamedFilename + extension;
 		}
 		
-		documentDao.updateOriginalFilename(documentId, renamedFilename);
+		documentDao.updateFilename(documentId, FileUtil.rename(caseDocument.getFilePath(), renamedFilename), renamedFilename);
 	}
 	
 	@Transactional
@@ -499,15 +501,7 @@ public class DocumentService {
 	
 	// Private Helpers
 	
-	private String nicDocumentLabel(User user) {
-		return user.getUserId() + "-" + DocumentType.NIC_DOCUMENT.name();
-	}
-	
-	private String barDocumentLabel(User user) {
-		return user.getUserId() + "-" + DocumentType.BAR_DOCUMENT.name();
-	}
-	
-	private void setBarDocument(User user, BarDocument barDocument) {
+private void setBarDocument(User user, BarDocument barDocument) {
 		
 		if (user instanceof Partner partner) {
 			partner.setBarDocument(barDocument);
@@ -562,7 +556,7 @@ public class DocumentService {
 			contentType = "application/octet-stream";
 		}
 		
-		return ResponseEntity.ok().contentType(MediaType.parseMediaType(contentType)).header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.inline().filename(document.getOriginalFilename()).build().toString()).body(resource);
+		return ResponseEntity.ok().contentType(MediaType.parseMediaType(contentType)).header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.inline().filename(document.getStoredFilename()).build().toString()).body(resource);
 	}
 	
 	private BarDocument getBarDocument(User user) {

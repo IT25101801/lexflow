@@ -192,7 +192,7 @@ public class ConsultationDao {
 					 SELECT %s
 					 FROM consultations
 					 WHERE consultation_status = ?
-					 ORDER BY submitted_at DESC
+					 ORDER BY submitted_at
 					 """.formatted(SELECT_COLUMNS);
 		
 		List<Consultation> consultations = new ArrayList<>();
@@ -485,7 +485,7 @@ public class ConsultationDao {
 					 FROM consultations
 					 WHERE %s = ?
 					   AND consultation_status = ?
-					 ORDER BY submitted_at DESC
+					 ORDER BY submitted_at
 					 """.formatted(SELECT_COLUMNS, column);
 		
 		List<Consultation> consultations = new ArrayList<>();

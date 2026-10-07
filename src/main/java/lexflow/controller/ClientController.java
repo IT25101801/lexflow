@@ -218,7 +218,7 @@ public class ClientController {
 	}
 	
 	@PostMapping("/client/cases/{id}/documents/stage")
-	public String stageCaseDocument(@PathVariable("id") Long caseId, @Valid @ModelAttribute UploadCaseDocumentsRequest form, Authentication authentication, Model model, RedirectAttributes redirectAttributes) {
+	public String stageCaseDocuments(@PathVariable("id") Long caseId, @Valid @ModelAttribute UploadCaseDocumentsRequest form, Authentication authentication, Model model, RedirectAttributes redirectAttributes) {
 		Case case_ = caseService.findOwnedByClient(caseId, currentClient(authentication));
 		List<MultipartFile> caseFiles = form.getCaseFiles() != null ? form.getCaseFiles() : List.of();
 		

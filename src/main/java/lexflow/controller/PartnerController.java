@@ -17,6 +17,9 @@ import lexflow.dto.scheduling.ScheduleMeetingRequest;
 import lexflow.dto.user.*;
 import lexflow.entity.case_.Case;
 import lexflow.entity.case_.CaseResolutionStatus;
+import lexflow.entity.scheduling.EventStatus;
+import lexflow.entity.document.DocumentType;
+import lexflow.entity.consultation.ConsultationStatus;
 import lexflow.entity.case_.Contact;
 import lexflow.entity.case_.Task;
 import lexflow.entity.consultation.CaseType;
@@ -80,27 +83,35 @@ public class PartnerController {
 	public String analytics(Authentication authentication, Model model) {
 		model.addAttribute("user", currentPartner(authentication));
 		
+		Map<Role, Integer> activeUserCountByRole = analyticsService.activeUserCountByRole();
+		model.addAttribute("activeUserCountByRoleLabels", buildLabels(activeUserCountByRole));
+		model.addAttribute("activeUserCountByRoleValues", buildIntValues(activeUserCountByRole));
+		model.addAttribute("totalClientWalletFloat", analyticsService.totalClientWalletFloat());
+		
+		Map<ConsultationStatus, Integer> consultationStatusBreakdown = analyticsService.consultationStatusBreakdown();
+		model.addAttribute("consultationStatusBreakdownLabels", buildLabels(consultationStatusBreakdown));
+		model.addAttribute("consultationStatusBreakdownValues", buildIntValues(consultationStatusBreakdown));
+		model.addAttribute("consultationAcceptanceRate", analyticsService.consultationAcceptanceRate());
+		
 		Map<CaseResolutionStatus, Integer> caseResolutionBreakdown = analyticsService.caseResolutionBreakdown();
 		model.addAttribute("caseResolutionBreakdownLabels", buildLabels(caseResolutionBreakdown));
 		model.addAttribute("caseResolutionBreakdownValues", buildIntValues(caseResolutionBreakdown));
-		
 		model.addAttribute("averageCaseDurationDays", analyticsService.averageCaseDurationDays());
+		
+		Map<DocumentType, Integer> documentCountByType = analyticsService.documentCountByType();
+		model.addAttribute("documentCountByTypeLabels", buildLabels(documentCountByType));
+		model.addAttribute("documentCountByTypeValues", buildIntValues(documentCountByType));
+		model.addAttribute("stagedDocumentCount", analyticsService.stagedDocumentCount());
 		
 		Map<Integer, BigDecimal> revenueByMonth = analyticsService.revenueByMonth(LocalDate.now().getYear());
 		model.addAttribute("revenueByMonthLabels", monthLabels());
 		model.addAttribute("revenueByMonthValues", revenueByMonth.values());
+		model.addAttribute("outstandingInvoiceTotal", analyticsService.outstandingInvoiceTotal());
 		
-		Map<CaseType, BigDecimal> revenueByCaseType = analyticsService.revenueByCaseType();
-		model.addAttribute("revenueByCaseTypeLabels", buildLabels(revenueByCaseType));
-		model.addAttribute("revenueByCaseTypeValues", buildDecimalValues(revenueByCaseType));
-		
-		Map<User, Integer> closedCaseCountByAssociate = analyticsService.closedCaseCountByAssociate();
-		model.addAttribute("closedCaseCountByAssociateLabels", buildStaffLabels(closedCaseCountByAssociate));
-		model.addAttribute("closedCaseCountByAssociateValues", buildIntValues(closedCaseCountByAssociate));
-		
-		Map<User, Integer> closedCaseCountByParalegal = analyticsService.closedCaseCountByParalegal();
-		model.addAttribute("closedCaseCountByParalegalLabels", buildStaffLabels(closedCaseCountByParalegal));
-		model.addAttribute("closedCaseCountByParalegalValues", buildIntValues(closedCaseCountByParalegal));
+		Map<EventStatus, Integer> eventStatusBreakdown = analyticsService.eventStatusBreakdown();
+		model.addAttribute("eventStatusBreakdownLabels", buildLabels(eventStatusBreakdown));
+		model.addAttribute("eventStatusBreakdownValues", buildIntValues(eventStatusBreakdown));
+		model.addAttribute("upcomingEventCountThisWeek", analyticsService.upcomingEventCountThisWeek());
 		
 		return "partner/analytics";
 	}
@@ -565,7 +576,7 @@ public class PartnerController {
 	}
 	
 	@PostMapping("/partner/cases/{id}/contacts")
-	public String addContact(@PathVariable("id") Long caseId, @Valid @ModelAttribute SaveContactRequest form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
+	public String saveContact(@PathVariable("id") Long caseId, @Valid @ModelAttribute SaveContactRequest form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
 		Case case_ = caseService.findById(caseId);
 		
 		if (bindingResult.hasErrors()) {
@@ -576,7 +587,7 @@ public class PartnerController {
 		}
 		
 		try {
-			contactService.add(case_, form.getName(), form.getPhoneNumbers(), form.getEmails(), form.getAddresses(), form.getNotes());
+			contactService.save(case_, form.getName(), form.getPhoneNumbers(), form.getEmails(), form.getAddresses(), form.getNotes());
 		} catch (InvalidStateException e) {
 			populateCaseDetailModel(case_, model);
 			model.addAttribute("error", e.getMessage());
@@ -1048,7 +1059,7 @@ public class PartnerController {
 		List<String> labels = new ArrayList<>();
 		
 		for (Object key : counts.keySet()) {
-			labels.add(key.toString());
+			labels.add(readableLabel(key.toString()));
 		}
 		
 		return labels;
@@ -1066,26 +1077,6 @@ public class PartnerController {
 	
 	private List<String> monthLabels() {
 		return List.of("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
-	}
-	
-	private List<BigDecimal> buildDecimalValues(Map<?, BigDecimal> sums) {
-		List<BigDecimal> values = new ArrayList<>();
-		
-		for (BigDecimal value : sums.values()) {
-			values.add(value == null ? BigDecimal.ZERO : value);
-		}
-		
-		return values;
-	}
-	
-	private List<String> buildStaffLabels(Map<User, Integer> workload) {
-		List<String> labels = new ArrayList<>();
-		
-		for (User user : workload.keySet()) {
-			labels.add(user.getName());
-		}
-		
-		return labels;
 	}
 	
 	private void populateConsultationDetailModel(Consultation consultation, Model model) {
@@ -1163,6 +1154,17 @@ public class PartnerController {
 	
 	private String userDetailsView(User user) {
 		return user instanceof Partner ? "partner/partner-details" : "partner/user-details";
+	}
+
+	private String readableLabel(String enumName) {
+		String[] words = enumName.toLowerCase().split("_");
+		StringBuilder label = new StringBuilder();
+		
+		for (String word : words) {
+			label.append(label.isEmpty() ? "" : " ").append(word.equals("nic") ? "NIC" : Character.toUpperCase(word.charAt(0)) + word.substring(1));
+		}
+		
+		return label.toString();
 	}
 	
 }

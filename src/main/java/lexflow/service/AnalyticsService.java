@@ -1,11 +1,11 @@
 package lexflow.service;
 
 import lexflow.dao.AnalyticsDao;
-import lexflow.dao.UserDao;
 import lexflow.entity.case_.CaseResolutionStatus;
-import lexflow.entity.consultation.CaseType;
-import lexflow.entity.finance.TransactionType;
-import lexflow.entity.user.User;
+import lexflow.entity.consultation.ConsultationStatus;
+import lexflow.entity.document.DocumentType;
+import lexflow.entity.scheduling.EventStatus;
+import lexflow.entity.user.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,12 +19,33 @@ import java.util.Map;
 public class AnalyticsService {
 	
 	private final AnalyticsDao analyticsDao;
-	private final UserDao userDao;
 	
 	// User
 	
+	public Map<Role, Integer> activeUserCountByRole() {
+		return analyticsDao.countActiveUsersByRole();
+	}
+	
 	public BigDecimal totalClientWalletFloat() {
 		return analyticsDao.sumClientWalletBalance();
+	}
+	
+	// Consultation
+	
+	public Map<ConsultationStatus, Integer> consultationStatusBreakdown() {
+		return analyticsDao.countConsultationsByStatus();
+	}
+	
+	public Double consultationAcceptanceRate() {
+		Map<ConsultationStatus, Integer> consultationStatusBreakdown = analyticsDao.countConsultationsByStatus();
+		int accepted = consultationStatusBreakdown.getOrDefault(ConsultationStatus.ACCEPTED_BY_ASSOCIATE, 0);
+		int rejected = consultationStatusBreakdown.getOrDefault(ConsultationStatus.REJECTED_BY_PARTNER, 0) + consultationStatusBreakdown.getOrDefault(ConsultationStatus.REJECTED_BY_ASSOCIATE, 0);
+		
+		if (accepted + rejected == 0) {
+			return null;
+		}
+		
+		return accepted * 100.0 / (accepted + rejected);
 	}
 	
 	// Case
@@ -37,54 +58,14 @@ public class AnalyticsService {
 		return analyticsDao.averageCaseDurationDays();
 	}
 	
-	public Map<User, Integer> closedCaseCountByAssociate() {
-		return resolveStaffWorkload(analyticsDao.countClosedCasesByAssociate());
+	// Document
+	
+	public Map<DocumentType, Integer> documentCountByType() {
+		return analyticsDao.countDocumentsByType();
 	}
 	
-	public Map<User, Integer> closedCaseCountByParalegal() {
-		return resolveStaffWorkload(analyticsDao.countClosedCasesByParalegal());
-	}
-	
-	public double winRateForAssociate(Long associateId) {
-		return winRate(analyticsDao.countCasesByResolutionStatusForAssociate(associateId));
-	}
-	
-	public double winRateForParalegal(Long paralegalId) {
-		return winRate(analyticsDao.countCasesByResolutionStatusForParalegal(paralegalId));
-	}
-	
-	public Double averageCaseDurationDaysForAssociate(Long associateId) {
-		return analyticsDao.averageCaseDurationDaysForAssociate(associateId);
-	}
-	
-	public Double averageCaseDurationDaysForParalegal(Long paralegalId) {
-		return analyticsDao.averageCaseDurationDaysForParalegal(paralegalId);
-	}
-	
-	// Task
-	
-	public BigDecimal billableAmountThisMonthForAssociate(Long associateId) {
-		LocalDate now = LocalDate.now();
-		
-		return analyticsDao.sumBillableAmountForAssociateInMonth(associateId, now.getYear(), now.getMonthValue());
-	}
-	
-	public BigDecimal billableAmountLastMonthForAssociate(Long associateId) {
-		LocalDate lastMonth = LocalDate.now().minusMonths(1);
-		
-		return analyticsDao.sumBillableAmountForAssociateInMonth(associateId, lastMonth.getYear(), lastMonth.getMonthValue());
-	}
-	
-	public BigDecimal billableAmountThisMonthForParalegal(Long paralegalId) {
-		LocalDate now = LocalDate.now();
-		
-		return analyticsDao.sumBillableAmountForParalegalInMonth(paralegalId, now.getYear(), now.getMonthValue());
-	}
-	
-	public BigDecimal billableAmountLastMonthForParalegal(Long paralegalId) {
-		LocalDate lastMonth = LocalDate.now().minusMonths(1);
-		
-		return analyticsDao.sumBillableAmountForParalegalInMonth(paralegalId, lastMonth.getYear(), lastMonth.getMonthValue());
+	public int stagedDocumentCount() {
+		return analyticsDao.countStagedDocuments();
 	}
 	
 	// Invoice
@@ -101,54 +82,20 @@ public class AnalyticsService {
 		return monthlyRevenue;
 	}
 	
-	public Map<CaseType, BigDecimal> revenueByCaseType() {
-		return analyticsDao.sumPaidRevenueByCaseType();
-	}
-	
 	public BigDecimal outstandingInvoiceTotal() {
 		return analyticsDao.sumUnpaidInvoiceTotal();
 	}
 	
-	public Double averageDaysToPayment() {
-		return analyticsDao.averageDaysToPayment();
+	// Event
+	
+	public Map<EventStatus, Integer> eventStatusBreakdown() {
+		return analyticsDao.countEventsByStatus();
 	}
 	
-	// Transaction
-	
-	public Map<TransactionType, Integer> topUpCountComparison() {
-		return analyticsDao.countTopUpsByType();
-	}
-	
-	// Private Helpers
-	
-	private double winRate(Map<CaseResolutionStatus, Integer> caseResolutionBreakdown) {
-		int total = 0;
-		int won = 0;
+	public int upcomingEventCountThisWeek() {
+		LocalDate today = LocalDate.now();
 		
-		for (Map.Entry<CaseResolutionStatus, Integer> entry : caseResolutionBreakdown.entrySet()) {
-			total += entry.getValue();
-			
-			if (entry.getKey() == CaseResolutionStatus.WON) {
-				won = entry.getValue();
-			}
-			
-		}
-		
-		if (total == 0) {
-			return 0.0;
-		}
-		
-		return (won * 100.0) / total;
-	}
-	
-	private Map<User, Integer> resolveStaffWorkload(Map<Long, Integer> countsByUserId) {
-		Map<User, Integer> workload = new LinkedHashMap<>();
-		
-		for (Map.Entry<Long, Integer> entry : countsByUserId.entrySet()) {
-			workload.put(userDao.findById(entry.getKey()), entry.getValue());
-		}
-		
-		return workload;
+		return analyticsDao.countScheduledEventsBetween(today, today.plusDays(7));
 	}
 	
 }

@@ -1,8 +1,10 @@
 package lexflow.dao;
 
 import lexflow.entity.case_.CaseResolutionStatus;
-import lexflow.entity.consultation.CaseType;
-import lexflow.entity.finance.TransactionType;
+import lexflow.entity.consultation.ConsultationStatus;
+import lexflow.entity.document.DocumentType;
+import lexflow.entity.scheduling.EventStatus;
+import lexflow.entity.user.Role;
 import lexflow.exception.PersistenceException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.datasource.DataSourceUtils;
@@ -11,9 +13,11 @@ import org.springframework.stereotype.Repository;
 import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,7 +36,7 @@ public class AnalyticsDao {
 					 FROM users
 					 WHERE role = 'CLIENT'
 					 """;
-		
+					
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -56,44 +60,43 @@ public class AnalyticsDao {
 		
 	}
 	
+	public Map<Role, Integer> countActiveUsersByRole() {
+		String sql = """
+					 SELECT role,
+					        COUNT(*) AS record_count
+					 FROM users
+					 WHERE account_status = 'ACTIVE'
+					 GROUP BY role
+					 """;
+					
+		return countByEnum(sql, "role", Role.class);
+	}
+	
+	// Consultation
+	
+	public Map<ConsultationStatus, Integer> countConsultationsByStatus() {
+		String sql = """
+					 SELECT consultation_status,
+					        COUNT(*) AS record_count
+					 FROM consultations
+					 GROUP BY consultation_status
+					 """;
+					
+		return countByEnum(sql, "consultation_status", ConsultationStatus.class);
+	}
+	
 	// Case
 	
 	public Map<CaseResolutionStatus, Integer> countCasesByResolutionStatus() {
 		String sql = """
 					 SELECT case_resolution_status,
-					        COUNT(*) AS case_count
+					        COUNT(*) AS record_count
 					 FROM cases
 					 WHERE case_resolution_status IS NOT NULL
 					 GROUP BY case_resolution_status
 					 """;
-		
-		return countByResolutionStatus(sql, null);
-	}
-	
-	public Map<CaseResolutionStatus, Integer> countCasesByResolutionStatusForAssociate(Long associateId) {
-		String sql = """
-					 SELECT case_resolution_status,
-					        COUNT(*) AS case_count
-					 FROM cases
-					 WHERE case_resolution_status IS NOT NULL
-					   AND associate_id = ?
-					 GROUP BY case_resolution_status
-					 """;
-		
-		return countByResolutionStatus(sql, associateId);
-	}
-	
-	public Map<CaseResolutionStatus, Integer> countCasesByResolutionStatusForParalegal(Long paralegalId) {
-		String sql = """
-					 SELECT case_resolution_status,
-					        COUNT(*) AS case_count
-					 FROM cases
-					 WHERE case_resolution_status IS NOT NULL
-					   AND paralegal_id = ?
-					 GROUP BY case_resolution_status
-					 """;
-		
-		return countByResolutionStatus(sql, paralegalId);
+					
+		return countByEnum(sql, "case_resolution_status", CaseResolutionStatus.class);
 	}
 	
 	public Double averageCaseDurationDays() {
@@ -102,86 +105,46 @@ public class AnalyticsDao {
 					 FROM cases
 					 WHERE case_status = 'CLOSED'
 					 """;
-		
+					
 		return averageDuration(sql, null);
 	}
 	
-	public Double averageCaseDurationDaysForAssociate(Long associateId) {
+	// Document
+	
+	public Map<DocumentType, Integer> countDocumentsByType() {
 		String sql = """
-					 SELECT AVG(CAST(DATEDIFF(DAY, opened_at, closed_at) AS FLOAT)) AS average_days
-					 FROM cases
-					 WHERE case_status = 'CLOSED'
-					   AND associate_id = ?
+					 SELECT document_type,
+					        COUNT(*) AS record_count
+					 FROM documents
+					 GROUP BY document_type
 					 """;
-		
-		return averageDuration(sql, associateId);
+					
+		return countByEnum(sql, "document_type", DocumentType.class);
 	}
 	
-	public Double averageCaseDurationDaysForParalegal(Long paralegalId) {
+	public int countStagedDocuments() {
 		String sql = """
-					 SELECT AVG(CAST(DATEDIFF(DAY, opened_at, closed_at) AS FLOAT)) AS average_days
-					 FROM cases
-					 WHERE case_status = 'CLOSED'
-					   AND paralegal_id = ?
+					 SELECT COUNT(*) AS record_count
+					 FROM documents
+					 WHERE in_staging = 1
 					 """;
+					
+		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
-		return averageDuration(sql, paralegalId);
-	}
-	
-	public Map<Long, Integer> countClosedCasesByAssociate() {
-		String sql = """
-					 SELECT associate_id,
-					        COUNT(*) AS case_count
-					 FROM cases
-					 WHERE case_status = 'CLOSED'
-					 GROUP BY associate_id
-					 """;
+		try (PreparedStatement statement = connection.prepareStatement(sql)) {
+			
+			try (ResultSet resultSet = statement.executeQuery()) {
+				resultSet.next();
+				
+				return resultSet.getInt("record_count");
+			}
+			
+		} catch (SQLException e) {
+			throw new PersistenceException("counting staged documents", e);
+		} finally {
+			DataSourceUtils.releaseConnection(connection, dataSource);
+		}
 		
-		return countByUserId(sql, "associate_id", "counting closed cases by associate");
-	}
-	
-	public Map<Long, Integer> countClosedCasesByParalegal() {
-		String sql = """
-					 SELECT paralegal_id,
-					        COUNT(*) AS case_count
-					 FROM cases
-					 WHERE case_status = 'CLOSED'
-					 GROUP BY paralegal_id
-					 """;
-		
-		return countByUserId(sql, "paralegal_id", "counting closed cases by paralegal");
-	}
-	
-	// Task
-	
-	public BigDecimal sumBillableAmountForAssociateInMonth(Long associateId, int year, int month) {
-		String sql = """
-					 SELECT SUM(tk.billable_amount) AS total_billable_amount
-					 FROM tasks tk
-					 INNER JOIN cases cs
-					     ON cs.case_id = tk.case_id
-					 WHERE tk.billing_task = 1
-					   AND cs.associate_id = ?
-					   AND YEAR(tk.logged_at) = ?
-					   AND MONTH(tk.logged_at) = ?
-					 """;
-		
-		return sumBillableAmountForStaffInMonth(sql, associateId, year, month);
-	}
-	
-	public BigDecimal sumBillableAmountForParalegalInMonth(Long paralegalId, int year, int month) {
-		String sql = """
-					 SELECT SUM(tk.billable_amount) AS total_billable_amount
-					 FROM tasks tk
-					 INNER JOIN cases cs
-					     ON cs.case_id = tk.case_id
-					 WHERE tk.billing_task = 1
-					   AND cs.paralegal_id = ?
-					   AND YEAR(tk.logged_at) = ?
-					   AND MONTH(tk.logged_at) = ?
-					 """;
-		
-		return sumBillableAmountForStaffInMonth(sql, paralegalId, year, month);
 	}
 	
 	// Invoice
@@ -195,7 +158,7 @@ public class AnalyticsDao {
 					   AND YEAR(paid_at) = ?
 					 GROUP BY MONTH(paid_at)
 					 """;
-		
+					
 		Map<Integer, BigDecimal> sums = new HashMap<>();
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
@@ -219,48 +182,13 @@ public class AnalyticsDao {
 		return sums;
 	}
 	
-	public Map<CaseType, BigDecimal> sumPaidRevenueByCaseType() {
-		String sql = """
-					 SELECT cn.case_type,
-					        SUM(i.total_amount) AS total_revenue
-					 FROM invoices i
-					 INNER JOIN cases cs
-					     ON cs.case_id = i.case_id
-					 INNER JOIN consultations cn
-					     ON cn.consultation_id = cs.consultation_id
-					 WHERE i.invoice_status = 'PAID'
-					 GROUP BY cn.case_type
-					 """;
-		
-		Map<CaseType, BigDecimal> sums = new EnumMap<>(CaseType.class);
-		Connection connection = DataSourceUtils.getConnection(dataSource);
-		
-		try (PreparedStatement statement = connection.prepareStatement(sql)) {
-			
-			try (ResultSet resultSet = statement.executeQuery()) {
-				
-				while (resultSet.next()) {
-					sums.put(CaseType.valueOf(resultSet.getString("case_type")), resultSet.getBigDecimal("total_revenue"));
-				}
-				
-			}
-			
-		} catch (SQLException e) {
-			throw new PersistenceException("summing paid revenue by case type", e);
-		} finally {
-			DataSourceUtils.releaseConnection(connection, dataSource);
-		}
-		
-		return sums;
-	}
-	
 	public BigDecimal sumUnpaidInvoiceTotal() {
 		String sql = """
 					 SELECT SUM(total_amount) AS total_unpaid_amount
 					 FROM invoices
 					 WHERE invoice_status = 'UNPAID'
 					 """;
-		
+					
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -284,73 +212,65 @@ public class AnalyticsDao {
 		
 	}
 	
-	public Double averageDaysToPayment() {
+	// Event
+	
+	public Map<EventStatus, Integer> countEventsByStatus() {
 		String sql = """
-					 SELECT AVG(CAST(DATEDIFF(DAY, compiled_at, paid_at) AS FLOAT)) AS average_days
-					 FROM invoices
-					 WHERE invoice_status = 'PAID'
+					 SELECT event_status,
+					        COUNT(*) AS record_count
+					 FROM events
+					 GROUP BY event_status
 					 """;
-		
-		return averageDuration(sql, null);
+					
+		return countByEnum(sql, "event_status", EventStatus.class);
 	}
 	
-	// Transaction
-	
-	public Map<TransactionType, Integer> countTopUpsByType() {
+	public int countScheduledEventsBetween(LocalDate startDate, LocalDate endDate) {
 		String sql = """
-					 SELECT transaction_type,
-					        COUNT(*) AS transaction_count
-					 FROM transactions
-					 WHERE transaction_type IN ('CARD_TOP_UP', 'CASH_TOP_UP')
-					 GROUP BY transaction_type
+					 SELECT COUNT(*) AS record_count
+					 FROM events
+					 WHERE event_status = 'SCHEDULED'
+					   AND date BETWEEN ? AND ?
 					 """;
-		
-		Map<TransactionType, Integer> counts = new EnumMap<>(TransactionType.class);
+					
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
+			statement.setDate(1, Date.valueOf(startDate));
+			statement.setDate(2, Date.valueOf(endDate));
 			
 			try (ResultSet resultSet = statement.executeQuery()) {
+				resultSet.next();
 				
-				while (resultSet.next()) {
-					TransactionType transactionType = TransactionType.valueOf(resultSet.getString("transaction_type"));
-					counts.put(transactionType, resultSet.getInt("transaction_count"));
-				}
-				
+				return resultSet.getInt("record_count");
 			}
 			
 		} catch (SQLException e) {
-			throw new PersistenceException("counting top-ups by type", e);
+			throw new PersistenceException("counting scheduled events", e);
 		} finally {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
 		
-		return counts;
 	}
 	
 	// Private Helpers
 	
-	private Map<CaseResolutionStatus, Integer> countByResolutionStatus(String sql, Long userId) {
-		Map<CaseResolutionStatus, Integer> counts = new EnumMap<>(CaseResolutionStatus.class);
+	private <E extends Enum<E>> Map<E, Integer> countByEnum(String sql, String column, Class<E> enumType) {
+		Map<E, Integer> counts = new EnumMap<>(enumType);
 		Connection connection = DataSourceUtils.getConnection(dataSource);
 		
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
 			
-			if (userId != null) {
-				statement.setLong(1, userId);
-			}
-			
 			try (ResultSet resultSet = statement.executeQuery()) {
 				
 				while (resultSet.next()) {
-					CaseResolutionStatus caseResolutionStatus = CaseResolutionStatus.valueOf(resultSet.getString("case_resolution_status"));
-					counts.put(caseResolutionStatus, resultSet.getInt("case_count"));
+					counts.put(Enum.valueOf(enumType, resultSet.getString(column)), resultSet.getInt("record_count"));
 				}
 				
 			}
 			
 		} catch (SQLException e) {
-			throw new PersistenceException("counting cases by resolution status", e);
+			throw new PersistenceException("counting by " + column, e);
 		} finally {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
@@ -384,61 +304,6 @@ public class AnalyticsDao {
 			DataSourceUtils.releaseConnection(connection, dataSource);
 		}
 		
-	}
-	
-	private BigDecimal sumBillableAmountForStaffInMonth(String sql, Long userId, int year, int month) {
-		Connection connection = DataSourceUtils.getConnection(dataSource);
-		
-		try (PreparedStatement statement = connection.prepareStatement(sql)) {
-			statement.setLong(1, userId);
-			statement.setInt(2, year);
-			statement.setInt(3, month);
-			
-			try (ResultSet resultSet = statement.executeQuery()) {
-				
-				if (resultSet.next()) {
-					BigDecimal total = resultSet.getBigDecimal("total_billable_amount");
-					
-					return total != null ? total : BigDecimal.ZERO;
-				}
-				
-				return BigDecimal.ZERO;
-			}
-			
-		} catch (SQLException e) {
-			throw new PersistenceException("summing billable amount for staff in month", e);
-		} finally {
-			DataSourceUtils.releaseConnection(connection, dataSource);
-		}
-		
-	}
-	
-	private Map<Long, Integer> countByUserId(String sql, String columnName, String errorContext) {
-		Map<Long, Integer> counts = new HashMap<>();
-		Connection connection = DataSourceUtils.getConnection(dataSource);
-		
-		try (PreparedStatement statement = connection.prepareStatement(sql)) {
-			
-			try (ResultSet resultSet = statement.executeQuery()) {
-				
-				while (resultSet.next()) {
-					long userId = resultSet.getLong(columnName);
-					
-					if (!resultSet.wasNull()) {
-						counts.put(userId, resultSet.getInt("case_count"));
-					}
-					
-				}
-				
-			}
-			
-		} catch (SQLException e) {
-			throw new PersistenceException(errorContext, e);
-		} finally {
-			DataSourceUtils.releaseConnection(connection, dataSource);
-		}
-		
-		return counts;
 	}
 	
 }

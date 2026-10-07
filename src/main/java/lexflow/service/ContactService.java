@@ -21,7 +21,7 @@ public class ContactService {
 	// Create
 	
 	@Transactional
-	public Contact add(Case case_, String name, List<String> phoneNumbers, List<String> emails, List<String> addresses, String notes) {
+	public Contact save(Case case_, String name, List<String> phoneNumbers, List<String> emails, List<String> addresses, String notes) {
 		caseService.requireOpen(case_);
 		
 		Contact contact = new Contact(case_.getCaseId(), name, phoneNumbers, emails, addresses, notes, LocalDateTime.now());

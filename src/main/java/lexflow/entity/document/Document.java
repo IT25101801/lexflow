@@ -3,6 +3,7 @@ package lexflow.entity.document;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 
 @Getter
@@ -28,6 +29,10 @@ public abstract class Document {
 		this.filePath = filePath;
 		this.originalFilename = originalFilename;
 		this.uploadedAt = uploadedAt;
+	}
+	
+	public String getStoredFilename() {
+		return Paths.get(filePath).getFileName().toString();
 	}
 	
 }

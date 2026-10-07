@@ -77,8 +77,38 @@ public class FileUtil {
 		
 	}
 	
-	// Delete
+	// Update
 	
+	public static String rename(String filePath, String newFilename) {
+		Path source = Paths.get(filePath);
+		String[] parts = source.getFileName().toString().split("-", 4);
+		
+		if (parts.length < 4) {
+			return filePath;
+		}
+		
+		Path target = UPLOAD_DIRECTORY.resolve(parts[0] + "-" + parts[1] + "-" + parts[2] + "-" + cleanFilename(newFilename));
+		Path uploadDirectory = UPLOAD_DIRECTORY.toAbsolutePath().normalize();
+		
+		if (!uploadDirectory.equals(target.toAbsolutePath().normalize().getParent())) {
+			throw new PersistenceException("renaming file: " + target.getFileName() + " resolves outside the upload directory");
+		}
+		
+		try {
+			
+			if (Files.exists(source) && !source.equals(target)) {
+				Files.move(source, target);
+			}
+			
+		} catch (IOException e) {
+			throw new PersistenceException("renaming file", e);
+		}
+		
+		return target.toString();
+	}
+	
+	// Delete
+
 	public static void delete(String filePath) {
 		
 		if (filePath == null) {

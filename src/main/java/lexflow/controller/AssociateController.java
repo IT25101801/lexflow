@@ -36,7 +36,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AssociateController {
 	
-	private final AnalyticsService analyticsService;
 	private final CaseService caseService;
 	private final ConsultationService consultationService;
 	private final ContactService contactService;
@@ -52,19 +51,6 @@ public class AssociateController {
 		model.addAttribute("user", currentAssociate(authentication));
 		
 		return "associate/dashboard";
-	}
-	
-	@GetMapping("/associate/analytics")
-	public String analytics(Authentication authentication, Model model) {
-		Associate associate = currentAssociate(authentication);
-		model.addAttribute("user", associate);
-		
-		model.addAttribute("winRate", analyticsService.winRateForAssociate(associate.getUserId()));
-		model.addAttribute("averageCaseDurationDays", analyticsService.averageCaseDurationDaysForAssociate(associate.getUserId()));
-		model.addAttribute("billableAmountThisMonth", analyticsService.billableAmountThisMonthForAssociate(associate.getUserId()));
-		model.addAttribute("billableAmountLastMonth", analyticsService.billableAmountLastMonthForAssociate(associate.getUserId()));
-		
-		return "associate/analytics";
 	}
 	
 	@GetMapping("/associate/profile")
@@ -421,7 +407,7 @@ public class AssociateController {
 	}
 	
 	@PostMapping("/associate/cases/{id}/contacts")
-	public String addContact(@PathVariable("id") Long caseId, @Valid @ModelAttribute SaveContactRequest form, BindingResult bindingResult, Authentication authentication, Model model, RedirectAttributes redirectAttributes) {
+	public String saveContact(@PathVariable("id") Long caseId, @Valid @ModelAttribute SaveContactRequest form, BindingResult bindingResult, Authentication authentication, Model model, RedirectAttributes redirectAttributes) {
 		Case case_ = caseService.findOwnedByAssociate(caseId, currentAssociate(authentication));
 		
 		if (bindingResult.hasErrors()) {
@@ -432,7 +418,7 @@ public class AssociateController {
 		}
 		
 		try {
-			contactService.add(case_, form.getName(), form.getPhoneNumbers(), form.getEmails(), form.getAddresses(), form.getNotes());
+			contactService.save(case_, form.getName(), form.getPhoneNumbers(), form.getEmails(), form.getAddresses(), form.getNotes());
 		} catch (InvalidStateException e) {
 			populateCaseDetailModel(case_, model);
 			model.addAttribute("error", e.getMessage());

@@ -46,7 +46,6 @@ public class FinanceOfficerController {
 	private final TransactionService transactionService;
 	private final DocumentService documentService;
 	private final TaskService taskService;
-	private final AnalyticsService analyticsService;
 	
 	// Overview
 	
@@ -55,26 +54,6 @@ public class FinanceOfficerController {
 		model.addAttribute("user", currentFinanceOfficer(authentication));
 		
 		return "finance-officer/dashboard";
-	}
-	
-	@GetMapping("/finance-officer/analytics")
-	public String analytics(Authentication authentication, Model model) {
-		model.addAttribute("user", currentFinanceOfficer(authentication));
-		
-		Map<Integer, BigDecimal> revenueByMonth = analyticsService.revenueByMonth(LocalDate.now().getYear());
-		model.addAttribute("revenueByMonthLabels", monthLabels());
-		model.addAttribute("revenueByMonthValues", revenueByMonth.values());
-		
-		model.addAttribute("outstandingInvoiceTotal", analyticsService.outstandingInvoiceTotal());
-		model.addAttribute("averageDaysToPayment", analyticsService.averageDaysToPayment());
-		
-		Map<TransactionType, Integer> topUpCountComparison = analyticsService.topUpCountComparison();
-		model.addAttribute("cardTopUpCount", topUpCountComparison.getOrDefault(TransactionType.CARD_TOP_UP, 0));
-		model.addAttribute("cashTopUpCount", topUpCountComparison.getOrDefault(TransactionType.CASH_TOP_UP, 0));
-		
-		model.addAttribute("totalClientWalletFloat", analyticsService.totalClientWalletFloat());
-		
-		return "finance-officer/analytics";
 	}
 	
 	@GetMapping("/finance-officer/profile")
@@ -364,10 +343,6 @@ public class FinanceOfficerController {
 		CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
 		
 		return (FinanceOfficer) principal.user();
-	}
-	
-	private List<String> monthLabels() {
-		return List.of("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
 	}
 	
 	private void populateCaseDetailModel(Case case_, Model model) {

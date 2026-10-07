@@ -34,3 +34,4 @@ build/
 
 ### VS Code ###
 .vscode/
+src/main/resources/static/demo-files/large-document.pdf

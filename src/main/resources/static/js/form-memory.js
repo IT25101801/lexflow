@@ -208,6 +208,7 @@ function reopenFormContainer(form) {
 			var copy = error.cloneNode(true);
 			copy.style.marginTop = "1rem";
 			form.parentNode.insertBefore(copy, form);
+			error.remove();
 		}
 		
 	}
@@ -276,3 +277,18 @@ function hideFlashLater(flash, delay) {
 		}, 400);
 	}, delay);
 }
+
+document.addEventListener("change", function (event) {
+	
+	if (event.target.type !== "file") {
+		return;
+	}
+	
+	var field = event.target.closest(".field");
+	var hints = field ? field.querySelectorAll(".reselect-hint") : [];
+	
+	for (var i = 0; i < hints.length; i++) {
+		hints[i].style.display = "none";
+	}
+
+});

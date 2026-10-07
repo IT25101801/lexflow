@@ -50,10 +50,6 @@ function clearFileInput(inputId) {
 	setDemoFiles(document.getElementById(inputId), []);
 }
 
-function fillLargeFileInput(inputId, filename) {
-	setDemoFiles(document.getElementById(inputId), [new File([new Uint8Array(51 * 1024 * 1024)], filename, {type: "application/pdf"})]);
-}
-
 async function fillFileInput(inputId, url, filename) {
 	const input = document.getElementById(inputId);
 	if (!input) return;
@@ -79,7 +75,7 @@ function fillClientRegisterFormB2() {
 	fillMultiInputRow("phoneNumberRows", "phoneNumbers", "0761000006");
 	addAndFillMultiInputRow("phoneNumberRows", "phoneNumbers", "0712345678", "0711000006");
 	document.getElementById("nicNumber").value = "935876789V";
-	fillFileInput("nicFile", "/demo-files/nic-document.pdf", "NIC Document.pdf");
+	fillFileInput("nicFile", "/demo-files/nic-document.pdf", "nic-document.pdf");
 }
 
 function fillClientRegisterFormD() {
@@ -101,7 +97,12 @@ function fillClientRegisterFormD1() {
 
 function fillClientRegisterFormD2() {
 	fillClientRegisterFormD();
-	fillFileInput("nicFile", "/demo-files/nic-document.pdf", "NIC Document.pdf");
+	fillFileInput("nicFile", "/demo-files/nic-image.png", "nic-image.png");
+}
+
+function fillClientRegisterFormD3() {
+	fillClientRegisterFormD();
+	fillFileInput("nicFile", "/demo-files/nic-document.pdf", "nic-document.pdf");
 }
 
 function fillWalkinClientRegisterFormB1() {
@@ -121,7 +122,7 @@ function fillWalkinClientRegisterFormB2() {
 	addAndFillMultiInputRow("addressRows", "addresses", "No. 123, Anywhere Street, Anywhere City", "No. 22, Havelock Road, Colombo");
 	fillMultiInputRow("phoneNumberRows", "phoneNumbers", "0761000007");
 	document.getElementById("nicNumber").value = "911957890V";
-	fillFileInput("nicFile", "/demo-files/nic-document.pdf", "NIC Document.pdf");
+	fillFileInput("nicFile", "/demo-files/nic-document.pdf", "nic-document.pdf");
 }
 
 function fillWalkinClientRegisterFormD() {
@@ -143,7 +144,12 @@ function fillWalkinClientRegisterFormD1() {
 
 function fillWalkinClientRegisterFormD2() {
 	fillWalkinClientRegisterFormD();
-	fillFileInput("nicFile", "/demo-files/nic-document.pdf", "NIC Document.pdf");
+	fillFileInput("nicFile", "/demo-files/nic-image.png", "nic-image.png");
+}
+
+function fillWalkinClientRegisterFormD3() {
+	fillWalkinClientRegisterFormD();
+	fillFileInput("nicFile", "/demo-files/nic-document.pdf", "nic-document.pdf");
 }
 
 function fillRegisterStaffRole(role, data) {
@@ -158,10 +164,10 @@ function fillRegisterStaffRole(role, data) {
 	fillMultiInputRow("addressRows", "addresses", data.address);
 	fillMultiInputRow("phoneNumberRows", "phoneNumbers", data.phoneNumber);
 	document.getElementById("nicNumber").value = data.nicNumber;
-	fillFileInput("nicFile", "/demo-files/nic-document.pdf", "NIC Document.pdf");
+	fillFileInput("nicFile", "/demo-files/nic-document.pdf", "nic-document.pdf");
 	if (data.barNumber) {
 		document.getElementById("barNumber").value = data.barNumber;
-		fillFileInput("barFile", "/demo-files/bar-document.pdf", "Bar Document.pdf");
+		fillFileInput("barFile", "/demo-files/bar-document.pdf", "bar-document.pdf");
 	} else {
 		document.getElementById("barNumber").value = "";
 		clearFileInput("barFile");
@@ -325,7 +331,7 @@ function fillTaskFormP2() {
 
 function fillTaskFormP3() {
 	fillTaskForm("File the 2019 survey plan", true, false, false);
-	fillFileInput("taskAddDocumentFiles", "/demo-files/case-document.pdf", "Survey Plan.pdf");
+	fillFileInput("taskAddDocumentFiles", "/demo-files/case-document-1.pdf", "case-document-1.pdf");
 }
 
 function fillTaskFormP4() {
@@ -388,12 +394,12 @@ function fillConsultationFormD() {
 
 function fillConsultationFormD1() {
 	fillConsultationFormD();
-	fillLargeFileInput("consultationFiles", "Large Document.pdf");
+	fillFileInput("consultationFiles", "/demo-files/large-document.pdf", "large-document.pdf");
 }
 
 function fillConsultationFormD2() {
 	fillConsultationFormD();
-	fillFileInput("consultationFiles", "/demo-files/consultation-document.pdf", "Consultation Document.pdf");
+	fillFileInput("consultationFiles", "/demo-files/consultation-document-1.pdf", "consultation-document-1.pdf");
 }
 
 function fillCroConsultationFormR1() {
@@ -434,12 +440,12 @@ function fillCroConsultationFormD() {
 
 function fillCroConsultationFormD1() {
 	fillCroConsultationFormD();
-	fillLargeFileInput("consultationFiles", "Large Document.pdf");
+	fillFileInput("consultationFiles", "/demo-files/large-document.pdf", "large-document.pdf");
 }
 
 function fillCroConsultationFormD2() {
 	fillCroConsultationFormD();
-	fillFileInput("consultationFiles", "/demo-files/consultation-document.pdf", "Consultation Document.pdf");
+	fillFileInput("consultationFiles", "/demo-files/consultation-document-1.pdf", "consultation-document-1.pdf");
 }
 
 function fillCashTopUpFormT1() {

@@ -92,7 +92,7 @@
 		<div class="field">
 			<label for="nicFile">NIC Document</label>
 			<input id="nicFile" type="file" name="nicFile" accept=".pdf" required/>
-			<span class="field-hint" th:if="${error}" style="color:var(--warning);">Please re-select your file.</span>
+			<span class="field-hint reselect-hint" th:if="${error}" style="color:var(--warning);">Please re-select your file.</span>
 			<span class="field-hint">Upload a scanned copy of your National Identity Card. (PDF only)</span>
 		</div>
 		
@@ -112,7 +112,8 @@
 	<button class="demo-btn" type="button" title="Fill Nimali Karunatilake With an Invalid NIC and Phone Number" onclick="fillClientRegisterFormB1()">B1</button>
 	<button class="demo-btn" type="button" title="Fill Nimali Karunatilake (Client)" onclick="fillClientRegisterFormB2()">B2</button>
 	<button class="demo-btn" type="button" title="Fill Dinusha Rathnayake Without an NIC Document" onclick="fillClientRegisterFormD1()">D1</button>
-	<button class="demo-btn" type="button" title="Fill Dinusha Rathnayake (Client)" onclick="fillClientRegisterFormD2()">D2</button>
+	<button class="demo-btn" type="button" title="Fill Dinusha Rathnayake With an Image Instead of a PDF" onclick="fillClientRegisterFormD2()">D2</button>
+	<button class="demo-btn" type="button" title="Fill Dinusha Rathnayake (Client)" onclick="fillClientRegisterFormD3()">D3</button>
 </div>
 
 <script th:src="@{/js/demo.js}"></script>

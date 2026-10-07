@@ -92,7 +92,7 @@
 						<p class="empty-state" th:if="${#lists.isEmpty(consultationDocuments)}">No documents yet.</p>
 						<div class="item-row" th:each="consultationDocument : ${consultationDocuments}">
 							<div class="item-main">
-								<a class="item-title" th:href="@{/client-relations-officer/documents/consultation/{id}/{filename}(id=${consultationDocument.documentId},filename=${consultationDocument.originalFilename})}" th:text="${consultationDocument.originalFilename}" target="_blank"></a>
+								<a class="item-title" th:href="@{/client-relations-officer/documents/consultation/{id}/{filename}(id=${consultationDocument.documentId},filename=${consultationDocument.storedFilename})}" th:text="${consultationDocument.originalFilename}" target="_blank"></a>
 							</div>
 						</div>
 					</div>

@@ -69,7 +69,7 @@
 				<div class="tabpanel" data-tab="tasks">
 					<div class="section-title" style="display:flex;align-items:center;justify-content:space-between;">
 						Tasks
-						<button class="btn-round-add" type="button" onclick="document.getElementById('taskAddModal').style.display='flex';">+</button>
+						<button class="btn-round-add" type="button" th:if="${case.caseStatus.name() == 'OPEN'}" onclick="document.getElementById('taskAddModal').style.display='flex';">+</button>
 					</div>
 					<p class="empty-state" th:if="${#lists.isEmpty(tasks)}">No tasks yet.</p>
 					<div class="contact-card-grid" th:unless="${#lists.isEmpty(tasks)}">
@@ -98,7 +98,7 @@
 								<div class="detail-value">
 									<div th:if="${#lists.isEmpty(taskDocuments.get(task.taskId))}">No documents yet</div>
 									<div th:each="taskDocument : ${taskDocuments.get(task.taskId)}">
-										<a class="item-title" th:href="@{/paralegal/documents/case/{id}/{filename}(id=${taskDocument.documentId},filename=${taskDocument.originalFilename})}" th:text="${taskDocument.originalFilename}" target="_blank"></a>
+										<a class="item-title" th:href="@{/paralegal/documents/case/{id}/{filename}(id=${taskDocument.documentId},filename=${taskDocument.storedFilename})}" th:text="${taskDocument.originalFilename}" target="_blank"></a>
 									</div>
 								</div>
 							</div>
@@ -141,7 +141,7 @@
 						<p class="empty-state" th:if="${#lists.isEmpty(caseDocuments) and documentKeyword != null and !#strings.isEmpty(documentKeyword)}">No documents match your search.</p>
 						<div class="item-row" th:each="caseDocument : ${caseDocuments}">
 							<div class="item-main">
-								<a class="item-title" th:href="@{/paralegal/documents/case/{id}/{filename}(id=${caseDocument.documentId},filename=${caseDocument.originalFilename})}" th:text="${caseDocument.originalFilename}" target="_blank"></a>
+								<a class="item-title" th:href="@{/paralegal/documents/case/{id}/{filename}(id=${caseDocument.documentId},filename=${caseDocument.storedFilename})}" th:text="${caseDocument.originalFilename}" target="_blank"></a>
 							</div>
 							<div class="item-actions">
 								<button type="button" class="action-btn action-btn-edit"
@@ -166,7 +166,7 @@
 							<div class="item-row" th:each="stagedDocument : ${stagedDocuments}">
 								<input class="staged-select" type="checkbox" name="documentIds" form="stagedBatchForm" th:value="${stagedDocument.documentId}" th:if="${#lists.size(stagedDocuments) >= 2}" onchange="updateStagedBatchBar()" style="margin-right:0.6rem;"/>
 								<div class="item-main">
-									<a class="item-title" th:href="@{/paralegal/documents/case/{id}/{filename}(id=${stagedDocument.documentId},filename=${stagedDocument.originalFilename})}" th:text="${stagedDocument.originalFilename}" target="_blank"></a>
+									<a class="item-title" th:href="@{/paralegal/documents/case/{id}/{filename}(id=${stagedDocument.documentId},filename=${stagedDocument.storedFilename})}" th:text="${stagedDocument.originalFilename}" target="_blank"></a>
 								</div>
 								<div class="item-actions">
 									<form method="post" th:action="@{/paralegal/cases/{id}/documents/{documentId}/accept(id=${case.caseId},documentId=${stagedDocument.documentId})}">
@@ -195,7 +195,7 @@
 				<div class="tabpanel" data-tab="contacts">
 					<div class="section-title" style="display:flex;align-items:center;justify-content:space-between;">
 						Contacts
-						<button type="button" class="btn-round-add"
+						<button type="button" class="btn-round-add" th:if="${case.caseStatus.name() == 'OPEN'}"
 								th:attr="data-action=@{/paralegal/cases/{id}/contacts(id=${case.caseId})}"
 								onclick="openContactAddModal(this)">+
 						</button>

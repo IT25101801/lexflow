@@ -95,7 +95,7 @@
 			<div class="field">
 				<label for="nicFile">NIC Document</label>
 				<input id="nicFile" type="file" name="nicFile" accept=".pdf" required/>
-				<span class="field-hint" th:if="${error}" style="color:var(--warning);">Please re-select your file.</span>
+				<span class="field-hint reselect-hint" th:if="${error}" style="color:var(--warning);">Please re-select your file.</span>
 				<span class="field-hint">Upload a scanned copy of the staff member's National Identity Card. (PDF only)</span>
 			</div>
 			
@@ -112,7 +112,7 @@
 				<div class="field">
 					<label for="barFile">Bar Document</label>
 					<input id="barFile" type="file" name="barFile" accept=".pdf"/>
-					<span class="field-hint" th:if="${error}" style="color:var(--warning);">Please re-select your file.</span>
+					<span class="field-hint reselect-hint" th:if="${error}" style="color:var(--warning);">Please re-select your file.</span>
 					<span class="field-hint">Upload a scanned copy of the staff member's bar enrollment certificate. (PDF only)</span>
 				</div>
 			</div>

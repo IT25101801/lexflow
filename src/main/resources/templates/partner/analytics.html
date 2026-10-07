@@ -10,103 +10,117 @@
 
 <div class="main">
 	<div th:replace="~{fragments/common :: topbar('Analytics', null)}"></div>
-	
+
 	<div class="content">
-		<div class="stat-grid">
-			<div class="stat-card">
-				<div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
-				<div>
+		<div class="module-grid">
+
+			<section class="module-card">
+				<div class="module-title"><i class="bi bi-people"></i> User Management</div>
+				<div class="module-stat">
+					<div class="stat-value" th:text="${totalClientWalletFloat != null ? #numbers.formatDecimal(totalClientWalletFloat, 1, 'COMMA', 2, 'POINT') : '0.00'}"></div>
+					<div class="stat-label">Money Held in Client Wallets</div>
+				</div>
+				<div class="chart-label">Active Users by Role</div>
+				<div class="chart-canvas-wrap"><canvas id="activeUserCountByRoleChart"></canvas></div>
+			</section>
+
+			<section class="module-card">
+				<div class="module-title"><i class="bi bi-chat-square-text"></i> Consultation Management</div>
+				<div class="module-stat">
+					<div class="stat-value" th:text="${consultationAcceptanceRate != null ? #numbers.formatDecimal(consultationAcceptanceRate, 1, 1) + '%' : '–'}"></div>
+					<div class="stat-label">Acceptance Rate</div>
+				</div>
+				<div class="chart-label">Consultation Requests by Status</div>
+				<div class="chart-canvas-wrap"><canvas id="consultationStatusBreakdownChart"></canvas></div>
+			</section>
+
+			<section class="module-card">
+				<div class="module-title"><i class="bi bi-briefcase"></i> Case Management</div>
+				<div class="module-stat">
 					<div class="stat-value" th:text="${averageCaseDurationDays != null ? #numbers.formatDecimal(averageCaseDurationDays, 1, 1) + ' days' : '–'}"></div>
-					<div class="stat-label">Avg. Case Duration</div>
+					<div class="stat-label">Average Case Duration</div>
 				</div>
-			</div>
-		</div>
-		
-		<div class="chart-grid">
-			<div class="chart-card">
-				<div class="chart-card-title">Case Resolution Breakdown</div>
-				<div class="chart-canvas-wrap">
-					<canvas id="caseResolutionChart"></canvas>
+				<div class="chart-label">Closed Cases by Resolution</div>
+				<div class="chart-canvas-wrap"><canvas id="caseResolutionBreakdownChart"></canvas></div>
+			</section>
+
+			<section class="module-card">
+				<div class="module-title"><i class="bi bi-file-earmark-text"></i> Document Management</div>
+				<div class="module-stat">
+					<div class="stat-value" th:text="${stagedDocumentCount}"></div>
+					<div class="stat-label">Documents Pending Review</div>
 				</div>
-			</div>
-			<div class="chart-card">
-				<div class="chart-card-title">Revenue by Month</div>
-				<div class="chart-canvas-wrap">
-					<canvas id="revenueByMonthChart"></canvas>
+				<div class="chart-label">Documents by Type</div>
+				<div class="chart-canvas-wrap"><canvas id="documentCountByTypeChart"></canvas></div>
+			</section>
+
+			<section class="module-card">
+				<div class="module-title"><i class="bi bi-cash-stack"></i> Finance Management</div>
+				<div class="module-stat">
+					<div class="stat-value" th:text="${outstandingInvoiceTotal != null ? #numbers.formatDecimal(outstandingInvoiceTotal, 1, 'COMMA', 2, 'POINT') : '0.00'}"></div>
+					<div class="stat-label">Outstanding Unpaid Invoices</div>
 				</div>
-			</div>
-			<div class="chart-card">
-				<div class="chart-card-title">Revenue by Case Type</div>
-				<div class="chart-canvas-wrap">
-					<canvas id="revenueByCaseTypeChart"></canvas>
+				<div class="chart-label">Revenue by Month</div>
+				<div class="chart-canvas-wrap"><canvas id="revenueByMonthChart"></canvas></div>
+			</section>
+
+			<section class="module-card">
+				<div class="module-title"><i class="bi bi-calendar-event"></i> Scheduling Management</div>
+				<div class="module-stat">
+					<div class="stat-value" th:text="${upcomingEventCountThisWeek}"></div>
+					<div class="stat-label">Events in the Next 7 Days</div>
 				</div>
-			</div>
-			<div class="chart-card">
-				<div class="chart-card-title">Closed Cases per Associate</div>
-				<div class="chart-canvas-wrap">
-					<canvas id="associateClosedChart"></canvas>
-				</div>
-			</div>
-			<div class="chart-card">
-				<div class="chart-card-title">Closed Cases per Paralegal</div>
-				<div class="chart-canvas-wrap">
-					<canvas id="paralegalClosedChart"></canvas>
-				</div>
-			</div>
+				<div class="chart-label">Events by Status</div>
+				<div class="chart-canvas-wrap"><canvas id="eventStatusBreakdownChart"></canvas></div>
+			</section>
+
 		</div>
 	</div>
 </div>
 
 <script th:inline="javascript">
 	/*<![CDATA[*/
+	const activeUserCountByRoleLabels = /*[[${activeUserCountByRoleLabels}]]*/ [];
+	const activeUserCountByRoleValues = /*[[${activeUserCountByRoleValues}]]*/ [];
+	const consultationStatusBreakdownLabels = /*[[${consultationStatusBreakdownLabels}]]*/ [];
+	const consultationStatusBreakdownValues = /*[[${consultationStatusBreakdownValues}]]*/ [];
 	const caseResolutionBreakdownLabels = /*[[${caseResolutionBreakdownLabels}]]*/ [];
 	const caseResolutionBreakdownValues = /*[[${caseResolutionBreakdownValues}]]*/ [];
+	const documentCountByTypeLabels = /*[[${documentCountByTypeLabels}]]*/ [];
+	const documentCountByTypeValues = /*[[${documentCountByTypeValues}]]*/ [];
 	const revenueByMonthLabels = /*[[${revenueByMonthLabels}]]*/ [];
 	const revenueByMonthValues = /*[[${revenueByMonthValues}]]*/ [];
-	const revenueByCaseTypeLabels = /*[[${revenueByCaseTypeLabels}]]*/ [];
-	const revenueByCaseTypeValues = /*[[${revenueByCaseTypeValues}]]*/ [];
-	const closedCaseCountByAssociateLabels = /*[[${closedCaseCountByAssociateLabels}]]*/ [];
-	const closedCaseCountByAssociateValues = /*[[${closedCaseCountByAssociateValues}]]*/ [];
-	const closedCaseCountByParalegalLabels = /*[[${closedCaseCountByParalegalLabels}]]*/ [];
-	const closedCaseCountByParalegalValues = /*[[${closedCaseCountByParalegalValues}]]*/ [];
+	const eventStatusBreakdownLabels = /*[[${eventStatusBreakdownLabels}]]*/ [];
+	const eventStatusBreakdownValues = /*[[${eventStatusBreakdownValues}]]*/ [];
 	/*]]>*/
-	
-	const chartTextColor = getComputedStyle(document.body).getPropertyValue("--text").trim();
-	Chart.defaults.color = chartTextColor;
+
+	Chart.defaults.color = getComputedStyle(document.body).getPropertyValue("--text").trim();
 	Chart.defaults.borderColor = getComputedStyle(document.body).getPropertyValue("--border").trim();
-	
-	new Chart(document.getElementById("caseResolutionChart"), {
-		type: "doughnut",
-		data: {
-			labels: caseResolutionBreakdownLabels,
-			datasets: [{data: caseResolutionBreakdownValues, backgroundColor: ["#2f9e5c", "#d64545", "#3b82c4", "#a0a0a0"]}]
-		},
-		options: {responsive: true, maintainAspectRatio: false}
-	});
-	
-	new Chart(document.getElementById("revenueByMonthChart"), {
-		type: "bar",
-		data: {labels: revenueByMonthLabels, datasets: [{label: "Revenue", data: revenueByMonthValues, backgroundColor: "#3b82c4"}]},
-		options: {responsive: true, maintainAspectRatio: false, plugins: {legend: {display: false}}}
-	});
-	
-	new Chart(document.getElementById("revenueByCaseTypeChart"), {
-		type: "bar",
-		data: {labels: revenueByCaseTypeLabels, datasets: [{label: "Revenue", data: revenueByCaseTypeValues, backgroundColor: "#8a5fd6"}]},
-		options: {responsive: true, maintainAspectRatio: false, indexAxis: "y", plugins: {legend: {display: false}}}
-	});
-	
-	new Chart(document.getElementById("associateClosedChart"), {
-		type: "bar",
-		data: {labels: closedCaseCountByAssociateLabels, datasets: [{label: "Closed Cases", data: closedCaseCountByAssociateValues, backgroundColor: "#2f9e5c"}]},
-		options: {responsive: true, maintainAspectRatio: false, plugins: {legend: {display: false}}}
-	});
-	
-	new Chart(document.getElementById("paralegalClosedChart"), {
-		type: "bar",
-		data: {labels: closedCaseCountByParalegalLabels, datasets: [{label: "Closed Cases", data: closedCaseCountByParalegalValues, backgroundColor: "#d69e2e"}]},
-		options: {responsive: true, maintainAspectRatio: false, plugins: {legend: {display: false}}}
-	});
+
+	const chartColors = ["#3b82c4", "#2f9e5c", "#d69e2e", "#d64545", "#8a5fd6", "#a0a0a0"];
+
+	function barChart(canvasId, labels, values, color) {
+		new Chart(document.getElementById(canvasId), {
+			type: "bar",
+			data: {labels: labels, datasets: [{data: values, backgroundColor: color}]},
+			options: {responsive: true, maintainAspectRatio: false, plugins: {legend: {display: false}}, scales: {y: {beginAtZero: true, ticks: {precision: 0}}}}
+		});
+	}
+
+	function doughnutChart(canvasId, labels, values) {
+		new Chart(document.getElementById(canvasId), {
+			type: "doughnut",
+			data: {labels: labels, datasets: [{data: values, backgroundColor: chartColors}]},
+			options: {responsive: true, maintainAspectRatio: false, plugins: {legend: {position: "bottom", labels: {boxWidth: 12, padding: 8}}}}
+		});
+	}
+
+	barChart("activeUserCountByRoleChart", activeUserCountByRoleLabels, activeUserCountByRoleValues, "#3b82c4");
+	doughnutChart("consultationStatusBreakdownChart", consultationStatusBreakdownLabels, consultationStatusBreakdownValues);
+	doughnutChart("caseResolutionBreakdownChart", caseResolutionBreakdownLabels, caseResolutionBreakdownValues);
+	barChart("documentCountByTypeChart", documentCountByTypeLabels, documentCountByTypeValues, "#8a5fd6");
+	barChart("revenueByMonthChart", revenueByMonthLabels, revenueByMonthValues, "#2f9e5c");
+	doughnutChart("eventStatusBreakdownChart", eventStatusBreakdownLabels, eventStatusBreakdownValues);
 </script>
 
 </body>

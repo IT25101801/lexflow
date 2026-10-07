@@ -1,37 +1,39 @@
-/* Dashboard stat cards and chart cards. Linked from the Partner, Associate, Paralegal and Finance dashboards. */
+/* ---- Partner analytics: one box per module ---- */
 
-/* ---- Analytics (stat cards + chart cards) ---- */
-
-.stat-grid {
+.module-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	grid-template-columns: repeat(3, minmax(0, 1fr));
 	gap: 1.25rem;
-	max-width: 900px;
-	margin: 2.5rem auto 0;
+	max-width: 1400px;
+	margin: 1.5rem auto 0;
 }
 
-.stat-card {
+.module-card {
 	background: var(--surface);
 	border: 1px solid var(--border);
 	border-radius: var(--radius-xl);
 	box-shadow: var(--shadow-sm);
-	padding: 1.5rem;
+	padding: 1.25rem 1.5rem 1.5rem;
 	display: flex;
-	align-items: center;
-	gap: 1rem;
+	flex-direction: column;
+	min-width: 0;
 }
 
-.stat-icon {
-	width: 48px;
-	height: 48px;
-	flex-shrink: 0;
-	background: var(--accent-dim);
-	border-radius: var(--radius-lg);
+.module-title {
 	display: flex;
 	align-items: center;
-	justify-content: center;
+	gap: 0.5rem;
+	font-size: 0.8rem;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
 	color: var(--accent);
-	font-size: 1.25rem;
+	padding-bottom: 0.85rem;
+	border-bottom: 1px solid var(--border);
+}
+
+.module-stat {
+	padding: 1rem 0;
 }
 
 .stat-value {
@@ -47,30 +49,30 @@
 	color: var(--text-muted);
 }
 
-.chart-grid {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-	gap: 1.25rem;
-	max-width: 1400px;
-	margin: 1.5rem auto 0;
-}
-
-.chart-card {
-	background: var(--surface);
-	border: 1px solid var(--border);
-	border-radius: var(--radius-xl);
-	box-shadow: var(--shadow-sm);
-	padding: 1.5rem;
-}
-
-.chart-card-title {
+.chart-label {
 	font-size: 0.85rem;
 	font-weight: 700;
 	color: var(--text);
-	margin-bottom: 1rem;
+	margin-bottom: 0.75rem;
 }
 
 .chart-canvas-wrap {
 	position: relative;
-	height: 260px;
+	height: 280px;
+}
+
+@media (max-width: 1200px) {
+
+	.module-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+}
+
+@media (max-width: 760px) {
+
+	.module-grid {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
 }

@@ -105,7 +105,7 @@
 						<p class="empty-state" th:if="${#lists.isEmpty(caseDocuments) and documentKeyword != null and !#strings.isEmpty(documentKeyword)}">No documents match your search.</p>
 						<div class="item-row" th:each="caseDocument : ${caseDocuments}">
 							<div class="item-main">
-								<a class="item-title" th:href="@{/client/documents/case/{id}/{filename}(id=${caseDocument.documentId},filename=${caseDocument.originalFilename})}" th:text="${caseDocument.originalFilename}" target="_blank"></a>
+								<a class="item-title" th:href="@{/client/documents/case/{id}/{filename}(id=${caseDocument.documentId},filename=${caseDocument.storedFilename})}" th:text="${caseDocument.originalFilename}" target="_blank"></a>
 							</div>
 						</div>
 					</div>
@@ -115,12 +115,12 @@
 						<div class="item-list" th:unless="${#lists.isEmpty(stagedDocuments)}">
 							<div class="item-row" th:each="stagedDocument : ${stagedDocuments}">
 								<div class="item-main">
-									<a class="item-title" th:href="@{/client/documents/case/{id}/{filename}(id=${stagedDocument.documentId},filename=${stagedDocument.originalFilename})}" th:text="${stagedDocument.originalFilename}" target="_blank"></a>
+									<a class="item-title" th:href="@{/client/documents/case/{id}/{filename}(id=${stagedDocument.documentId},filename=${stagedDocument.storedFilename})}" th:text="${stagedDocument.originalFilename}" target="_blank"></a>
 								</div>
 							</div>
 						</div>
 					</div>
-					<div>
+					<div th:if="${case.caseStatus.name() == 'OPEN'}">
 						<div class="section-title">Upload Document</div>
 						<form th:action="@{/client/cases/{id}/documents/stage(id=${case.caseId})}" method="post" enctype="multipart/form-data" style="display:flex;gap:0.75rem;align-items:flex-end;">
 							<div class="field" style="flex:1;">

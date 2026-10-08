@@ -93,7 +93,10 @@
 <div id="eventRescheduleModal" class="modal-overlay" th:if="${event.eventStatus.name() == 'SCHEDULED'}" onclick="if(event.target===this)this.style.display='none';">
 	<div class="modal-dialog" style="max-width:480px;width:92%;max-height:90vh;overflow-y:auto;">
 		<div class="section-title">Reschedule Event</div>
-		<form method="post" th:action="@{/associate/events/{id}/reschedule(id=${event.eventId})}" style="display:flex;flex-direction:column;gap:0.85rem;">
+		<div class="demo-btn-corner">
+			<button class="demo-btn" type="button" title="Fill New Meeting Time" onclick="fillRescheduleMeetingFormS3()">S3</button>
+		</div>
+		<form method="post" th:action="@{/associate/events/{id}/reschedule(id=${event.eventId})}" style="display:flex;flex-direction:column;gap:0.85rem;margin-top:1rem;">
 			<div class="field">
 				<label for="subject">Subject</label>
 				<input id="subject" type="text" name="subject" th:value="${event.subject}" required/>
@@ -128,10 +131,6 @@
 	</div>
 </div>
 
-<div class="demo-btn-row" th:if="${event.eventStatus.name() == 'SCHEDULED'}">
-	<span class="demo-btn-label">Demo</span>
-	<button class="demo-btn" type="button" title="Fill New Meeting Time" onclick="fillRescheduleMeetingFormS3()">S3</button>
-</div>
 <script th:src="@{/js/demo.js}"></script>
 
 </body>

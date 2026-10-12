@@ -104,6 +104,8 @@
 					<div class="tabbar" role="tablist">
 						<button class="tab" type="button" th:if="${consultation.consultationStatus.name() == 'PENDING'}" data-tab="accept">Accept</button>
 						<button class="tab" type="button" th:if="${consultation.consultationStatus.name() == 'PENDING'}" data-tab="reject">Reject</button>
+						<button class="tab" type="button" th:if="${consultation.consultationStatus.name() == 'ACCEPTED_BY_PARTNER'}" data-tab="schedule">Schedule Meeting</button>
+						<button class="tab" type="button" th:if="${consultation.consultationStatus.name() == 'ACCEPTED_BY_ASSOCIATE' and !hasCase}" data-tab="opencase">Open Case</button>
 						<button class="tab" type="button" th:if="${!hasCase and consultation.associate != null and (consultation.consultationStatus.name() == 'ACCEPTED_BY_PARTNER' or consultation.consultationStatus.name() == 'SCHEDULED' or consultation.consultationStatus.name() == 'ACCEPTED_BY_ASSOCIATE')}" data-tab="reassign">
 							Reassign Staff
 						</button>
@@ -139,6 +141,44 @@
 								</div>
 							</form>
 						</div>
+						<div class="tabpanel" th:if="${consultation.consultationStatus.name() == 'ACCEPTED_BY_PARTNER'}" data-tab="schedule">
+							<form method="post" th:action="@{/partner/consultations/{id}/schedule(id=${consultation.consultationId})}" style="display:flex;flex-direction:column;gap:0.85rem;">
+								<div class="field">
+									<label for="subject">Subject</label>
+									<input id="subject" type="text" name="subject" required/>
+								</div>
+								<div class="field">
+									<label for="date">Date</label>
+									<input id="date" type="date" name="date" required data-not-past/>
+								</div>
+								<div class="field-row">
+									<div class="field">
+										<label for="startTime">Start Time</label>
+										<input id="startTime" type="time" name="startTime" required/>
+									</div>
+									<div class="field">
+										<label for="endTime">End Time</label>
+										<input id="endTime" type="time" name="endTime" required/>
+									</div>
+								</div>
+								<div class="field">
+									<label for="location">Location</label>
+									<input id="location" type="text" name="location" required/>
+								</div>
+								<div class="field">
+									<label for="notes">Notes</label>
+									<textarea id="notes" name="notes" rows="4"></textarea>
+								</div>
+								<div>
+									<button class="btn btn-primary btn-block" type="submit">Schedule</button>
+								</div>
+							</form>
+						</div>
+						<div class="tabpanel" th:if="${consultation.consultationStatus.name() == 'ACCEPTED_BY_ASSOCIATE' and !hasCase}" data-tab="opencase">
+							<form method="post" th:action="@{/partner/consultations/{id}/open-case(id=${consultation.consultationId})}">
+								<button class="btn btn-primary btn-block" type="submit">Open Case</button>
+							</form>
+						</div>
 						<div class="tabpanel" th:if="${!hasCase and consultation.associate != null and (consultation.consultationStatus.name() == 'ACCEPTED_BY_PARTNER' or consultation.consultationStatus.name() == 'SCHEDULED' or consultation.consultationStatus.name() == 'ACCEPTED_BY_ASSOCIATE')}" data-tab="reassign">
 							<form method="post" th:action="@{/partner/consultations/{id}/reassign(id=${consultation.consultationId})}" style="display:flex;flex-direction:column;gap:0.85rem;">
 								<div class="field">
@@ -169,6 +209,11 @@
 	</div>
 </div>
 
+<div class="demo-btn-row" th:if="${consultation.consultationStatus.name() == 'ACCEPTED_BY_PARTNER'}">
+	<span class="demo-btn-label">Demo</span>
+	<button class="demo-btn" type="button" title="Fill Meeting With the End Before the Start" onclick="fillScheduleMeetingFormS1()">S1</button>
+	<button class="demo-btn" type="button" title="Fill Meeting" onclick="fillScheduleMeetingFormS2()">S2</button>
+</div>
 <div class="demo-btn-row" th:if="${consultation.consultationStatus.name() == 'PENDING'}">
 	<span class="demo-btn-label">Demo</span>
 	<button class="demo-btn" type="button" title="Fill Rejection Reason" onclick="fillPartnerRejectionFormR()">R</button>

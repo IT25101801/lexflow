@@ -254,6 +254,40 @@ public class PartnerController {
 		return "redirect:/partner/consultations/{id}";
 	}
 	
+	@PostMapping("/partner/consultations/{id}/schedule")
+	public String scheduleMeeting(@PathVariable("id") Long consultationId, @Valid @ModelAttribute ScheduleMeetingRequest form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
+		Consultation consultation = consultationService.findById(consultationId);
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", ValidationUtil.allErrors(bindingResult));
+			populateConsultationDetailModel(consultation, model);
+			
+			return "partner/consultation-details";
+		}
+		
+		try {
+			eventService.schedule(consultation, form.getSubject(), form.getDate(), form.getStartTime(), form.getEndTime(), form.getLocation(), form.getNotes());
+		} catch (InvalidStateException | BusinessRuleViolationException e) {
+			populateConsultationDetailModel(consultation, model);
+			model.addAttribute("error", e.getMessage());
+			
+			return "partner/consultation-details";
+		}
+		
+		redirectAttributes.addFlashAttribute("success", "Meeting scheduled successfully.");
+		
+		return "redirect:/partner/consultations/{id}";
+	}
+	
+	@PostMapping("/partner/consultations/{id}/open-case")
+	public String openCase(@PathVariable("id") Long consultationId, RedirectAttributes redirectAttributes) {
+		Case case_ = caseService.open(consultationService.findById(consultationId));
+		
+		redirectAttributes.addFlashAttribute("success", "Case opened successfully.");
+		
+		return "redirect:/partner/cases/" + case_.getCaseId();
+	}
+	
 	@PostMapping("/partner/consultations/{id}/reassign")
 	public String reassignConsultation(@PathVariable("id") Long consultationId, @Valid @ModelAttribute AssignStaffRequest form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
 		Consultation consultation = consultationService.findById(consultationId);

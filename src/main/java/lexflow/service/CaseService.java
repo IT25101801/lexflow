@@ -28,15 +28,6 @@ public class CaseService {
 	private final CaseDao caseDao;
 	private final ApplicationEventPublisher eventPublisher;
 	
-	// Create
-	
-	@Transactional
-	public Case open(Consultation consultation) {
-		Case case_ = new Case(consultation, consultation.getClient(), consultation.getAssociate(), consultation.getParalegal(), LocalDateTime.now());
-		
-		return caseDao.insert(case_);
-	}
-	
 	// Read
 	
 	public Case findById(Long caseId) {

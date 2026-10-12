@@ -1,5 +1,6 @@
 package lexflow.state.consultation;
 
+import lexflow.entity.case_.Case;
 import lexflow.entity.consultation.CaseType;
 import lexflow.entity.consultation.Consultation;
 import lexflow.entity.consultation.ConsultationStatus;
@@ -43,6 +44,10 @@ public interface ConsultationState {
 	
 	default Consultation associateReject(Consultation consultation, ConsultationService consultationService, String rejectionReason) {
 		throw new InvalidConsultationStateException(consultation.getConsultationId(), consultation.getConsultationStatus(), ConsultationStatus.SCHEDULED);
+	}
+	
+	default Case openCase(Consultation consultation, ConsultationService consultationService) {
+		throw new InvalidConsultationStateException(consultation.getConsultationId(), consultation.getConsultationStatus(), ConsultationStatus.ACCEPTED_BY_ASSOCIATE);
 	}
 	
 	default void delete(Consultation consultation, ConsultationService consultationService) {

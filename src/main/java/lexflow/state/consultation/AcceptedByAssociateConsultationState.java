@@ -1,5 +1,6 @@
 package lexflow.state.consultation;
 
+import lexflow.entity.case_.Case;
 import lexflow.entity.consultation.Consultation;
 import lexflow.entity.consultation.ConsultationStatus;
 import lexflow.entity.user.Associate;
@@ -18,6 +19,11 @@ public class AcceptedByAssociateConsultationState implements ConsultationState {
 		}
 		
 		return consultationService.applyReassignment(consultation, associate, paralegal, false);
+	}
+	
+	@Override
+	public Case openCase(Consultation consultation, ConsultationService consultationService) {
+		return consultationService.applyOpenCase(consultation);
 	}
 	
 }

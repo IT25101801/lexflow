@@ -176,6 +176,11 @@ public class ConsultationService {
 	}
 	
 	@Transactional
+	public Case openCase(Consultation consultation) {
+		return stateFor(consultation.getConsultationStatus()).openCase(consultation, this);
+	}
+	
+	@Transactional
 	public Consultation markScheduled(Consultation consultation) {
 		return stateFor(consultation.getConsultationStatus()).markScheduled(consultation, this);
 	}
@@ -239,6 +244,12 @@ public class ConsultationService {
 		consultation.setParalegal(paralegal);
 		
 		return consultationDao.update(consultation);
+	}
+	
+	public Case applyOpenCase(Consultation consultation) {
+		Case case_ = new Case(consultation, consultation.getClient(), consultation.getAssociate(), consultation.getParalegal(), LocalDateTime.now());
+		
+		return caseDao.insert(case_);
 	}
 	
 	public Consultation applyStatusChange(Consultation consultation) {

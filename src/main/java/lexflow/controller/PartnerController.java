@@ -281,7 +281,7 @@ public class PartnerController {
 	
 	@PostMapping("/partner/consultations/{id}/open-case")
 	public String openCase(@PathVariable("id") Long consultationId, RedirectAttributes redirectAttributes) {
-		Case case_ = caseService.open(consultationService.findById(consultationId));
+		Case case_ = consultationService.openCase(consultationService.findById(consultationId));
 		
 		redirectAttributes.addFlashAttribute("success", "Case opened successfully.");
 		

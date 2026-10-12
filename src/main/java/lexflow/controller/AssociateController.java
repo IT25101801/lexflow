@@ -182,7 +182,7 @@ public class AssociateController {
 	@PostMapping("/associate/consultations/{id}/open-case")
 	public String openCase(@PathVariable("id") Long consultationId, Authentication authentication, RedirectAttributes redirectAttributes) {
 		Consultation consultation = consultationService.findOwnedByAssociate(consultationId, currentAssociate(authentication));
-		Case case_ = caseService.open(consultation);
+		Case case_ = consultationService.openCase(consultation);
 		
 		redirectAttributes.addFlashAttribute("success", "Case opened successfully.");
 		

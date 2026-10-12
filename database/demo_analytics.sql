@@ -1,57 +1,57 @@
 -- Clear Database
 
 DECLARE
-@sql NVARCHAR(MAX) = N'';
+    @sql NVARCHAR(MAX) = N'';
 
 -- Drop All Functions
 
-SELECT @sql += 'DROP FUNCTION ' + QUOTENAME(SCHEMA_NAME(schema_id)) + '.' + QUOTENAME(NAME) + ';' + CHAR(10)
+SELECT @sql += 'DROP FUNCTION ' + QUOTENAME(SCHEMA_NAME(schema_id)) + '.' + QUOTENAME(name) + ';' + CHAR(10)
 FROM sys.objects
-WHERE TYPE IN ('FN', 'IF', 'TF');
+WHERE type IN ('FN', 'IF', 'TF');
 
 EXEC sp_executesql @sql;
 
 SET
-@sql = N'';
+    @sql = N'';
 
 -- Drop All Stored Procedures
 
-SELECT @sql += 'DROP PROCEDURE ' + QUOTENAME(SCHEMA_NAME(schema_id)) + '.' + QUOTENAME(NAME) + ';' + CHAR(10)
+SELECT @sql += 'DROP PROCEDURE ' + QUOTENAME(SCHEMA_NAME(schema_id)) + '.' + QUOTENAME(name) + ';' + CHAR(10)
 FROM sys.procedures;
 
 EXEC sp_executesql @sql;
 
 SET
-@sql = N'';
+    @sql = N'';
 
 -- Drop All Triggers
 
 SELECT @sql += 'DROP TRIGGER ' + QUOTENAME(SCHEMA_NAME(t.schema_id)) + '.' + QUOTENAME(tr.name) + ';' + CHAR(10)
 FROM sys.triggers tr
-    INNER JOIN sys.tables t
-ON tr.parent_id = t.object_id
+INNER JOIN sys.tables t
+    ON tr.parent_id = t.object_id
 WHERE tr.parent_class = 1;
 
 EXEC sp_executesql @sql;
 
 SET
-@sql = N'';
+    @sql = N'';
 
 -- Drop All Foreign Keys
 
 SELECT @sql += 'ALTER TABLE ' + QUOTENAME(SCHEMA_NAME(t.schema_id)) + '.' + QUOTENAME(t.name) + ' DROP CONSTRAINT ' + QUOTENAME(fk.name) + ';' + CHAR(10)
 FROM sys.foreign_keys fk
-    INNER JOIN sys.tables t
-ON fk.parent_object_id = t.object_id;
+INNER JOIN sys.tables t
+    ON fk.parent_object_id = t.object_id;
 
 EXEC sp_executesql @sql;
 
 SET
-@sql = N'';
+    @sql = N'';
 
 -- Drop All Tables
 
-SELECT @sql += 'DROP TABLE ' + QUOTENAME(SCHEMA_NAME(schema_id)) + '.' + QUOTENAME(NAME) + ';' + CHAR(10)
+SELECT @sql += 'DROP TABLE ' + QUOTENAME(SCHEMA_NAME(schema_id)) + '.' + QUOTENAME(name) + ';' + CHAR(10)
 FROM sys.tables;
 
 EXEC sp_executesql @sql;
@@ -61,18 +61,17 @@ EXEC sp_executesql @sql;
 
 -- Session Setting for Filtered Unique Indexes
 SET
-QUOTED_IDENTIFIER ON;
+    QUOTED_IDENTIFIER ON;
 
 -- Users Table
 
 CREATE TABLE users (
-    user_id   BIGINT IDENTITY (1, 1) NOT NULL,
-    role      VARCHAR(24)  NOT NULL,
-    user_code VARCHAR(255),
-    email     VARCHAR(255) NOT NULL,
-    password  VARCHAR(255) NOT NULL,
-    name      VARCHAR(MAX
-) NOT NULL,
+    user_id        BIGINT IDENTITY (1, 1) NOT NULL,
+    role           VARCHAR(24)            NOT NULL,
+    user_code      VARCHAR(255),
+    email          VARCHAR(255)           NOT NULL,
+    password       VARCHAR(255)           NOT NULL,
+    name           VARCHAR(MAX)           NOT NULL,
     date_of_birth  DATE                   NOT NULL,
     gender         VARCHAR(6)             NOT NULL,
     nic_number     VARCHAR(12)            NOT NULL,
@@ -88,7 +87,7 @@ CREATE TABLE users (
     CONSTRAINT uq_users_user_code UNIQUE (user_code),
 
     -- Check Constraints
-    CONSTRAINT ck_users_role CHECK (ROLE IN ('PARTNER', 'ASSOCIATE', 'PARALEGAL', 'CLIENT', 'CLIENT_RELATIONS_OFFICER', 'FINANCE_OFFICER')),
+    CONSTRAINT ck_users_role CHECK (role IN ('PARTNER', 'ASSOCIATE', 'PARALEGAL', 'CLIENT', 'CLIENT_RELATIONS_OFFICER', 'FINANCE_OFFICER')),
     CONSTRAINT ck_users_gender CHECK (gender IN ('MALE', 'FEMALE', 'OTHER')),
     CONSTRAINT ck_users_nic_number CHECK (
         nic_number LIKE '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][VXvx]' OR
@@ -96,12 +95,12 @@ CREATE TABLE users (
         ),
     CONSTRAINT ck_users_account_status CHECK (account_status IN ('ACTIVE', 'DELETED')),
     CONSTRAINT ck_users_bar_number_role CHECK (
-        (ROLE IN ('PARTNER', 'ASSOCIATE') AND bar_number IS NOT NULL) OR
-        (ROLE NOT IN ('PARTNER', 'ASSOCIATE') AND bar_number IS NULL)
+        (role IN ('PARTNER', 'ASSOCIATE') AND bar_number IS NOT NULL) OR
+        (role NOT IN ('PARTNER', 'ASSOCIATE') AND bar_number IS NULL)
         ),
     CONSTRAINT ck_users_wallet_balance_role CHECK (
-        (ROLE = 'CLIENT' AND wallet_balance IS NOT NULL) OR
-        (ROLE <> 'CLIENT' AND wallet_balance IS NULL)
+        (role = 'CLIENT' AND wallet_balance IS NOT NULL) OR
+        (role <> 'CLIENT' AND wallet_balance IS NULL)
         ),
     CONSTRAINT ck_users_wallet_balance_non_negative CHECK (
         wallet_balance IS NULL OR
@@ -149,12 +148,11 @@ ALTER TABLE user_phone_numbers
 
 -- Consultations Table
 CREATE TABLE consultations (
-    consultation_id   BIGINT IDENTITY (1, 1) NOT NULL,
-    consultation_code VARCHAR(255),
-    client_id         BIGINT      NOT NULL,
-    case_type         VARCHAR(21) NOT NULL,
-    description       VARCHAR(MAX
-) NOT NULL,
+    consultation_id     BIGINT IDENTITY (1, 1) NOT NULL,
+    consultation_code   VARCHAR(255),
+    client_id           BIGINT                 NOT NULL,
+    case_type           VARCHAR(21)            NOT NULL,
+    description         VARCHAR(MAX)           NOT NULL,
     consultation_status VARCHAR(21)            NOT NULL,
     submitted_at        DATETIME2(3)           NOT NULL,
     associate_id        BIGINT,
@@ -209,11 +207,11 @@ ALTER TABLE consultation_opposing_parties
 CREATE TABLE cases (
     case_id                BIGINT IDENTITY (1, 1) NOT NULL,
     case_code              VARCHAR(255),
-    consultation_id        BIGINT     NOT NULL,
-    client_id              BIGINT     NOT NULL,
-    associate_id           BIGINT     NOT NULL,
-    paralegal_id           BIGINT     NOT NULL,
-    case_status            VARCHAR(6) NOT NULL,
+    consultation_id        BIGINT                 NOT NULL,
+    client_id              BIGINT                 NOT NULL,
+    associate_id           BIGINT                 NOT NULL,
+    paralegal_id           BIGINT                 NOT NULL,
+    case_status            VARCHAR(6)             NOT NULL,
     opened_at              DATETIME2(3)           NOT NULL,
     case_resolution_status VARCHAR(9),
     closed_at              DATETIME2(3),
@@ -248,9 +246,8 @@ ALTER TABLE cases
 -- Contacts Table
 CREATE TABLE contacts (
     contact_id BIGINT IDENTITY (1, 1) NOT NULL,
-    case_id    BIGINT NOT NULL,
-    name       VARCHAR(MAX
-) ,
+    case_id    BIGINT                 NOT NULL,
+    name       VARCHAR(MAX),
     notes      VARCHAR(MAX),
     added_at   DATETIME2(3)           NOT NULL,
 
@@ -308,9 +305,9 @@ ALTER TABLE contact_addresses
 CREATE TABLE invoices (
     invoice_id     BIGINT IDENTITY (1, 1) NOT NULL,
     invoice_code   VARCHAR(255),
-    case_id        BIGINT         NOT NULL,
-    total_amount   DECIMAL(38, 2) NOT NULL,
-    invoice_status VARCHAR(6)     NOT NULL,
+    case_id        BIGINT                 NOT NULL,
+    total_amount   DECIMAL(38, 2)         NOT NULL,
+    invoice_status VARCHAR(6)             NOT NULL,
     compiled_at    DATETIME2(3)           NOT NULL,
     paid_at        DATETIME2(3),
     
@@ -336,9 +333,9 @@ ALTER TABLE invoices
 CREATE TABLE transactions (
     transaction_id   BIGINT IDENTITY (1, 1) NOT NULL,
     transaction_code VARCHAR(255),
-    client_id        BIGINT         NOT NULL,
-    amount           DECIMAL(38, 2) NOT NULL,
-    transaction_type VARCHAR(11)    NOT NULL,
+    client_id        BIGINT                 NOT NULL,
+    amount           DECIMAL(38, 2)         NOT NULL,
+    transaction_type VARCHAR(11)            NOT NULL,
     invoice_id       BIGINT,
     occurred_at      DATETIME2(3)           NOT NULL,
     
@@ -364,11 +361,11 @@ ALTER TABLE transactions
 -- Tasks Table
 CREATE TABLE tasks (
     task_id           BIGINT IDENTITY (1, 1) NOT NULL,
-    case_id           BIGINT       NOT NULL,
-    title             VARCHAR(255) NOT NULL,
-    documenting_task  BIT          NOT NULL,
-    scheduling_task   BIT          NOT NULL,
-    billing_task      BIT          NOT NULL,
+    case_id           BIGINT                 NOT NULL,
+    title             VARCHAR(255)           NOT NULL,
+    documenting_task  BIT                    NOT NULL,
+    scheduling_task   BIT                    NOT NULL,
+    billing_task      BIT                    NOT NULL,
     billable_amount   DECIMAL(38, 2),
     billed_invoice_id BIGINT,
     logged_at         DATETIME2(3)           NOT NULL,
@@ -394,15 +391,14 @@ ALTER TABLE tasks
 
 -- Events Table
 CREATE TABLE events (
-    event_id   BIGINT IDENTITY (1, 1) NOT NULL,
-    event_type VARCHAR(18)  NOT NULL,
-    subject    VARCHAR(255) NOT NULL,
-    date       DATE         NOT NULL,
-    start_time TIME(0)      NOT NULL,
-    end_time   TIME(0)      NOT NULL,
-    location   VARCHAR(255) NOT NULL,
-    notes      VARCHAR(MAX
-) ,
+    event_id        BIGINT IDENTITY (1, 1) NOT NULL,
+    event_type      VARCHAR(18)            NOT NULL,
+    subject         VARCHAR(255)           NOT NULL,
+    date            DATE                   NOT NULL,
+    start_time      TIME(0)                NOT NULL,
+    end_time        TIME(0)                NOT NULL,
+    location        VARCHAR(255)           NOT NULL,
+    notes           VARCHAR(MAX),
     event_status    VARCHAR(9)             NOT NULL,
     scheduled_at    DATETIME2(3)           NOT NULL,
     completed_at    DATETIME2(3),
@@ -451,9 +447,9 @@ ALTER TABLE events
 -- Documents Table
 CREATE TABLE documents (
     document_id       BIGINT IDENTITY (1, 1) NOT NULL,
-    document_type     VARCHAR(21)  NOT NULL,
-    file_path         VARCHAR(255) NOT NULL,
-    original_filename VARCHAR(255) NOT NULL,
+    document_type     VARCHAR(21)            NOT NULL,
+    file_path         VARCHAR(255)           NOT NULL,
+    original_filename VARCHAR(255)           NOT NULL,
     uploaded_at       DATETIME2(3)           NOT NULL,
     user_id           BIGINT,
     consultation_id   BIGINT,
@@ -507,7 +503,7 @@ ALTER TABLE documents
 -- Recreate Seed Data
 -- Session Setting for Filtered Unique Indexes
 SET
-QUOTED_IDENTIFIER ON;
+    QUOTED_IDENTIFIER ON;
 
 -- Users Data
 
@@ -2022,7 +2018,7 @@ VALUES ('NIC_DOCUMENT',          'uploads/1-NIC_DOCUMENT-d01957-nic-document.pdf
 -- Recreate Functions
 -- Session Setting for Functions
 SET
-QUOTED_IDENTIFIER ON;
+    QUOTED_IDENTIFIER ON;
 GO
 
 -- Generate Code Function
@@ -2030,7 +2026,7 @@ CREATE FUNCTION dbo.ufn_generate_code(@id BIGINT) RETURNS BIGINT
 AS
 BEGIN
 
-RETURN 10000000 + ((@id % 90000000) * 71234567 + 12345691) % 90000000;
+    RETURN 10000000 + ((@id % 90000000) * 71234567 + 12345691) % 90000000;
 
 END;
 GO
@@ -2040,7 +2036,7 @@ CREATE FUNCTION dbo.ufn_generate_transaction_code(@transaction_id BIGINT) RETURN
 AS
 BEGIN
 
-RETURN 'TXN-' + CAST(@transaction_id AS VARCHAR(20)) + '-' + CAST(dbo.ufn_generate_code(@transaction_id) AS VARCHAR(20));
+    RETURN 'TXN-' + CAST(@transaction_id AS VARCHAR(20)) + '-' + CAST(dbo.ufn_generate_code(@transaction_id) AS VARCHAR(20));
 
 END;
 GO
@@ -2059,118 +2055,119 @@ AS
 BEGIN
     -- Procedure Options
     SET
-NOCOUNT ON;
+        NOCOUNT ON;
     SET
-XACT_ABORT ON;
+        XACT_ABORT ON;
 
     -- Reset Outputs
     SET
-@transaction_id = NULL;
+        @transaction_id = NULL;
     SET
-@transaction_code = NULL;
+        @transaction_code = NULL;
     SET
-@balance = NULL;
+        @balance = NULL;
 
     -- Check Amount
     IF
-@amount IS NULL OR @amount <= 0.00
-BEGIN
+        @amount IS NULL OR @amount <= 0.00
+        BEGIN
             SET
-@status_code = 1;
+                @status_code = 1;
             RETURN;
-END;
+        END;
 
-BEGIN TRY
+    BEGIN TRY
         -- Start Transaction
-BEGIN
-TRANSACTION;
+        BEGIN
+            TRANSACTION;
 
         -- Find and Lock Client
         DECLARE
-@current_balance DECIMAL(38, 2);
+            @current_balance DECIMAL(38, 2);
 
-SELECT @current_balance = wallet_balance
-FROM users WITH (UPDLOCK, ROWLOCK)
-WHERE user_id = @client_id
-  AND ROLE = 'CLIENT'
-  AND account_status = 'ACTIVE';
+        SELECT @current_balance = wallet_balance
+        FROM users
+        WITH (UPDLOCK, ROWLOCK)
+        WHERE user_id = @client_id
+          AND role = 'CLIENT'
+          AND account_status = 'ACTIVE';
 
-IF
-@current_balance IS NULL
-BEGIN
+        IF
+            @current_balance IS NULL
+            BEGIN
                 SET
-@status_code = 2;
+                    @status_code = 2;
 
-ROLLBACK TRANSACTION;
+                ROLLBACK TRANSACTION;
 
-RETURN;
+                RETURN;
 
-END;
+            END;
 
         -- Work Out Balance Change
         DECLARE
-@delta DECIMAL(38, 2);
+            @delta DECIMAL(38, 2);
 
         IF
-@transaction_type IN ('CHARGE', 'WITHDRAWAL')
+            @transaction_type IN ('CHARGE', 'WITHDRAWAL')
             SET @delta = -@amount;
-ELSE
+        ELSE
             SET @delta = @amount;
 
         -- Check Sufficient Funds
         IF
-@delta < 0.00 AND (@current_balance + @delta) < 0.00
-BEGIN
+            @delta < 0.00 AND (@current_balance + @delta) < 0.00
+            BEGIN
                 SET
-@status_code = 3;
+                    @status_code = 3;
                 SET
-@balance = @current_balance;
+                    @balance = @current_balance;
 
-ROLLBACK TRANSACTION;
+                ROLLBACK TRANSACTION;
 
-RETURN;
+                RETURN;
 
-END;
+            END;
 
         -- Update Balance
         SET
-@balance = @current_balance + @delta;
+            @balance = @current_balance + @delta;
 
-UPDATE users
-SET wallet_balance = @balance
-WHERE user_id = @client_id;
+        UPDATE users
+        SET wallet_balance = @balance
+        WHERE user_id = @client_id;
 
 -- Insert Ledger Row
-INSERT INTO transactions (client_id, amount, transaction_type, invoice_id, occurred_at)
-VALUES (@client_id, @amount, @transaction_type, @invoice_id, @occurred_at);
+        INSERT INTO transactions (client_id, amount, transaction_type, invoice_id, occurred_at)
+        VALUES (@client_id, @amount, @transaction_type, @invoice_id, @occurred_at);
 
 -- Set Transaction Code
-SET
-@transaction_id = CAST(SCOPE_IDENTITY() AS BIGINT);
         SET
-@transaction_code = dbo.ufn_generate_transaction_code(@transaction_id);
+            @transaction_id = CAST(SCOPE_IDENTITY() AS BIGINT);
+        SET
+            @transaction_code = dbo.ufn_generate_transaction_code(@transaction_id);
 
-UPDATE transactions
-SET transaction_code = @transaction_code
-WHERE transaction_id = @transaction_id;
+        UPDATE transactions
+        SET transaction_code = @transaction_code
+        WHERE transaction_id = @transaction_id;
 
 -- Commit and Report Success
-COMMIT TRANSACTION;
+        COMMIT TRANSACTION;
 
-SET
-@status_code = 0;
-END TRY
+        SET
+            @status_code = 0;
+    END TRY
     -- Error Handling
-BEGIN CATCH
-IF @@TRANCOUNT > 0
-BEGIN
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            BEGIN
 
-ROLLBACK TRANSACTION;
+                ROLLBACK TRANSACTION;
 
-END;
+            END;
 
         THROW;
-END CATCH;
+    END CATCH;
 END;
 GO
 
@@ -2183,29 +2180,28 @@ GO
 CREATE TRIGGER trg_users_au_prevent_deletion_of_client_with_outstanding_wallet_balance
     ON users
     AFTER
-
-UPDATE
-    as
+        UPDATE
+    AS
 BEGIN
     -- Trigger Options
     SET
-NOCOUNT ON;
+        NOCOUNT ON;
 
     -- Find Deleted Clients With Outstanding Wallet Balance
     IF
-EXISTS (SELECT 1
-               FROM inserted i
-               INNER JOIN deleted d
-                   ON d.user_id = i.user_id
-               WHERE i.role = 'CLIENT'
-                 AND d.account_status = 'ACTIVE'
-                 AND i.account_status = 'DELETED'
-                 AND i.wallet_balance > 0.00)
-BEGIN
+        EXISTS (SELECT 1
+                FROM inserted i
+                INNER JOIN deleted d
+                    ON d.user_id = i.user_id
+                WHERE i.role = 'CLIENT'
+                  AND d.account_status = 'ACTIVE'
+                  AND i.account_status = 'DELETED'
+                  AND i.wallet_balance > 0.00)
+        BEGIN
             -- Reject the Update
             THROW
-50001, 'A client with an outstanding wallet balance cannot be deleted.', 1;
-END;
+                50001, 'A client with an outstanding wallet balance cannot be deleted.', 1;
+        END;
 END;
 GO
 
@@ -2213,33 +2209,32 @@ GO
 CREATE TRIGGER trg_users_au_prevent_deletion_of_user_with_active_consultation
     ON users
     AFTER
-
-UPDATE
-    as
+        UPDATE
+    AS
 BEGIN
     -- Trigger Options
     SET
-NOCOUNT ON;
+        NOCOUNT ON;
 
     -- Find Deleted Users Assigned to an Active Consultation
     IF
-EXISTS (SELECT 1
-               FROM inserted i
-               INNER JOIN deleted d
-                   ON d.user_id = i.user_id
-               WHERE d.account_status = 'ACTIVE'
-                 AND i.account_status = 'DELETED'
-                 AND EXISTS (SELECT 1
-                             FROM consultations cn
-                             WHERE (cn.consultation_status IN ('PENDING', 'ACCEPTED_BY_PARTNER', 'SCHEDULED') OR (cn.consultation_status = 'ACCEPTED_BY_ASSOCIATE' AND NOT EXISTS (SELECT 1
-                                                                                                                                                                                   FROM cases cs
-                                                                                                                                                                                   WHERE cs.consultation_id = cn.consultation_id)))
-                               AND (cn.client_id = i.user_id OR cn.associate_id = i.user_id OR cn.paralegal_id = i.user_id)))
-BEGIN
+        EXISTS (SELECT 1
+                FROM inserted i
+                INNER JOIN deleted d
+                    ON d.user_id = i.user_id
+                WHERE d.account_status = 'ACTIVE'
+                  AND i.account_status = 'DELETED'
+                  AND EXISTS (SELECT 1
+                              FROM consultations cn
+                              WHERE (cn.consultation_status IN ('PENDING', 'ACCEPTED_BY_PARTNER', 'SCHEDULED') OR (cn.consultation_status = 'ACCEPTED_BY_ASSOCIATE' AND NOT EXISTS (SELECT 1
+                                                                                                                                                                                    FROM cases cs
+                                                                                                                                                                                    WHERE cs.consultation_id = cn.consultation_id)))
+                                AND (cn.client_id = i.user_id OR cn.associate_id = i.user_id OR cn.paralegal_id = i.user_id)))
+        BEGIN
             -- Reject the Update
             THROW
-50002, 'A user assigned to an active consultation cannot be deleted.', 1;
-END;
+                50002, 'A user assigned to an active consultation cannot be deleted.', 1;
+        END;
 END;
 GO
 
@@ -2247,31 +2242,30 @@ GO
 CREATE TRIGGER trg_users_au_prevent_deletion_of_user_with_open_case
     ON users
     AFTER
-
-UPDATE
-    as
+        UPDATE
+    AS
 BEGIN
     -- Trigger Options
     SET
-NOCOUNT ON;
+        NOCOUNT ON;
 
     -- Find Deleted Users Assigned to an Open Case
     IF
-EXISTS (SELECT 1
-               FROM inserted i
-               INNER JOIN deleted d
-                   ON d.user_id = i.user_id
-               WHERE d.account_status = 'ACTIVE'
-                 AND i.account_status = 'DELETED'
-                 AND EXISTS (SELECT 1
-                             FROM cases cs
-                             WHERE cs.case_status = 'OPEN'
-                               AND (cs.client_id = i.user_id OR cs.associate_id = i.user_id OR cs.paralegal_id = i.user_id)))
-BEGIN
+        EXISTS (SELECT 1
+                FROM inserted i
+                INNER JOIN deleted d
+                    ON d.user_id = i.user_id
+                WHERE d.account_status = 'ACTIVE'
+                  AND i.account_status = 'DELETED'
+                  AND EXISTS (SELECT 1
+                              FROM cases cs
+                              WHERE cs.case_status = 'OPEN'
+                                AND (cs.client_id = i.user_id OR cs.associate_id = i.user_id OR cs.paralegal_id = i.user_id)))
+        BEGIN
             -- Reject the Update
             THROW
-50003, 'A user assigned to an open case cannot be deleted.', 1;
-END;
+                50003, 'A user assigned to an open case cannot be deleted.', 1;
+        END;
 END;
 GO
 
@@ -2279,33 +2273,32 @@ GO
 CREATE TRIGGER trg_users_au_prevent_deletion_of_client_with_unpaid_invoice
     ON users
     AFTER
-
-UPDATE
-    as
+        UPDATE
+    AS
 BEGIN
     -- Trigger Options
     SET
-NOCOUNT ON;
+        NOCOUNT ON;
 
     -- Find Deleted Clients With an Unpaid Invoice
     IF
-EXISTS (SELECT 1
-               FROM inserted i
-               INNER JOIN deleted d
-                   ON d.user_id = i.user_id
-               WHERE i.role = 'CLIENT'
-                 AND d.account_status = 'ACTIVE'
-                 AND i.account_status = 'DELETED'
-                 AND EXISTS (SELECT 1
-                             FROM invoices inv
-                             INNER JOIN cases cs
-                                 ON cs.case_id = inv.case_id
-                             WHERE inv.invoice_status = 'UNPAID'
-                               AND cs.client_id = i.user_id))
-BEGIN
+        EXISTS (SELECT 1
+                FROM inserted i
+                INNER JOIN deleted d
+                    ON d.user_id = i.user_id
+                WHERE i.role = 'CLIENT'
+                  AND d.account_status = 'ACTIVE'
+                  AND i.account_status = 'DELETED'
+                  AND EXISTS (SELECT 1
+                              FROM invoices inv
+                              INNER JOIN cases cs
+                                  ON cs.case_id = inv.case_id
+                              WHERE inv.invoice_status = 'UNPAID'
+                                AND cs.client_id = i.user_id))
+        BEGIN
             -- Reject the Update
             THROW
-50004, 'A client with an unpaid invoice cannot be deleted.', 1;
-END;
+                50004, 'A client with an unpaid invoice cannot be deleted.', 1;
+        END;
 END;
 GO

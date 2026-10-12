@@ -105,11 +105,34 @@ public class ParalegalController {
 	@GetMapping("/paralegal/consultations/{id}")
 	public String consultationDetails(@PathVariable("id") Long consultationId, Authentication authentication, Model model) {
 		Consultation consultation = consultationService.findOwnedByParalegal(consultationId, currentParalegal(authentication));
-		model.addAttribute("consultation", consultation);
-		model.addAttribute("consultationDocuments", documentService.findByConsultation(consultation));
-		model.addAttribute("existingCase", caseService.findByConsultation(consultation));
+		populateConsultationDetailModel(consultation, model);
 		
 		return "paralegal/consultation-details";
+	}
+	
+	@PostMapping("/paralegal/consultations/{id}/schedule")
+	public String scheduleMeeting(@PathVariable("id") Long consultationId, @Valid @ModelAttribute ScheduleMeetingRequest form, BindingResult bindingResult, Authentication authentication, Model model, RedirectAttributes redirectAttributes) {
+		Consultation consultation = consultationService.findOwnedByParalegal(consultationId, currentParalegal(authentication));
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", ValidationUtil.allErrors(bindingResult));
+			populateConsultationDetailModel(consultation, model);
+			
+			return "paralegal/consultation-details";
+		}
+		
+		try {
+			eventService.schedule(consultation, form.getSubject(), form.getDate(), form.getStartTime(), form.getEndTime(), form.getLocation(), form.getNotes());
+		} catch (InvalidStateException | BusinessRuleViolationException e) {
+			populateConsultationDetailModel(consultation, model);
+			model.addAttribute("error", e.getMessage());
+			
+			return "paralegal/consultation-details";
+		}
+		
+		redirectAttributes.addFlashAttribute("success", "Meeting scheduled successfully.");
+		
+		return "redirect:/paralegal/consultations/{id}";
 	}
 	
 	// Cases
@@ -481,6 +504,12 @@ public class ParalegalController {
 		CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
 		
 		return (Paralegal) principal.user();
+	}
+	
+	private void populateConsultationDetailModel(Consultation consultation, Model model) {
+		model.addAttribute("consultation", consultation);
+		model.addAttribute("consultationDocuments", documentService.findByConsultation(consultation));
+		model.addAttribute("existingCase", caseService.findByConsultation(consultation));
 	}
 	
 	private void populateCaseDetailModel(Case case_, Model model) {

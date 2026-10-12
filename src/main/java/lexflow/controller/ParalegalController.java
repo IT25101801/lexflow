@@ -397,6 +397,42 @@ public class ParalegalController {
 		return "paralegal/event-details";
 	}
 	
+	@PostMapping("/paralegal/events/{id}/complete")
+	public String completeEvent(@PathVariable("id") Long eventId, Authentication authentication, Model model, RedirectAttributes redirectAttributes) {
+		Event event = eventService.findOwnedByParalegal(eventId, currentParalegal(authentication));
+		
+		try {
+			eventService.complete(event);
+		} catch (InvalidStateException | BusinessRuleViolationException e) {
+			model.addAttribute("event", event);
+			model.addAttribute("error", e.getMessage());
+			
+			return "paralegal/event-details";
+		}
+		
+		redirectAttributes.addFlashAttribute("success", "Event completed successfully.");
+		
+		return "redirect:/paralegal/events/{id}";
+	}
+	
+	@PostMapping("/paralegal/events/{id}/cancel")
+	public String cancelEvent(@PathVariable("id") Long eventId, Authentication authentication, Model model, RedirectAttributes redirectAttributes) {
+		Event event = eventService.findOwnedByParalegal(eventId, currentParalegal(authentication));
+		
+		try {
+			eventService.cancel(event);
+		} catch (InvalidStateException e) {
+			model.addAttribute("event", event);
+			model.addAttribute("error", e.getMessage());
+			
+			return "paralegal/event-details";
+		}
+		
+		redirectAttributes.addFlashAttribute("success", "Event canceled successfully.");
+		
+		return "redirect:/paralegal/events/{id}";
+	}
+	
 	@PostMapping("/paralegal/events/{id}/reschedule")
 	public String rescheduleEvent(@PathVariable("id") Long eventId, @Valid @ModelAttribute ScheduleMeetingRequest form, BindingResult bindingResult, Authentication authentication, Model model, RedirectAttributes redirectAttributes) {
 		Event event = eventService.findOwnedByParalegal(eventId, currentParalegal(authentication));

@@ -24,6 +24,12 @@
 						</div>
 						<div th:if="${event.eventStatus.name() == 'SCHEDULED'}" style="margin-left:auto;display:flex;gap:0.5rem;">
 							<button class="action-btn action-btn-edit" type="button" onclick="document.getElementById('eventRescheduleModal').style.display='flex';">Reschedule</button>
+							<form method="post" th:action="@{/paralegal/events/{id}/complete(id=${event.eventId})}">
+								<button class="action-btn action-btn-create" type="submit">Complete</button>
+							</form>
+							<form method="post" th:action="@{/paralegal/events/{id}/cancel(id=${event.eventId})}" onsubmit="return confirm('Cancel this event? This action cannot be undone.');">
+								<button class="action-btn action-btn-delete" type="submit">Cancel</button>
+							</form>
 						</div>
 					</div>
 					<div class="detail-row">

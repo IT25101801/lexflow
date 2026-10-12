@@ -1,6 +1,5 @@
 package lexflow.state.consultation;
 
-import lexflow.entity.case_.Case;
 import lexflow.entity.consultation.CaseType;
 import lexflow.entity.consultation.Consultation;
 import lexflow.entity.user.Associate;
@@ -27,8 +26,6 @@ public interface ConsultationState {
 	Consultation associateAccept(Consultation consultation, ConsultationService consultationService);
 	
 	Consultation associateReject(Consultation consultation, ConsultationService consultationService, String rejectionReason);
-	
-	Case openCase(Consultation consultation, ConsultationService consultationService);
 	
 	void delete(Consultation consultation, ConsultationService consultationService);
 	

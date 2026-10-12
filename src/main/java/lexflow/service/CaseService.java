@@ -5,9 +5,11 @@ import lexflow.entity.case_.Case;
 import lexflow.entity.case_.CaseResolutionStatus;
 import lexflow.entity.case_.CaseStatus;
 import lexflow.entity.consultation.Consultation;
+import lexflow.entity.consultation.ConsultationStatus;
 import lexflow.entity.user.Associate;
 import lexflow.entity.user.Client;
 import lexflow.entity.user.Paralegal;
+import lexflow.exception.consultation.InvalidConsultationStateException;
 import lexflow.observer.CaseEventsCancellationRequested;
 import lexflow.state.case_.CaseState;
 import lexflow.state.case_.ClosedCaseState;
@@ -27,6 +29,20 @@ public class CaseService {
 	
 	private final CaseDao caseDao;
 	private final ApplicationEventPublisher eventPublisher;
+	
+	// Create
+	
+	@Transactional
+	public Case open(Consultation consultation) {
+		
+		if (consultation.getConsultationStatus() != ConsultationStatus.ACCEPTED_BY_ASSOCIATE) {
+			throw new InvalidConsultationStateException(consultation.getConsultationId(), consultation.getConsultationStatus(), ConsultationStatus.ACCEPTED_BY_ASSOCIATE);
+		}
+		
+		Case case_ = new Case(consultation, consultation.getClient(), consultation.getAssociate(), consultation.getParalegal(), LocalDateTime.now());
+		
+		return caseDao.insert(case_);
+	}
 	
 	// Read
 	

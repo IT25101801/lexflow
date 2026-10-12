@@ -1,6 +1,5 @@
 package lexflow.state.consultation;
 
-import lexflow.entity.case_.Case;
 import lexflow.entity.consultation.CaseType;
 import lexflow.entity.consultation.Consultation;
 import lexflow.entity.consultation.ConsultationStatus;
@@ -78,11 +77,6 @@ public class ScheduledConsultationState implements ConsultationState {
 		consultation.setConsultationStatus(ConsultationStatus.REJECTED_BY_ASSOCIATE);
 		
 		return consultationService.applyStatusChange(consultation);
-	}
-	
-	@Override
-	public Case openCase(Consultation consultation, ConsultationService consultationService) {
-		throw new InvalidConsultationStateException(consultation.getConsultationId(), consultation.getConsultationStatus(), ConsultationStatus.ACCEPTED_BY_ASSOCIATE);
 	}
 	
 	@Override

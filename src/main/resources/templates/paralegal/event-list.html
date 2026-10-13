@@ -48,7 +48,10 @@
 						<td th:if="${active == 'events-past'}" th:text="${event.completedAt != null ? #temporals.format(event.completedAt, 'dd/MM/yyyy HH:mm') : '–'}"></td>
 						<td th:if="${active == 'events-past'}" th:text="${event.canceledAt != null ? #temporals.format(event.canceledAt, 'dd/MM/yyyy HH:mm') : '–'}"></td>
 						<td>
-							<a class="action-btn action-btn-view" th:href="@{/paralegal/events/{id}(id=${event.eventId})}">View</a>
+							<div style="display:flex;gap:0.4rem;">
+								<a class="action-btn action-btn-view" th:href="@{/paralegal/events/{id}(id=${event.eventId})}">View</a>
+								<a class="action-btn action-btn-edit" th:if="${event.eventStatus.name() == 'SCHEDULED'}" th:href="@{/paralegal/events/{id}(id=${event.eventId}, reschedule=true)}">Reschedule</a>
+							</div>
 						</td>
 					</tr>
 					</tbody>

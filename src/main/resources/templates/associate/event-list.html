@@ -50,6 +50,7 @@
 						<td>
 							<div style="display:flex;gap:0.4rem;">
 								<a class="action-btn action-btn-view" th:href="@{/associate/events/{id}(id=${event.eventId})}">View</a>
+								<a class="action-btn action-btn-edit" th:if="${event.eventStatus.name() == 'SCHEDULED'}" th:href="@{/associate/events/{id}(id=${event.eventId}, reschedule=true)}">Reschedule</a>
 								<form method="post" th:action="@{/associate/events/{id}/complete(id=${event.eventId})}" th:if="${event.eventStatus.name() == 'SCHEDULED'}">
 									<button class="action-btn action-btn-create" type="submit">Complete</button>
 								</form>

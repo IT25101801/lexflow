@@ -133,5 +133,15 @@
 
 <script th:src="@{/js/demo.js}"></script>
 
+<script>
+	if (new URLSearchParams(window.location.search).has("reschedule")) {
+		var rescheduleModal = document.getElementById("eventRescheduleModal");
+
+		if (rescheduleModal) {
+			rescheduleModal.style.display = "flex";
+		}
+	}
+</script>
+
 </body>
 </html>

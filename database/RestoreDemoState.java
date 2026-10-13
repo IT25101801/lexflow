@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 
 // java database/ResetDemo.java --apply
 
-public class ResetDemo {
+public class RestoreDemoState {
 	
 	public static void main(String[] args) throws Exception {
 		boolean apply = false;
@@ -45,13 +45,17 @@ public class ResetDemo {
 		
 		System.out.println("Seeded files committed in uploads/: " + tracked);
 		System.out.println("Seeded files to put back (deleted or changed): " + restore.size());
+		
 		for (String line : restore) {
 			System.out.println("  " + line.trim());
 		}
+		
 		System.out.println("Practice files to delete: " + delete.size());
+		
 		for (String line : delete) {
 			System.out.println("  " + line.replace("Would remove ", ""));
 		}
+		
 		System.out.println(filesOnly ? "Database: skipped (--files-only)" : "Database to rebuild from database/full_reset.sql: " + database);
 		
 		if (!apply) {

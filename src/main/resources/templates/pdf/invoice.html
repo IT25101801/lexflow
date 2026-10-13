@@ -96,6 +96,11 @@
 			color: #6b7380;
 			border-color: #6b7380;
 		}
+
+		.status-refunded {
+			color: #b91c1c;
+			border-color: #b91c1c;
+		}
 		
 		.rule {
 			border-top: 2px solid #d4af37;
@@ -215,7 +220,7 @@
 		<td>
 			<div class="document-title">INVOICE</div>
 			<div class="document-code" th:text="${invoice.invoiceCode}"></div>
-			<div class="status"><span th:class="${'status-' + #strings.toLowerCase(invoice.invoiceStatus.name())}" th:text="${invoice.invoiceStatus.name()}"></span></div>
+			<div class="status" th:with="refunded=${invoice.invoiceStatus.name() == 'VOIDED' and invoice.paidAt != null}"><span th:class="${refunded ? 'status-refunded' : 'status-' + #strings.toLowerCase(invoice.invoiceStatus.name())}" th:text="${refunded ? 'REFUNDED' : invoice.invoiceStatus.name()}"></span></div>
 		</td>
 	</tr>
 </table>

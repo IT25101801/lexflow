@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-// java database/ResetDemo.java --apply
+// java database/RestoreDemoState.java --apply
 
 public class RestoreDemoState {
 	

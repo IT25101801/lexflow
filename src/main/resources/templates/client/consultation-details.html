@@ -104,6 +104,10 @@
 <div class="modal-overlay" id="editModal" onclick="if(event.target===this)this.style.display='none';">
 	<div class="modal-dialog" style="max-width:480px;width:92%;">
 		<div class="section-title">Edit Consultation</div>
+		<div class="demo-btn-corner">
+			<button class="demo-btn" type="button" title="Fill a Blank Legal Issue" onclick="fillEditConsultationFormR1()">R1</button>
+			<button class="demo-btn" type="button" title="Fill Meridian Textiles With a Second Opposing Party and a Shorter Description" onclick="fillEditConsultationFormR2()">R2</button>
+		</div>
 		
 		<form method="post" enctype="multipart/form-data" th:action="@{/client/consultations/{id}/edit(id=${consultation.consultationId})}" style="display:flex;flex-direction:column;gap:0.85rem;margin-top:1rem;">
 			<div class="field">
@@ -150,6 +154,8 @@
 		</form>
 	</div>
 </div>
+
+<script th:src="@{/js/demo.js}"></script>
 
 </body>
 </html>

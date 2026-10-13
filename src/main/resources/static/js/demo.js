@@ -78,6 +78,20 @@ function fillClientRegisterFormB2() {
 	fillFileInput("nicFile", "/demo-files/nic-document.pdf", "nic-document.pdf");
 }
 
+function fillEditUserFormB1() {
+	fillEditUserFormB2();
+	document.querySelector("#phoneNumberRows input[name='phoneNumbers']").value = "07610";
+}
+
+function fillEditUserFormB2() {
+	// Nimali Karunatilake (the client registered with B2) — a new name, a new first address and a second one, a new first phone number and a second one.
+	document.getElementById("name").value = "Nimali Karunatilake Perera";
+	fillMultiInputRow("addressRows", "addresses", "No. 12, Havelock Road, Colombo");
+	addAndFillMultiInputRow("addressRows", "addresses", "", "No. 8, Lake Drive, Kandy");
+	fillMultiInputRow("phoneNumberRows", "phoneNumbers", "0761000066");
+	addAndFillMultiInputRow("phoneNumberRows", "phoneNumbers", "0712345678", "0711000066");
+}
+
 function fillClientRegisterFormD() {
 	// Dinusha Rathnayake — a second new client, so two people can register without resetting the database.
 	document.getElementById("email").value = "dinusha.rathnayake@gmail.com";
@@ -377,6 +391,21 @@ function fillConsultationFormR3() {
 		"My neighbour Mr. Sunil Wickramaratne has built a boundary wall about two feet inside my land in Kadawatha. " +
 		"The survey plan from 2019 shows the original boundary clearly. I would like advice on having the wall " +
 		"removed and the boundary restored.";
+}
+
+function fillEditConsultationFormR1() {
+	document.getElementById("description").value = "   ";
+}
+
+function fillEditConsultationFormR2() {
+	// The commercial contract consultation filled with R2 — a second opposing party and a much shorter description.
+	document.getElementById("caseType").value = "CONTRACT_COMMERCIAL";
+	fillMultiInputRow("opposingPartyRows", "opposingParties", "Meridian Textiles (Pvt) Ltd");
+	addAndFillMultiInputRow("opposingPartyRows", "opposingParties", "", "Ceylon Fabric Traders (Pvt) Ltd");
+	document.getElementById("description").value =
+		"Meridian Textiles (Pvt) Ltd has repeatedly delivered less fabric than our twelve-month supply agreement requires, and some batches missed " +
+		"the agreed specification. We have since learned that Ceylon Fabric Traders (Pvt) Ltd resold part of the contracted fabric. We want advice on " +
+		"terminating the agreement and recovering our losses from both companies.";
 }
 
 function fillConsultationFormD() {

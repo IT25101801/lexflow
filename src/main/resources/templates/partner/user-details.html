@@ -305,6 +305,10 @@
 <div id="editModal" class="modal-overlay" onclick="if(event.target===this)this.style.display='none';">
 	<div class="modal-dialog" style="max-width:480px;width:92%;">
 		<div class="section-title">Edit User</div>
+		<div class="demo-btn-corner">
+			<button class="demo-btn" type="button" title="Fill Nimali Karunatilake With an Invalid Phone Number" onclick="fillEditUserFormB1()">B1</button>
+			<button class="demo-btn" type="button" title="Fill Nimali Karunatilake's New Details" onclick="fillEditUserFormB2()">B2</button>
+		</div>
 		<form method="post" th:action="@{/partner/users/{id}/edit(id=${user.userId})}" enctype="multipart/form-data" style="display:flex;flex-direction:column;gap:0.85rem;margin-top:1rem;">
 			<div class="field">
 				<label for="name">Name</label>
@@ -357,6 +361,8 @@
 		</form>
 	</div>
 </div>
+
+<script th:src="@{/js/demo.js}"></script>
 
 </body>
 </html>

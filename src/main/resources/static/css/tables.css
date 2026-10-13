@@ -15,6 +15,25 @@
 	max-height: calc(100vh - var(--topbar-height) - 4rem);
 }
 
+.main > .content.content-fit-table {
+	flex: none;
+	display: flex;
+	flex-direction: column;
+	height: 100vh;
+	box-sizing: border-box;
+}
+
+.content-fit-table > .table-card {
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+}
+
+.content-fit-table > .table-card > div {
+	max-height: none;
+	min-height: 0;
+}
+
 .table-card table {
 	width: 100%;
 	border-collapse: collapse;

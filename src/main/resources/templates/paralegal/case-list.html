@@ -31,7 +31,7 @@
 					<tr th:each="case : ${cases}">
 						<td class="cell-id" th:text="${case.caseCode}"></td>
 						<td>
-							<a class="action-btn action-btn-view" th:href="@{/paralegal/consultations/{id}(id=${case.consultation.consultationId})}">View</a>
+							<a class="item-title" th:href="@{/paralegal/consultations/{id}(id=${case.consultation.consultationId})}" th:text="${case.consultation.consultationCode}"></a>
 						</td>
 						<td>
 							<div th:text="${case.client.name}"></div>

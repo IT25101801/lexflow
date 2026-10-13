@@ -117,12 +117,12 @@ public class ClientController {
 			return "client/consultation-form";
 		} catch (PersistenceException e) {
 			model.addAttribute("caseTypes", CaseType.values());
-			model.addAttribute("error", "Could not submit your consultation request. Please try again.");
+			model.addAttribute("error", "Could not submit your consultation. Please try again.");
 			
 			return "client/consultation-form";
 		}
 		
-		redirectAttributes.addFlashAttribute("success", "Consultation request submitted successfully.");
+		redirectAttributes.addFlashAttribute("success", "Consultation submitted successfully.");
 		
 		return "redirect:/client/consultations/" + consultation.getConsultationId();
 	}
@@ -154,7 +154,7 @@ public class ClientController {
 			return "client/consultation-details";
 		}
 		
-		redirectAttributes.addFlashAttribute("success", "Consultation request deleted successfully.");
+		redirectAttributes.addFlashAttribute("success", "Consultation deleted successfully.");
 		
 		return "redirect:/client/consultations";
 	}
@@ -181,7 +181,7 @@ public class ClientController {
 			return "client/consultation-details";
 		}
 		
-		redirectAttributes.addFlashAttribute("success", "Consultation request updated successfully.");
+		redirectAttributes.addFlashAttribute("success", "Consultation updated successfully.");
 		
 		return "redirect:/client/consultations/{id}";
 	}

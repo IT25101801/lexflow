@@ -25,10 +25,10 @@
 		
 		<span class="nav-section-label">Consultations</span>
 		<a class="nav-item" th:classappend="${active == 'consultation-pending'} ? ' active'" th:href="@{/partner/consultations/pending}">
-			<i class="bi bi-envelope-exclamation"></i> Pending Consultation Requests
+			<i class="bi bi-envelope-exclamation"></i> Pending Consultations
 		</a>
 		<a class="nav-item" th:classappend="${active == 'consultations'} ? ' active'" th:href="@{/partner/consultations}">
-			<i class="bi bi-envelope"></i> Consultation Requests
+			<i class="bi bi-envelope"></i> Consultations
 		</a>
 		
 		<a class="nav-item" th:classappend="${active == 'conflict-check'} ? ' active'" th:href="@{/partner/conflict-check}">

@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/head :: head('Consultation Request Details – LexFlow')}"></head>
+<head th:replace="~{fragments/head :: head('Consultation Details – LexFlow')}"></head>
 <body>
 
 <aside th:replace="~{fragments/sidebar-client :: sidebar('consultations')}"></aside>
 
 <div class="main">
-	<div th:replace="~{fragments/common :: topbar('Consultation Request Details', null)}"></div>
+	<div th:replace="~{fragments/common :: topbar('Consultation Details', null)}"></div>
 	
 	<div class="content">
 		
@@ -28,7 +28,7 @@
 									onclick="document.getElementById('editModal').style.display='flex';">Edit
 							</button>
 							<form method="post" style="margin:0;" th:if="${consultation.consultationStatus.name() == 'PENDING'}" th:action="@{/client/consultations/{id}/delete(id=${consultation.consultationId})}"
-								  onsubmit="return confirm('Delete this consultation request? This action cannot be undone.');">
+								  onsubmit="return confirm('Delete this consultation? This action cannot be undone.');">
 								<button class="action-btn action-btn-delete" type="submit">Delete</button>
 							</form>
 						</div>
@@ -103,7 +103,7 @@
 <!-- Edit Modal -->
 <div class="modal-overlay" id="editModal" onclick="if(event.target===this)this.style.display='none';">
 	<div class="modal-dialog" style="max-width:480px;width:92%;">
-		<div class="section-title">Edit Consultation Request</div>
+		<div class="section-title">Edit Consultation</div>
 		
 		<form method="post" enctype="multipart/form-data" th:action="@{/client/consultations/{id}/edit(id=${consultation.consultationId})}" style="display:flex;flex-direction:column;gap:0.85rem;margin-top:1rem;">
 			<div class="field">

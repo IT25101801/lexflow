@@ -150,7 +150,7 @@
 						</thead>
 						<tbody>
 						<tr th:if="${#lists.isEmpty(relatedConsultations)}">
-							<td class="table-empty" colspan="5">No consultation requests yet.</td>
+							<td class="table-empty" colspan="5">No consultations yet.</td>
 						</tr>
 						<tr th:each="consultation : ${relatedConsultations}">
 							<td class="cell-id" th:text="${consultation.consultationCode}"></td>

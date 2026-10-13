@@ -97,7 +97,7 @@ public class AssociateController {
 	@GetMapping("/associate/consultations")
 	public String consultations(Authentication authentication, Model model) {
 		model.addAttribute("consultations", consultationService.findAllForAssociate(currentAssociate(authentication)));
-		model.addAttribute("title", "Consultation Requests");
+		model.addAttribute("title", "Consultations");
 		model.addAttribute("active", "consultations");
 		
 		return "associate/consultation-list";
@@ -149,7 +149,7 @@ public class AssociateController {
 			return "associate/consultation-details";
 		}
 		
-		redirectAttributes.addFlashAttribute("success", "Consultation request accepted successfully.");
+		redirectAttributes.addFlashAttribute("success", "Consultation accepted successfully.");
 		
 		return "redirect:/associate/consultations/{id}";
 	}
@@ -174,7 +174,7 @@ public class AssociateController {
 			return "associate/consultation-details";
 		}
 		
-		redirectAttributes.addFlashAttribute("success", "Consultation request rejected successfully.");
+		redirectAttributes.addFlashAttribute("success", "Consultation rejected successfully.");
 		
 		return "redirect:/associate/consultations/{id}";
 	}

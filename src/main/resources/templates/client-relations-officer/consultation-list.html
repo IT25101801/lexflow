@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/head :: head('Consultation Requests – LexFlow')}"></head>
+<head th:replace="~{fragments/head :: head('Consultations – LexFlow')}"></head>
 <body>
 
 <aside th:replace="~{fragments/sidebar-client-relations-officer :: sidebar('consultations')}"></aside>
 
 <div class="main">
-	<div th:replace="~{fragments/common :: topbar('Consultation Requests', null)}"></div>
+	<div th:replace="~{fragments/common :: topbar('Consultations', null)}"></div>
 	
 	<div class="content">
 		<div class="flash flash-success" th:if="${success}" th:text="${success}"></div>
@@ -28,7 +28,7 @@
 					</thead>
 					<tbody>
 					<tr th:if="${#lists.isEmpty(consultations)}">
-						<td class="table-empty" colspan="9" th:text="${keyword != null and !#strings.isEmpty(keyword)} ? 'No consultation requests match your search.' : 'No consultation requests yet.'"></td>
+						<td class="table-empty" colspan="9" th:text="${keyword != null and !#strings.isEmpty(keyword)} ? 'No consultations match your search.' : 'No consultations yet.'"></td>
 					</tr>
 					<tr th:each="consultation : ${consultations}">
 						<td class="cell-id" th:text="${consultation.consultationCode}"></td>

@@ -168,7 +168,7 @@
 						</thead>
 						<tbody>
 						<tr th:if="${#lists.isEmpty(relatedConsultations)}">
-							<td class="table-empty" th:colspan="${isClient} ? 5 : 6">No consultation requests yet.</td>
+							<td class="table-empty" th:colspan="${isClient} ? 5 : 6">No consultations yet.</td>
 						</tr>
 						<tr th:each="consultation : ${relatedConsultations}">
 							<td class="cell-id" th:text="${consultation.consultationCode}"></td>

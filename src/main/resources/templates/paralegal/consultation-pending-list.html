@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/head :: head('Pending Consultation Requests – LexFlow')}"></head>
+<head th:replace="~{fragments/head :: head('Unscheduled Consultations – LexFlow')}"></head>
 <body>
 
 <aside th:replace="~{fragments/sidebar-paralegal :: sidebar('consultation-pending')}"></aside>
 
 <div class="main">
-	<div th:replace="~{fragments/common :: topbar('Pending Consultation Requests', null)}"></div>
+	<div th:replace="~{fragments/common :: topbar('Unscheduled Consultations', null)}"></div>
 	
 	<div class="content">
 		<div class="table-card">
@@ -24,7 +24,7 @@
 					</thead>
 					<tbody>
 					<tr th:if="${#lists.isEmpty(consultations)}">
-						<td class="table-empty" colspan="6">No pending consultation requests.</td>
+						<td class="table-empty" colspan="6">No unscheduled consultations.</td>
 					</tr>
 					<tr th:each="consultation : ${consultations}">
 						<td class="cell-id" th:text="${consultation.consultationCode}"></td>

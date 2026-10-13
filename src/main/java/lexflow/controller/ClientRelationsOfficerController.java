@@ -279,12 +279,12 @@ public class ClientRelationsOfficerController {
 			return "client-relations-officer/consultation-form";
 		} catch (PersistenceException e) {
 			model.addAttribute("caseTypes", CaseType.values());
-			model.addAttribute("error", "Could not submit the consultation request. Please try again.");
+			model.addAttribute("error", "Could not submit the consultation. Please try again.");
 			
 			return "client-relations-officer/consultation-form";
 		}
 		
-		redirectAttributes.addFlashAttribute("success", "Consultation request submitted successfully.");
+		redirectAttributes.addFlashAttribute("success", "Consultation submitted successfully.");
 		
 		return "redirect:/client-relations-officer/consultations/" + consultation.getConsultationId();
 	}
@@ -317,7 +317,7 @@ public class ClientRelationsOfficerController {
 			return "client-relations-officer/consultation-details";
 		}
 		
-		redirectAttributes.addFlashAttribute("success", "Consultation request deleted successfully.");
+		redirectAttributes.addFlashAttribute("success", "Consultation deleted successfully.");
 		
 		return "redirect:/client-relations-officer/consultations";
 	}
@@ -344,7 +344,7 @@ public class ClientRelationsOfficerController {
 			return "client-relations-officer/consultation-details";
 		}
 		
-		redirectAttributes.addFlashAttribute("success", "Consultation request updated successfully.");
+		redirectAttributes.addFlashAttribute("success", "Consultation updated successfully.");
 		
 		return "redirect:/client-relations-officer/consultations/{id}";
 	}

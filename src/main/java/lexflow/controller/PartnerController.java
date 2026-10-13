@@ -188,7 +188,7 @@ public class PartnerController {
 	@GetMapping("/partner/consultations")
 	public String consultations(Model model) {
 		model.addAttribute("consultations", consultationService.findAll());
-		model.addAttribute("title", "Consultation Requests");
+		model.addAttribute("title", "Consultations");
 		model.addAttribute("active", "consultations");
 		
 		return "partner/consultation-list";
@@ -224,7 +224,7 @@ public class PartnerController {
 			return "partner/consultation-details";
 		}
 		
-		redirectAttributes.addFlashAttribute("success", "Consultation request accepted successfully.");
+		redirectAttributes.addFlashAttribute("success", "Consultation accepted successfully.");
 		
 		return "redirect:/partner/consultations/{id}";
 	}
@@ -249,7 +249,7 @@ public class PartnerController {
 			return "partner/consultation-details";
 		}
 		
-		redirectAttributes.addFlashAttribute("success", "Consultation request rejected successfully.");
+		redirectAttributes.addFlashAttribute("success", "Consultation rejected successfully.");
 		
 		return "redirect:/partner/consultations/{id}";
 	}

@@ -27,7 +27,7 @@
 					</thead>
 					<tbody>
 					<tr th:if="${#lists.isEmpty(consultations)}">
-						<td class="table-empty" th:attr="colspan=${active == 'cases-to-open' ? 8 : 9}" th:text="${active == 'cases-to-open' ? 'No cases to open.' : 'No consultation requests yet.'}"></td>
+						<td class="table-empty" th:attr="colspan=${active == 'cases-to-open' ? 8 : 9}" th:text="${active == 'cases-to-open' ? 'No cases to open.' : 'No consultations yet.'}"></td>
 					</tr>
 					<tr th:each="consultation : ${consultations}">
 						<td class="cell-id" th:text="${consultation.consultationCode}"></td>

@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/head :: head('Consultation Requests – LexFlow')}"></head>
+<head th:replace="~{fragments/head :: head('Consultations – LexFlow')}"></head>
 <body>
 
 <aside th:replace="~{fragments/sidebar-client :: sidebar('consultations')}"></aside>
 
 <div class="main">
-	<div th:replace="~{fragments/common :: topbar('Consultation Requests', null)}"></div>
+	<div th:replace="~{fragments/common :: topbar('Consultations', null)}"></div>
 	
 	<div class="content">
 		
@@ -29,7 +29,7 @@
 					</thead>
 					<tbody>
 					<tr th:if="${#lists.isEmpty(consultations)}">
-						<td class="table-empty" colspan="8">No consultation requests yet.</td>
+						<td class="table-empty" colspan="8">No consultations yet.</td>
 					</tr>
 					<tr th:each="consultation : ${consultations}">
 						<td class="cell-id" th:text="${consultation.consultationCode}"></td>

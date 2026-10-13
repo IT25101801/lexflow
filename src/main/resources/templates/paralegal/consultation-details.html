@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/head :: head('Consultation Request Details – LexFlow')}"></head>
+<head th:replace="~{fragments/head :: head('Consultation Details – LexFlow')}"></head>
 <body>
 
 <aside th:replace="~{fragments/sidebar-paralegal :: sidebar(${consultation.consultationStatus.name() == 'ACCEPTED_BY_PARTNER' ? 'consultation-pending' : 'consultations'})}"></aside>
 
 <div class="main">
-	<div th:replace="~{fragments/common :: topbar('Consultation Request Details', null)}"></div>
+	<div th:replace="~{fragments/common :: topbar('Consultation Details', null)}"></div>
 	
 	<div class="content">
 		

@@ -96,7 +96,7 @@ public class ParalegalController {
 	@GetMapping("/paralegal/consultations")
 	public String consultations(Authentication authentication, Model model) {
 		model.addAttribute("consultations", consultationService.findAllForParalegal(currentParalegal(authentication)));
-		model.addAttribute("title", "Consultation Requests");
+		model.addAttribute("title", "Consultations");
 		model.addAttribute("active", "consultations");
 		
 		return "paralegal/consultation-list";

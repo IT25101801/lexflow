@@ -2268,37 +2268,3 @@ BEGIN
         END;
 END;
 GO
-
--- Prevent Deletion of Client With an Unpaid Invoice Trigger
-CREATE TRIGGER trg_users_au_prevent_deletion_of_client_with_unpaid_invoice
-    ON users
-    AFTER
-        UPDATE
-    AS
-BEGIN
-    -- Trigger Options
-    SET
-        NOCOUNT ON;
-
-    -- Find Deleted Clients With an Unpaid Invoice
-    IF
-        EXISTS (SELECT 1
-                FROM inserted i
-                INNER JOIN deleted d
-                    ON d.user_id = i.user_id
-                WHERE i.role = 'CLIENT'
-                  AND d.account_status = 'ACTIVE'
-                  AND i.account_status = 'DELETED'
-                  AND EXISTS (SELECT 1
-                              FROM invoices inv
-                              INNER JOIN cases cs
-                                  ON cs.case_id = inv.case_id
-                              WHERE inv.invoice_status = 'UNPAID'
-                                AND cs.client_id = i.user_id))
-        BEGIN
-            -- Reject the Update
-            THROW
-                50004, 'A client with an unpaid invoice cannot be deleted.', 1;
-        END;
-END;
-GO

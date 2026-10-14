@@ -394,7 +394,7 @@ public class AssociateController {
 		
 		try {
 			caseService.close(case_, form.getCaseResolutionStatus());
-		} catch (InvalidStateException e) {
+		} catch (InvalidStateException | BusinessRuleViolationException e) {
 			populateCaseDetailModel(case_, model);
 			model.addAttribute("error", e.getMessage());
 			

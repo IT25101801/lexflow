@@ -32,6 +32,7 @@ public class InvoiceService {
 	
 	private final InvoiceDao invoiceDao;
 	private final CaseDao caseDao;
+	private final CaseService caseService;
 	private final TaskService taskService;
 	private final TransactionService transactionService;
 	private final DocumentService documentService;
@@ -41,6 +42,7 @@ public class InvoiceService {
 	
 	@Transactional
 	public Invoice compile(Case case_, List<Long> taskIds) {
+		caseService.requireOpen(case_);
 		
 		if (taskIds == null || taskIds.isEmpty()) {
 			throw new NoChargesSelectedException(case_.getCaseId());
@@ -86,16 +88,22 @@ public class InvoiceService {
 	
 	@Transactional
 	public Invoice charge(Case case_, Invoice invoice) {
+		caseService.requireOpen(case_);
+		
 		return stateFor(invoice.getInvoiceStatus()).charge(invoice, this, case_.getClient());
 	}
 	
 	@Transactional
-	public Invoice void_(Invoice invoice) {
+	public Invoice void_(Case case_, Invoice invoice) {
+		caseService.requireOpen(case_);
+		
 		return stateFor(invoice.getInvoiceStatus()).void_(invoice, this);
 	}
 	
 	@Transactional
 	public Invoice voidAndRefund(Case case_, Invoice invoice) {
+		caseService.requireOpen(case_);
+		
 		return stateFor(invoice.getInvoiceStatus()).voidAndRefund(invoice, this, case_.getClient());
 	}
 	

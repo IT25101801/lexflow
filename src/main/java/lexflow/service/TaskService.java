@@ -157,7 +157,8 @@ public class TaskService {
 		return task;
 	}
 	
-	public Task updateBillableAmount(Task task, BigDecimal billableAmount) {
+	public Task updateBillableAmount(Case case_, Task task, BigDecimal billableAmount) {
+		caseService.requireOpen(case_);
 		
 		if (task.getBillableAmount() == null || task.getBilledInvoiceId() != null) {
 			throw new BillableAmountNotEditableException(task.getTaskId());

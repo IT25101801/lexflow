@@ -12,6 +12,7 @@ import lexflow.entity.scheduling.EventStatus;
 import lexflow.entity.user.Associate;
 import lexflow.entity.user.Client;
 import lexflow.entity.user.Paralegal;
+import lexflow.exception.consultation.ConsultationHasCaseException;
 import lexflow.observer.ConsultationEventsCancellationRequested;
 import lexflow.state.consultation.*;
 import lombok.RequiredArgsConstructor;
@@ -56,10 +57,8 @@ public class ConsultationService {
 	
 	public Consultation findOwnedByAssociate(Long consultationId, Associate associate) {
 		Consultation consultation = findById(consultationId);
-		Case case_ = caseDao.findByConsultationId(consultationId);
-		Associate effectiveAssociate = case_ != null ? case_.getAssociate() : consultation.getAssociate();
 		
-		if (effectiveAssociate == null || !effectiveAssociate.getUserId().equals(associate.getUserId())) {
+		if (consultation.getAssociate() == null || !consultation.getAssociate().getUserId().equals(associate.getUserId())) {
 			throw new AccessDeniedException("Not assigned to you.");
 		}
 		
@@ -68,10 +67,8 @@ public class ConsultationService {
 	
 	public Consultation findOwnedByParalegal(Long consultationId, Paralegal paralegal) {
 		Consultation consultation = findById(consultationId);
-		Case case_ = caseDao.findByConsultationId(consultationId);
-		Paralegal effectiveParalegal = case_ != null ? case_.getParalegal() : consultation.getParalegal();
 		
-		if (effectiveParalegal == null || !effectiveParalegal.getUserId().equals(paralegal.getUserId())) {
+		if (consultation.getParalegal() == null || !consultation.getParalegal().getUserId().equals(paralegal.getUserId())) {
 			throw new AccessDeniedException("Not assigned to you.");
 		}
 		
@@ -141,16 +138,21 @@ public class ConsultationService {
 	
 	public boolean hasCompletedMeeting(Consultation consultation) {
 		List<ConsultationEvent> consultationEvents = eventDao.findByConsultationId(consultation.getConsultationId());
+		boolean completed = false;
 		
 		for (ConsultationEvent consultationEvent : consultationEvents) {
 			
+			if (consultationEvent.getEventStatus() == EventStatus.SCHEDULED) {
+				return false;
+			}
+			
 			if (consultationEvent.getEventStatus() == EventStatus.COMPLETED) {
-				return true;
+				completed = true;
 			}
 			
 		}
 		
-		return false;
+		return completed;
 	}
 	
 	// Update
@@ -162,6 +164,12 @@ public class ConsultationService {
 	
 	@Transactional
 	public Consultation reassignStaff(Consultation consultation, Associate associate, Paralegal paralegal) {
+		Case case_ = caseDao.findByConsultationId(consultation.getConsultationId());
+		
+		if (case_ != null) {
+			throw new ConsultationHasCaseException(consultation.getConsultationId(), case_.getCaseId());
+		}
+		
 		return stateFor(consultation.getConsultationStatus()).reassignStaff(consultation, this, associate, paralegal);
 	}
 	

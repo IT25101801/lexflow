@@ -948,7 +948,7 @@ VALUES ('CONSULTATION_EVENT', 'Divorce and custody consultation',         '2025-
        ('CONSULTATION_EVENT', 'Merger advisory consultation',             '2025-04-19', '14:00:00', '14:45:00', 'LexFlow Office, Colombo',  NULL,                                       'COMPLETED', '2025-04-18 11:00:00.000', '2025-04-19 14:45:00.000', NULL,                      4,    NULL, NULL),
        ('CONSULTATION_EVENT', 'Wrongful termination consultation',        '2025-04-20', '09:30:00', '10:00:00', 'LexFlow Office, Colombo',  NULL,                                       'COMPLETED', '2025-04-19 11:00:00.000', '2025-04-20 10:00:00.000', NULL,                      5,    NULL, NULL),
        ('CONSULTATION_EVENT', 'Property title dispute consultation',      '2025-04-21', '11:00:00', '11:30:00', 'LexFlow Office, Colombo',  NULL,                                       'COMPLETED', '2025-04-20 11:00:00.000', '2025-04-21 11:30:00.000', NULL,                      6,    NULL, NULL),
-       ('CONSULTATION_EVENT', 'Supply contract breach consultation',      '2026-12-05', '10:00:00', '10:30:00', 'LexFlow Office, Colombo',  NULL,                                       'SCHEDULED', '2025-04-22 11:00:00.000', NULL,                      NULL,                      8,    NULL, NULL),
+       ('CONSULTATION_EVENT', 'Supply contract breach consultation',      '2025-04-24', '10:00:00', '10:30:00', 'LexFlow Office, Colombo',  NULL,                                       'COMPLETED', '2025-04-22 11:00:00.000', '2025-04-24 10:30:00.000', NULL,                      8,    NULL, NULL),
        ('CASE_EVENT',         'Client strategy meeting',                  '2026-12-08', '09:00:00', '10:00:00', 'LexFlow Office, Colombo',  NULL,                                       'SCHEDULED', '2025-05-01 09:00:00.000', NULL,                      NULL,                      NULL, 1,    41  ),
        ('CASE_EVENT',         'Document review meeting',                  '2025-05-20', '13:00:00', '14:00:00', 'LexFlow Office, Colombo',  NULL,                                       'COMPLETED', '2025-05-15 09:00:00.000', '2025-05-20 14:00:00.000', NULL,                      NULL, 1,    2   ),
        ('CASE_EVENT',         'Merger negotiation session',               '2025-05-25', '10:00:00', '12:00:00', 'Client Site, Colombo',     NULL,                                       'COMPLETED', '2025-05-20 09:00:00.000', '2025-05-25 12:00:00.000', NULL,                      NULL, 2,    42  ),
@@ -969,7 +969,13 @@ VALUES ('CONSULTATION_EVENT', 'Divorce and custody consultation',         '2025-
        ('CONSULTATION_EVENT', 'Unpaid invoices consultation',             '2026-09-30', '10:00:00', '10:30:00', 'LexFlow Office, Colombo',  NULL,                                       'COMPLETED', '2026-09-26 11:00:00.000', '2026-09-30 10:30:00.000', NULL,                      23,   NULL, NULL),
        ('CONSULTATION_EVENT', 'Water damage consultation',                '2026-10-05', '11:00:00', '11:30:00', 'LexFlow Office, Colombo',  NULL,                                       'SCHEDULED', '2026-09-30 11:00:00.000', NULL,                      NULL,                      24,   NULL, NULL),
        ('CONSULTATION_EVENT', 'Shareholder dispute consultation',         '2026-10-05', '14:00:00', '14:30:00', 'LexFlow Office, Colombo',  NULL,                                       'SCHEDULED', '2026-10-01 11:00:00.000', NULL,                      NULL,                      25,   NULL, NULL),
-       ('CONSULTATION_EVENT', 'Online defamation consultation',           '2026-10-05', '15:30:00', '16:00:00', 'LexFlow Office, Colombo',  NULL,                                       'SCHEDULED', '2026-10-02 11:00:00.000', NULL,                      NULL,                      26,   NULL, NULL);
+       ('CONSULTATION_EVENT', 'Online defamation consultation',           '2026-10-05', '15:30:00', '16:00:00', 'LexFlow Office, Colombo',  NULL,                                       'SCHEDULED', '2026-10-02 11:00:00.000', NULL,                      NULL,                      26,   NULL, NULL),
+       ('CONSULTATION_EVENT', 'Work visa renewal consultation',     '2025-04-25', '10:00:00', '10:30:00', 'LexFlow Office, Colombo',  NULL,                                       'COMPLETED', '2025-04-24 11:00:00.000', '2025-04-25 10:30:00.000', NULL,                      9,    NULL, NULL),
+       ('CONSULTATION_EVENT', 'Lease agreement consultation',       '2025-04-26', '10:00:00', '10:30:00', 'LexFlow Office, Colombo',  NULL,                                       'COMPLETED', '2025-04-25 11:00:00.000', '2025-04-26 10:30:00.000', NULL,                      10,   NULL, NULL),
+       ('CONSULTATION_EVENT', 'Supplier contract dispute consultation', '2025-07-05', '10:00:00', '10:30:00', 'LexFlow Office, Colombo',  NULL,                                       'COMPLETED', '2025-07-02 11:00:00.000', '2025-07-05 10:30:00.000', NULL,                      11,   NULL, NULL),
+       ('CONSULTATION_EVENT', 'Business restructuring consultation', '2025-08-08', '10:00:00', '10:30:00', 'LexFlow Office, Colombo',  NULL,                                       'COMPLETED', '2025-08-06 11:00:00.000', '2025-08-08 10:30:00.000', NULL,                      17,   NULL, NULL),
+       ('CONSULTATION_EVENT', 'Tenancy rights consultation',        '2025-08-12', '10:00:00', '10:30:00', 'LexFlow Office, Colombo',  NULL,                                       'COMPLETED', '2025-08-11 11:00:00.000', '2025-08-12 10:30:00.000', NULL,                      19,   NULL, NULL),
+       ('CONSULTATION_EVENT', 'Overtime claim consultation',        '2025-08-14', '10:00:00', '10:30:00', 'LexFlow Office, Colombo',  NULL,                                       'COMPLETED', '2025-08-13 11:00:00.000', '2025-08-14 10:30:00.000', NULL,                      20,   NULL, NULL);
 
 -- Documents Data
 INSERT INTO documents (document_type, file_path, original_filename, uploaded_at, user_id, consultation_id, case_id, in_staging, task_id, invoice_id)
@@ -1453,36 +1459,6 @@ BEGIN
         BEGIN
             -- Reject the Update
             THROW 50003, 'A user assigned to an open case cannot be deleted.', 1;
-        END;
-END;
-GO
-
--- Prevent Deletion of Client With an Unpaid Invoice Trigger
-CREATE TRIGGER trg_users_au_prevent_deletion_of_client_with_unpaid_invoice
-    ON users
-    AFTER UPDATE
-    AS
-BEGIN
-    -- Trigger Options
-    SET NOCOUNT ON;
-
-    -- Find Deleted Clients With an Unpaid Invoice
-    IF EXISTS (SELECT 1
-               FROM inserted i
-               INNER JOIN deleted d
-                   ON d.user_id = i.user_id
-               WHERE i.role = 'CLIENT'
-                 AND d.account_status = 'ACTIVE'
-                 AND i.account_status = 'DELETED'
-                 AND EXISTS (SELECT 1
-                             FROM invoices inv
-                             INNER JOIN cases cs
-                                 ON cs.case_id = inv.case_id
-                             WHERE inv.invoice_status = 'UNPAID'
-                               AND cs.client_id = i.user_id))
-        BEGIN
-            -- Reject the Update
-            THROW 50004, 'A client with an unpaid invoice cannot be deleted.', 1;
         END;
 END;
 GO

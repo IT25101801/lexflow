@@ -25,7 +25,6 @@ public class UserDao {
 	private static final int OUTSTANDING_WALLET_BALANCE_ERROR_NUMBER = 50001;
 	private static final int ACTIVE_CONSULTATION_ASSIGNMENT_ERROR_NUMBER = 50002;
 	private static final int OPEN_CASE_ASSIGNMENT_ERROR_NUMBER = 50003;
-	private static final int UNPAID_INVOICE_ERROR_NUMBER = 50004;
 	private static final int UNIQUE_INDEX_VIOLATION_ERROR_NUMBER = 2601;
 	
 	private static final String SELECT_COLUMNS = """
@@ -423,8 +422,6 @@ public class UserDao {
 				throw new ActiveConsultationAssignmentException(userId, findActiveConsultationCodes(userId));
 			} else if (e.getErrorCode() == OPEN_CASE_ASSIGNMENT_ERROR_NUMBER) {
 				throw new OpenCaseAssignmentException(userId, findOpenCaseCodes(userId));
-			} else if (e.getErrorCode() == UNPAID_INVOICE_ERROR_NUMBER) {
-				throw new UnpaidInvoiceException(userId, findUnpaidInvoiceCodes(userId));
 			} else if (e.getErrorCode() == OUTSTANDING_WALLET_BALANCE_ERROR_NUMBER && findById(userId) instanceof Client client) {
 				throw new OutstandingWalletBalanceException(userId, client.getWalletBalance());
 			}
@@ -713,20 +710,6 @@ public class UserDao {
 					 """;
 		
 		return findCodesForUser(sql, userId, "finding open cases blocking a user deletion");
-	}
-	
-	private List<String> findUnpaidInvoiceCodes(Long userId) {
-		String sql = """
-					 SELECT i.invoice_code
-					 FROM invoices i
-					 INNER JOIN cases cs
-					     ON cs.case_id = i.case_id
-					 WHERE i.invoice_status = 'UNPAID'
-					   AND cs.client_id = ?
-					 ORDER BY i.invoice_id
-					 """;
-		
-		return findCodesForUser(sql, userId, "finding unpaid invoices blocking a client deletion");
 	}
 	
 	private List<String> findCodesForUser(String sql, Long userId, String operation) {

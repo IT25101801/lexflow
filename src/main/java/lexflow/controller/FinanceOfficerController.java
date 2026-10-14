@@ -14,9 +14,9 @@ import lexflow.entity.user.Role;
 import lexflow.entity.user.User;
 import lexflow.exception.BusinessRuleViolationException;
 import lexflow.exception.EntityNotFoundException;
+import lexflow.exception.InvalidStateException;
 import lexflow.exception.PersistenceException;
 import lexflow.exception.finance.InsufficientFundsException;
-import lexflow.exception.finance.InvalidInvoiceStateException;
 import lexflow.security.CustomUserPrincipal;
 import lexflow.service.*;
 import lexflow.util.ValidationUtil;
@@ -121,7 +121,7 @@ public class FinanceOfficerController {
 		}
 		
 		try {
-			taskService.updateBillableAmount(taskService.findById(taskId), form.getAmount());
+			taskService.updateBillableAmount(case_, taskService.findById(taskId), form.getAmount());
 		} catch (BusinessRuleViolationException e) {
 			populateCaseDetailModel(case_, model);
 			model.addAttribute("error", e.getMessage());
@@ -158,7 +158,7 @@ public class FinanceOfficerController {
 		
 		try {
 			invoiceService.charge(case_, invoiceService.findById(invoiceId));
-		} catch (InvalidInvoiceStateException | InsufficientFundsException e) {
+		} catch (InvalidStateException | BusinessRuleViolationException e) {
 			populateCaseDetailModel(case_, model);
 			model.addAttribute("error", e.getMessage());
 			
@@ -175,8 +175,8 @@ public class FinanceOfficerController {
 		Case case_ = caseService.findById(caseId);
 		
 		try {
-			invoiceService.void_(invoiceService.findById(invoiceId));
-		} catch (InvalidInvoiceStateException e) {
+			invoiceService.void_(case_, invoiceService.findById(invoiceId));
+		} catch (InvalidStateException e) {
 			populateCaseDetailModel(case_, model);
 			model.addAttribute("error", e.getMessage());
 			
@@ -194,7 +194,7 @@ public class FinanceOfficerController {
 		
 		try {
 			invoiceService.voidAndRefund(case_, invoiceService.findById(invoiceId));
-		} catch (InvalidInvoiceStateException e) {
+		} catch (InvalidStateException e) {
 			populateCaseDetailModel(case_, model);
 			model.addAttribute("error", e.getMessage());
 			

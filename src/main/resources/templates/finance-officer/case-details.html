@@ -79,12 +79,12 @@
 				<div style="display:flex;flex-direction:column;gap:0.75rem;">
 					<div class="contact-card" th:each="task : ${unbilledTasks}" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;">
 						<label style="display:flex;align-items:center;gap:0.75rem;min-width:0;">
-							<input type="checkbox" name="taskIds" th:value="${task.taskId}"/>
+							<input type="checkbox" name="taskIds" th:value="${task.taskId}" th:if="${case.caseStatus.name() == 'OPEN'}"/>
 							<span th:text="${task.title}"></span>
 						</label>
 						<div style="display:flex;align-items:center;gap:1rem;flex-shrink:0;">
 							<span class="detail-value" th:text="${#numbers.formatDecimal(task.billableAmount, 1, 'COMMA', 2, 'POINT')}"></span>
-							<button class="action-btn action-btn-edit" type="button"
+							<button th:if="${case.caseStatus.name() == 'OPEN'}" class="action-btn action-btn-edit" type="button"
 									th:attr="data-action=@{/finance-officer/cases/{id}/tasks/{taskId}/edit-billable-amount(id=${case.caseId},taskId=${task.taskId})}"
 									th:data-amount="${task.billableAmount}"
 									onclick="openAmountModal(this)">Edit
@@ -92,7 +92,7 @@
 						</div>
 					</div>
 				</div>
-				<button class="btn btn-primary" style="margin-top:0.85rem;" type="submit">Compile Selected into Invoice</button>
+				<button th:if="${case.caseStatus.name() == 'OPEN'}" class="btn btn-primary" style="margin-top:0.85rem;" type="submit">Compile Selected into Invoice</button>
 			</form>
 		</div>
 		
@@ -105,10 +105,10 @@
 					<div style="display:flex;align-items:center;gap:0.75rem;flex-shrink:0;">
 						<span class="detail-value" th:text="${#numbers.formatDecimal(invoice.totalAmount, 1, 'COMMA', 2, 'POINT')}"></span>
 						<a class="action-btn action-btn-view" th:href="@{/finance-officer/documents/invoice/{id}/{filename}(id=${invoice.invoiceDocument != null ? invoice.invoiceDocument.documentId : 0},filename=${invoice.invoiceDocument != null ? invoice.invoiceDocument.storedFilename : invoice.invoiceCode + '.pdf'})}" target="_blank">View</a>
-						<form method="post" th:action="@{/finance-officer/cases/{id}/invoices/{invoiceId}/charge(id=${case.caseId},invoiceId=${invoice.invoiceId})}">
+						<form th:if="${case.caseStatus.name() == 'OPEN'}" method="post" th:action="@{/finance-officer/cases/{id}/invoices/{invoiceId}/charge(id=${case.caseId},invoiceId=${invoice.invoiceId})}">
 							<button class="action-btn action-btn-create" type="submit">Charge</button>
 						</form>
-						<form method="post" th:action="@{/finance-officer/cases/{id}/invoices/{invoiceId}/void(id=${case.caseId},invoiceId=${invoice.invoiceId})}" onsubmit="return confirm('Void this invoice? Its charges will be released. This action cannot be undone.');">
+						<form th:if="${case.caseStatus.name() == 'OPEN'}" method="post" th:action="@{/finance-officer/cases/{id}/invoices/{invoiceId}/void(id=${case.caseId},invoiceId=${invoice.invoiceId})}" onsubmit="return confirm('Void this invoice? Its charges will be released. This action cannot be undone.');">
 							<button class="action-btn action-btn-delete" type="submit">Void</button>
 						</form>
 					</div>
@@ -128,7 +128,7 @@
 					<div style="display:flex;align-items:center;gap:0.75rem;flex-shrink:0;">
 						<span class="detail-value" th:text="${#numbers.formatDecimal(invoice.totalAmount, 1, 'COMMA', 2, 'POINT')}"></span>
 						<a class="action-btn action-btn-view" th:href="@{/finance-officer/documents/invoice/{id}/{filename}(id=${invoice.invoiceDocument != null ? invoice.invoiceDocument.documentId : 0},filename=${invoice.invoiceDocument != null ? invoice.invoiceDocument.storedFilename : invoice.invoiceCode + '.pdf'})}" target="_blank">View</a>
-						<form method="post" th:action="@{/finance-officer/cases/{id}/invoices/{invoiceId}/void-refund(id=${case.caseId},invoiceId=${invoice.invoiceId})}" onsubmit="return confirm('Void this invoice and refund the client? This action cannot be undone.');">
+						<form th:if="${case.caseStatus.name() == 'OPEN'}" method="post" th:action="@{/finance-officer/cases/{id}/invoices/{invoiceId}/void-refund(id=${case.caseId},invoiceId=${invoice.invoiceId})}" onsubmit="return confirm('Void this invoice and refund the client? This action cannot be undone.');">
 							<button class="action-btn action-btn-delete" type="submit">Void &amp; Refund</button>
 						</form>
 					</div>

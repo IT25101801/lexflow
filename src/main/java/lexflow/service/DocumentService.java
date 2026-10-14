@@ -454,12 +454,7 @@ public class DocumentService {
 	}
 	
 	private boolean canAccessConsultationDocument(Consultation consultation, User requester) {
-		Case case_ = caseDao.findByConsultationId(consultation.getConsultationId());
-		Client effectiveClient = case_ != null ? case_.getClient() : consultation.getClient();
-		Associate effectiveAssociate = case_ != null ? case_.getAssociate() : consultation.getAssociate();
-		Paralegal effectiveParalegal = case_ != null ? case_.getParalegal() : consultation.getParalegal();
-		
-		return resolveDocumentAccessStrategy(requester, true, false).canAccess(requester, effectiveClient, effectiveAssociate, effectiveParalegal);
+		return resolveDocumentAccessStrategy(requester, true, false).canAccess(requester, consultation.getClient(), consultation.getAssociate(), consultation.getParalegal());
 	}
 	
 	private boolean canAccessCaseDocument(Case case_, User requester) {

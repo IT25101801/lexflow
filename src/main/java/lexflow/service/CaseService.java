@@ -1,14 +1,19 @@
 package lexflow.service;
 
 import lexflow.dao.CaseDao;
+import lexflow.dao.ConsultationDao;
+import lexflow.dao.InvoiceDao;
+import lexflow.dao.TaskDao;
 import lexflow.entity.case_.Case;
 import lexflow.entity.case_.CaseResolutionStatus;
 import lexflow.entity.case_.CaseStatus;
 import lexflow.entity.consultation.Consultation;
 import lexflow.entity.consultation.ConsultationStatus;
+import lexflow.entity.finance.InvoiceStatus;
 import lexflow.entity.user.Associate;
 import lexflow.entity.user.Client;
 import lexflow.entity.user.Paralegal;
+import lexflow.exception.case_.UnsettledBillingException;
 import lexflow.exception.consultation.InvalidConsultationStateException;
 import lexflow.observer.CaseEventsCancellationRequested;
 import lexflow.state.case_.CaseState;
@@ -28,6 +33,9 @@ import java.util.List;
 public class CaseService {
 	
 	private final CaseDao caseDao;
+	private final ConsultationDao consultationDao;
+	private final TaskDao taskDao;
+	private final InvoiceDao invoiceDao;
 	private final ApplicationEventPublisher eventPublisher;
 	
 	// Create
@@ -152,6 +160,11 @@ public class CaseService {
 			eventPublisher.publishEvent(new CaseEventsCancellationRequested(case_.getCaseId()));
 		}
 		
+		Consultation consultation = case_.getConsultation();
+		consultation.setAssociate(associate);
+		consultation.setParalegal(paralegal);
+		consultationDao.update(consultation);
+		
 		case_.setAssociate(associate);
 		case_.setParalegal(paralegal);
 		
@@ -159,6 +172,13 @@ public class CaseService {
 	}
 	
 	public Case applyClose(Case case_, CaseResolutionStatus caseResolutionStatus) {
+		int unbilledTaskCount = taskDao.findUnbilledByCaseId(case_.getCaseId()).size();
+		int unpaidInvoiceCount = invoiceDao.findByCaseIdAndStatus(case_.getCaseId(), InvoiceStatus.UNPAID).size();
+		
+		if (unbilledTaskCount > 0 || unpaidInvoiceCount > 0) {
+			throw new UnsettledBillingException(case_.getCaseId(), unbilledTaskCount, unpaidInvoiceCount);
+		}
+		
 		eventPublisher.publishEvent(new CaseEventsCancellationRequested(case_.getCaseId()));
 		
 		case_.setCaseStatus(CaseStatus.CLOSED);

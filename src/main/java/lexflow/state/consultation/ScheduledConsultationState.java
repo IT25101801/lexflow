@@ -23,13 +23,14 @@ public class ScheduledConsultationState implements ConsultationState {
 	public Consultation reassignStaff(Consultation consultation, ConsultationService consultationService, Associate associate, Paralegal paralegal) {
 		boolean associateChanged = consultation.getAssociate() == null || !consultation.getAssociate().getUserId().equals(associate.getUserId());
 		boolean paralegalChanged = consultation.getParalegal() == null || !consultation.getParalegal().getUserId().equals(paralegal.getUserId());
-		boolean changed = associateChanged || paralegalChanged;
+		boolean meetingHeld = consultationService.hasCompletedMeeting(consultation);
+		boolean resetsMeeting = associateChanged || (paralegalChanged && !meetingHeld);
 		
-		if (changed) {
+		if (resetsMeeting) {
 			consultation.setConsultationStatus(ConsultationStatus.ACCEPTED_BY_PARTNER);
 		}
 		
-		return consultationService.applyReassignment(consultation, associate, paralegal, changed);
+		return consultationService.applyReassignment(consultation, associate, paralegal, resetsMeeting);
 	}
 	
 	@Override

@@ -94,7 +94,7 @@
 						</span>
 					</div>
 					<div th:if="${isClient}">
-						<div class="section-title" style="margin-top:1.25rem;">Billing Wallet</div>
+						<div class="section-title" style="margin-top:1.25rem;">Trust Account</div>
 						<div class="detail-row">
 							<span class="detail-label">Wallet Balance</span>
 							<span class="detail-value" th:text="${#numbers.formatDecimal(user.walletBalance, 1, 'COMMA', 2, 'POINT')}"></span>

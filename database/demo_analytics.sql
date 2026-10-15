@@ -154,7 +154,7 @@ CREATE TABLE consultations (
     case_type           VARCHAR(21)            NOT NULL,
     description         VARCHAR(MAX)           NOT NULL,
     consultation_status VARCHAR(21)            NOT NULL,
-    submitted_at        DATETIME2(3)           NOT NULL,
+    requested_at        DATETIME2(3)           NOT NULL,
     associate_id        BIGINT,
     paralegal_id        BIGINT,
     rejection_reason    VARCHAR(MAX),
@@ -839,7 +839,7 @@ VALUES (1,   '0705000000'),
        (101, '0770000060');
 
 -- Consultations Data
-INSERT INTO consultations (consultation_code, client_id, case_type, description, consultation_status, submitted_at, associate_id, paralegal_id, rejection_reason)
+INSERT INTO consultations (consultation_code, client_id, case_type, description, consultation_status, requested_at, associate_id, paralegal_id, rejection_reason)
 VALUES ('CON-1-00151218',  12, 'CIVIL',                 'A dispute with a neighbour over damage to the boundary wall.',                                                            'ACCEPTED_BY_ASSOCIATE', '2021-04-18 10:00:00.000', 2,    5,    NULL                                                                                    ),
        ('CON-2-00199489',  13, 'CONTRACT_COMMERCIAL',   'A supplier has not delivered goods that were paid for in advance.',                                                       'REJECTED_BY_PARTNER',   '2021-06-05 10:00:00.000', NULL, NULL, 'The claim is time-barred.'                                                             ),
        ('CON-3-00247760',  14, 'CORPORATE',             'Advice is needed on restructuring the shareholding of a family company.',                                                 'ACCEPTED_BY_ASSOCIATE', '2021-07-23 10:00:00.000', 4,    5,    NULL                                                                                    ),

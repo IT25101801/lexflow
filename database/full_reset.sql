@@ -142,7 +142,7 @@ CREATE TABLE consultations (
     case_type           VARCHAR(21)            NOT NULL,
     description         VARCHAR(MAX)           NOT NULL,
     consultation_status VARCHAR(21)            NOT NULL,
-    submitted_at        DATETIME2(3)           NOT NULL,
+    requested_at        DATETIME2(3)           NOT NULL,
     associate_id        BIGINT,
     paralegal_id        BIGINT,
     rejection_reason    VARCHAR(MAX),
@@ -702,7 +702,7 @@ VALUES (1,  '0770000001'),
        (60, '0770000060');
 
 -- Consultations Data
-INSERT INTO consultations (consultation_code, client_id, case_type, description, consultation_status, submitted_at, associate_id, paralegal_id, rejection_reason)
+INSERT INTO consultations (consultation_code, client_id, case_type, description, consultation_status, requested_at, associate_id, paralegal_id, rejection_reason)
 VALUES ('CON-1-93580258',  31, 'FAMILY',                'Seeking representation for a contested divorce and custody arrangement.',                                                 'ACCEPTED_BY_ASSOCIATE', '2025-04-15 10:00:00.000', 11,   21,   NULL                                                                                    ),
        ('CON-2-74814825',  32, 'CIVIL',                 'Dispute with a neighbour over a boundary wall.',                                                                          'REJECTED_BY_PARTNER',   '2025-04-16 10:00:00.000', NULL, NULL, 'The matter is a minor boundary issue better settled through the local mediation board.'),
        ('CON-3-56049392',  33, 'CRIMINAL',              'Requesting defence representation for a traffic offence.',                                                                'REJECTED_BY_PARTNER',   '2025-04-17 10:00:00.000', NULL, NULL, 'Conflict of interest with an existing client.'                                         ),

@@ -31,7 +31,7 @@ public class ConsultationDao {
 												 case_type,
 												 description,
 												 consultation_status,
-												 submitted_at,
+												 requested_at,
 												 associate_id,
 												 paralegal_id,
 												 rejection_reason
@@ -44,7 +44,7 @@ public class ConsultationDao {
 	
 	public Consultation insert(Consultation consultation) {
 		String sql = """
-					 INSERT INTO consultations (client_id, case_type, description, consultation_status, submitted_at, associate_id, paralegal_id, rejection_reason)
+					 INSERT INTO consultations (client_id, case_type, description, consultation_status, requested_at, associate_id, paralegal_id, rejection_reason)
 					 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 					 """;
 		
@@ -56,7 +56,7 @@ public class ConsultationDao {
 			statement.setString(2, consultation.getCaseType().name());
 			statement.setString(3, consultation.getDescription());
 			statement.setString(4, consultation.getConsultationStatus().name());
-			statement.setTimestamp(5, Timestamp.valueOf(consultation.getSubmittedAt()));
+			statement.setTimestamp(5, Timestamp.valueOf(consultation.getRequestedAt()));
 			
 			if (consultation.getAssociate() != null) {
 				statement.setLong(6, consultation.getAssociate().getUserId());
@@ -150,7 +150,7 @@ public class ConsultationDao {
 		String sql = """
 					 SELECT %s
 					 FROM consultations
-					 ORDER BY submitted_at DESC
+					 ORDER BY requested_at DESC
 					 """.formatted(SELECT_COLUMNS);
 		
 		List<Consultation> consultations = new ArrayList<>();
@@ -192,7 +192,7 @@ public class ConsultationDao {
 					 SELECT %s
 					 FROM consultations
 					 WHERE consultation_status = ?
-					 ORDER BY submitted_at
+					 ORDER BY requested_at
 					 """.formatted(SELECT_COLUMNS);
 		
 		List<Consultation> consultations = new ArrayList<>();
@@ -234,7 +234,7 @@ public class ConsultationDao {
 					        cn.case_type,
 					        cn.description,
 					        cn.consultation_status,
-					        cn.submitted_at,
+					        cn.requested_at,
 					        cn.associate_id,
 					        cn.paralegal_id,
 					        cn.rejection_reason
@@ -398,7 +398,7 @@ public class ConsultationDao {
 		List<String> opposingParties = findOpposingParties(consultationId);
 		String description = resultSet.getString("description");
 		ConsultationStatus consultationStatus = ConsultationStatus.valueOf(resultSet.getString("consultation_status"));
-		LocalDateTime submittedAt = resultSet.getTimestamp("submitted_at").toLocalDateTime();
+		LocalDateTime requestedAt = resultSet.getTimestamp("requested_at").toLocalDateTime();
 		Associate associate = null;
 		long associateId = resultSet.getLong("associate_id");
 		
@@ -415,7 +415,7 @@ public class ConsultationDao {
 		
 		String rejectionReason = resultSet.getString("rejection_reason");
 		
-		return new Consultation(consultationId, consultationCode, client, caseType, opposingParties, description, consultationStatus, submittedAt, associate, paralegal, rejectionReason);
+		return new Consultation(consultationId, consultationCode, client, caseType, opposingParties, description, consultationStatus, requestedAt, associate, paralegal, rejectionReason);
 	}
 	
 	private List<String> findOpposingParties(Long consultationId) {
@@ -453,7 +453,7 @@ public class ConsultationDao {
 					 SELECT %s
 					 FROM consultations
 					 WHERE %s = ?
-					 ORDER BY submitted_at DESC
+					 ORDER BY requested_at DESC
 					 """.formatted(SELECT_COLUMNS, column);
 		
 		List<Consultation> consultations = new ArrayList<>();
@@ -485,7 +485,7 @@ public class ConsultationDao {
 					 FROM consultations
 					 WHERE %s = ?
 					   AND consultation_status = ?
-					 ORDER BY submitted_at
+					 ORDER BY requested_at
 					 """.formatted(SELECT_COLUMNS, column);
 		
 		List<Consultation> consultations = new ArrayList<>();

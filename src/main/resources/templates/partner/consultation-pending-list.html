@@ -18,7 +18,7 @@
 						<th>Client</th>
 						<th>Case Type</th>
 						<th>Opposing Parties</th>
-						<th>Submitted At</th>
+						<th>Requested At</th>
 						<th>Actions</th>
 					</tr>
 					</thead>
@@ -34,7 +34,7 @@
 						</td>
 						<td th:text="${#strings.replace(consultation.caseType, '_', ' ')}"></td>
 						<td th:text="${#lists.size(consultation.opposingParties) > 1 ? consultation.opposingParties[0] + ' et al.' : consultation.opposingParties[0]}"></td>
-						<td th:text="${#temporals.format(consultation.submittedAt, 'dd/MM/yyyy HH:mm')}"></td>
+						<td th:text="${#temporals.format(consultation.requestedAt, 'dd/MM/yyyy HH:mm')}"></td>
 						<td>
 							<a class="action-btn action-btn-view" th:href="@{/partner/consultations/{id}(id=${consultation.consultationId})}">View</a>
 						</td>

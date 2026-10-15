@@ -91,7 +91,7 @@ CREATE TABLE consultations (
     case_type           VARCHAR(21)            NOT NULL,
     description         VARCHAR(MAX)           NOT NULL,
     consultation_status VARCHAR(21)            NOT NULL,
-    submitted_at        DATETIME2(3)           NOT NULL,
+    requested_at        DATETIME2(3)           NOT NULL,
     associate_id        BIGINT,
     paralegal_id        BIGINT,
     rejection_reason    VARCHAR(MAX),

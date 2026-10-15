@@ -437,7 +437,7 @@ function fillCroConsultationFormR1() {
 }
 
 function fillCroConsultationFormR2() {
-	// Lal Yapa — default seeded client, walked in to submit a new request.
+	// Lal Yapa — default seeded client, walked in to request a consultation.
 	document.getElementById("clientCode").value = "CLT-31-70617268";
 	document.getElementById("caseType").value = "PROPERTY";
 	fillMultiInputRow("opposingPartyRows", "opposingParties", "Mr. S.B. Kulatunga (neighbour)");

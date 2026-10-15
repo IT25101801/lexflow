@@ -2,7 +2,7 @@ package lexflow.controller;
 
 import jakarta.validation.Valid;
 import lexflow.dto.consultation.EditConsultationRequest;
-import lexflow.dto.consultation.SubmitWalkInConsultationRequest;
+import lexflow.dto.consultation.RequestWalkInConsultationRequest;
 import lexflow.dto.user.*;
 import lexflow.entity.consultation.CaseType;
 import lexflow.entity.consultation.Consultation;
@@ -246,7 +246,7 @@ public class ClientRelationsOfficerController {
 	}
 	
 	@PostMapping("/client-relations-officer/consultations")
-	public String submitConsultation(@Valid @ModelAttribute SubmitWalkInConsultationRequest form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
+	public String requestConsultation(@Valid @ModelAttribute RequestWalkInConsultationRequest form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
 		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", ValidationUtil.allErrors(bindingResult));
@@ -271,7 +271,7 @@ public class ClientRelationsOfficerController {
 		Consultation consultation;
 		
 		try {
-			consultation = consultationService.submit(client, form.getCaseType(), form.getOpposingParties(), form.getDescription(), consultationFiles);
+			consultation = consultationService.request(client, form.getCaseType(), form.getOpposingParties(), form.getDescription(), consultationFiles);
 		} catch (BusinessRuleViolationException e) {
 			model.addAttribute("caseTypes", CaseType.values());
 			model.addAttribute("error", e.getMessage());
@@ -279,12 +279,12 @@ public class ClientRelationsOfficerController {
 			return "client-relations-officer/consultation-form";
 		} catch (PersistenceException e) {
 			model.addAttribute("caseTypes", CaseType.values());
-			model.addAttribute("error", "Could not submit the consultation. Please try again.");
+			model.addAttribute("error", "Could not request the consultation. Please try again.");
 			
 			return "client-relations-officer/consultation-form";
 		}
 		
-		redirectAttributes.addFlashAttribute("success", "Consultation submitted successfully.");
+		redirectAttributes.addFlashAttribute("success", "Consultation requested successfully.");
 		
 		return "redirect:/client-relations-officer/consultations/" + consultation.getConsultationId();
 	}

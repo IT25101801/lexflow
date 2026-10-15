@@ -39,12 +39,12 @@ public class ConsultationService {
 	// Create
 	
 	@Transactional
-	public Consultation submit(Client client, CaseType caseType, List<String> opposingParties, String description, List<MultipartFile> consultationFiles) {
-		LocalDateTime submittedAt = LocalDateTime.now();
-		Consultation consultation = new Consultation(client, caseType, opposingParties, description, submittedAt);
+	public Consultation request(Client client, CaseType caseType, List<String> opposingParties, String description, List<MultipartFile> consultationFiles) {
+		LocalDateTime requestedAt = LocalDateTime.now();
+		Consultation consultation = new Consultation(client, caseType, opposingParties, description, requestedAt);
 		
 		consultationDao.insert(consultation);
-		documentService.attach(consultation, consultationFiles, submittedAt);
+		documentService.attach(consultation, consultationFiles, requestedAt);
 		
 		return consultation;
 	}

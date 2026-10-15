@@ -61,8 +61,8 @@
 						<span class="badge" th:classappend="'badge-' + ${consultation.consultationStatus}" th:text="${#strings.replace(consultation.consultationStatus, '_', ' ')}"></span>
 					</div>
 					<div class="detail-row">
-						<span class="detail-label">Submitted At</span>
-						<span class="detail-value" th:text="${#temporals.format(consultation.submittedAt, 'dd/MM/yyyy HH:mm')}"></span>
+						<span class="detail-label">Requested At</span>
+						<span class="detail-value" th:text="${#temporals.format(consultation.requestedAt, 'dd/MM/yyyy HH:mm')}"></span>
 					</div>
 					<div class="detail-row" th:if="${consultation.associate != null}">
 						<span class="detail-label">Assigned Associate</span>

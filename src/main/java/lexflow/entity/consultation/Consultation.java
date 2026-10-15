@@ -20,21 +20,21 @@ public class Consultation {
 	private List<String> opposingParties;
 	private String description;
 	private ConsultationStatus consultationStatus;
-	private final LocalDateTime submittedAt;
+	private final LocalDateTime requestedAt;
 	private Associate associate;
 	private Paralegal paralegal;
 	private String rejectionReason;
 	
-	public Consultation(Client client, CaseType caseType, List<String> opposingParties, String description, LocalDateTime submittedAt) {
+	public Consultation(Client client, CaseType caseType, List<String> opposingParties, String description, LocalDateTime requestedAt) {
 		this.client = client;
 		this.caseType = caseType;
 		this.opposingParties = opposingParties;
 		this.description = description;
 		this.consultationStatus = ConsultationStatus.PENDING;
-		this.submittedAt = submittedAt;
+		this.requestedAt = requestedAt;
 	}
 	
-	public Consultation(Long consultationId, String consultationCode, Client client, CaseType caseType, List<String> opposingParties, String description, ConsultationStatus consultationStatus, LocalDateTime submittedAt, Associate associate, Paralegal paralegal, String rejectionReason) {
+	public Consultation(Long consultationId, String consultationCode, Client client, CaseType caseType, List<String> opposingParties, String description, ConsultationStatus consultationStatus, LocalDateTime requestedAt, Associate associate, Paralegal paralegal, String rejectionReason) {
 		this.consultationId = consultationId;
 		this.consultationCode = consultationCode;
 		this.client = client;
@@ -42,7 +42,7 @@ public class Consultation {
 		this.opposingParties = opposingParties;
 		this.description = description;
 		this.consultationStatus = consultationStatus;
-		this.submittedAt = submittedAt;
+		this.requestedAt = requestedAt;
 		this.associate = associate;
 		this.paralegal = paralegal;
 		this.rejectionReason = rejectionReason;

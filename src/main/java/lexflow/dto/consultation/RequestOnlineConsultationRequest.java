@@ -11,11 +11,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class SubmitWalkInConsultationRequest {
-	
-	@NotBlank(message = "Client code is required")
-	@Pattern(regexp = "CLT-\\d+-\\d{8}", message = "Client code must look like CLT-31-70617268")
-	private String clientCode;
+public class RequestOnlineConsultationRequest {
 	
 	@NotNull(message = "Case type is required")
 	private CaseType caseType;

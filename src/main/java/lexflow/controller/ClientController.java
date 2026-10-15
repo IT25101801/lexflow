@@ -2,7 +2,7 @@ package lexflow.controller;
 
 import jakarta.validation.Valid;
 import lexflow.dto.consultation.EditConsultationRequest;
-import lexflow.dto.consultation.SubmitOnlineConsultationRequest;
+import lexflow.dto.consultation.RequestOnlineConsultationRequest;
 import lexflow.dto.document.UploadCaseDocumentsRequest;
 import lexflow.dto.finance.TopUpByCardRequest;
 import lexflow.dto.user.ChangePasswordRequest;
@@ -95,7 +95,7 @@ public class ClientController {
 	}
 	
 	@PostMapping("/client/consultations")
-	public String submitConsultation(@Valid @ModelAttribute SubmitOnlineConsultationRequest form, BindingResult bindingResult, Authentication authentication, Model model, RedirectAttributes redirectAttributes) {
+	public String requestConsultation(@Valid @ModelAttribute RequestOnlineConsultationRequest form, BindingResult bindingResult, Authentication authentication, Model model, RedirectAttributes redirectAttributes) {
 		
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("error", ValidationUtil.allErrors(bindingResult));
@@ -109,7 +109,7 @@ public class ClientController {
 		Consultation consultation;
 		
 		try {
-			consultation = consultationService.submit(currentClient(authentication), form.getCaseType(), form.getOpposingParties(), form.getDescription(), consultationFiles);
+			consultation = consultationService.request(currentClient(authentication), form.getCaseType(), form.getOpposingParties(), form.getDescription(), consultationFiles);
 		} catch (BusinessRuleViolationException e) {
 			model.addAttribute("caseTypes", CaseType.values());
 			model.addAttribute("error", e.getMessage());
@@ -117,12 +117,12 @@ public class ClientController {
 			return "client/consultation-form";
 		} catch (PersistenceException e) {
 			model.addAttribute("caseTypes", CaseType.values());
-			model.addAttribute("error", "Could not submit your consultation. Please try again.");
+			model.addAttribute("error", "Could not request your consultation. Please try again.");
 			
 			return "client/consultation-form";
 		}
 		
-		redirectAttributes.addFlashAttribute("success", "Consultation submitted successfully.");
+		redirectAttributes.addFlashAttribute("success", "Consultation requested successfully.");
 		
 		return "redirect:/client/consultations/" + consultation.getConsultationId();
 	}

@@ -55,7 +55,7 @@ SELECT @sql += 'DROP TABLE ' + QUOTENAME(SCHEMA_NAME(schema_id)) + '.' + QUOTENA
 FROM sys.tables;
 
 EXEC sp_executesql @sql;
-
+GO
 
 -- Recreate Schema
 
